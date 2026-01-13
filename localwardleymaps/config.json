@@ -1,0 +1,11 @@
+{
+  "type": "rig",
+  "version": 1,
+  "name": "localwardleymaps",
+  "git_url": "git@github.com:damonsk/onlinewardleymaps.git",
+  "default_branch": "main",
+  "created_at": "2026-01-12T17:39:31.288098+01:00",
+  "beads": {
+    "prefix": "lo"
+  }
+}

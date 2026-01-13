@@ -1,0 +1,11 @@
+{
+  "type": "rig",
+  "version": 1,
+  "name": "invoices",
+  "git_url": "git@github.com:mandrigin/invoice-monitor.git",
+  "default_branch": "main",
+  "created_at": "2026-01-13T15:58:42.36055+01:00",
+  "beads": {
+    "prefix": "in"
+  }
+}

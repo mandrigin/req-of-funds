@@ -1,0 +1,326 @@
+{"ts":"2026-01-12T16:31:00Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-12927","cwd":"/Users/mandrigin/gt","role":"mayor","session_id":"mayor-12927"},"visibility":"feed"}
+{"ts":"2026-01-12T16:34:03Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-23729","cwd":"/Users/mandrigin/gt","role":"mayor","session_id":"mayor-23729"},"visibility":"feed"}
+{"ts":"2026-01-12T16:34:35Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-25392","cwd":"/Users/mandrigin/gt","role":"mayor","session_id":"mayor-25392"},"visibility":"feed"}
+{"ts":"2026-01-12T16:49:44Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-36892","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-36892"},"visibility":"feed"}
+{"ts":"2026-01-12T16:49:52Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-37612","cwd":"/Users/mandrigin/gt","role":"mayor","session_id":"mayor-37612"},"visibility":"feed"}
+{"ts":"2026-01-12T16:56:49Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T16:56:51Z","source":"gt","type":"session_start","actor":"localwardleymaps/witness","payload":{"actor_pid":"localwardleymaps/witness-61847","cwd":"/Users/mandrigin/gt/localwardleymaps/witness","role":"localwardleymaps/witness","session_id":"localwardleymaps/witness-61847","topic":"patrol"},"visibility":"feed"}
+{"ts":"2026-01-12T16:57:01Z","source":"gt","type":"session_start","actor":"localwardleymaps/witness","payload":{"actor_pid":"localwardleymaps/witness-63069","cwd":"/Users/mandrigin/gt/localwardleymaps/witness","role":"localwardleymaps/witness","session_id":"localwardleymaps/witness-63069","topic":"patrol"},"visibility":"feed"}
+{"ts":"2026-01-12T16:58:11Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-be8","target":"localwardleymaps/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T16:58:16Z","source":"gt","type":"session_start","actor":"/refinery","payload":{"actor_pid":"/refinery-67463","cwd":"/Users/mandrigin/gt","role":"/refinery","session_id":"/refinery-67463","topic":"patrol"},"visibility":"feed"}
+{"ts":"2026-01-12T16:59:29Z","source":"gt","type":"mail","actor":"localwardleymaps/refinery","payload":{"subject":"Uncommitted work detected","to":"localwardleymaps/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T16:59:40Z","source":"gt","type":"mail","actor":"localwardleymaps/refinery","payload":{"subject":"Polecat furiosa has uncommitted work","to":"localwardleymaps/witness"},"visibility":"feed"}
+{"ts":"2026-01-12T17:02:13Z","source":"gt","type":"mail","actor":"localwardleymaps/furiosa","payload":{"subject":"lo-be8 complete - push blocked","to":"localwardleymaps/witness"},"visibility":"feed"}
+{"ts":"2026-01-12T17:02:32Z","source":"gt","type":"done","actor":"localwardleymaps/furiosa","payload":{"bead":"furiosa-mkbenfhz","branch":"polecat/furiosa-mkbenfhz"},"visibility":"feed"}
+{"ts":"2026-01-12T17:02:47Z","source":"gt","type":"mail","actor":"localwardleymaps/witness","payload":{"subject":"ESCALATION: localwardleymaps rig needs fork configured","to":"mayor/"},"visibility":"feed"}
+{"ts":"2026-01-12T17:05:55Z","source":"gt","type":"mail","actor":"mayor/","payload":{"subject":"🚚 Convoy landed: monitor local file instead of the text field in the web ui and delete the text field","to":"mayor/"},"visibility":"feed"}
+{"ts":"2026-01-12T17:10:14Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T17:10:16Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-5wm","target":"localwardleymaps/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:11:47Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Status check - did you complete lo-5wm? Please commit your work if done.","rig":"localwardleymaps","target":"localwardleymaps/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:12:43Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] You have uncommitted changes\\! Run: git add -A \u0026\u0026 git commit -m 'feat: replace text field with file monitoring' \u0026\u0026 bd close lo-5wm","rig":"localwardleymaps","target":"localwardleymaps/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:13:12Z","source":"gt","type":"unhook","actor":"localwardleymaps/polecats/furiosa","payload":{"bead":"lo-5wm"},"visibility":"feed"}
+{"ts":"2026-01-12T17:13:59Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T17:14:01Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-5wm","target":"localwardleymaps/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:15:57Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Work incomplete! You created useFileMonitor.ts but need to:\n1. Create FileMonitorPanel UI component\n2. Integrate into MapEnvironment.tsx - remove Editor, add FileMonitorPanel\n3. Call useFileMonitor and connect to mapActions.setMapText\n4. Commit all changes when done","rig":"localwardleymaps","target":"localwardleymaps/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:17:42Z","source":"gt","type":"mail","actor":"mayor/","payload":{"subject":"🚚 Convoy landed: file monitoring v2","to":"mayor/"},"visibility":"feed"}
+{"ts":"2026-01-12T17:19:37Z","source":"gt","type":"done","actor":"localwardleymaps/furiosa","payload":{"bead":"furiosa-mkbf9iv3","branch":"polecat/furiosa-mkbf9iv3"},"visibility":"feed"}
+{"ts":"2026-01-12T17:34:47Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T17:34:48Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-28r","target":"localwardleymaps/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:37:59Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T17:38:01Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-28r","target":"localwardleymaps/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:38:24Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Base updated with file monitoring code. Now implement lo-28r: fullscreen default, collapsed monitor after file selection, status bar at top with file path and time.","rig":"localwardleymaps","target":"localwardleymaps/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:39:10Z","source":"gt","type":"mail","actor":"localwardleymaps/refinery","payload":{"subject":"MR lo-rif: Build failed - TypeScript error","to":"localwardleymaps/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:39:15Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Work incomplete! Still need:\n1. Status bar at TOP of screen showing: file path | last update time | Stop button\n2. When file is selected, collapse FileMonitor to just the status bar\n3. Map should fill remaining space\n\nModify FileMonitor.tsx to have a compact/collapsed mode. Add status bar to MapEnvironment above the map.","rig":"localwardleymaps","target":"localwardleymaps/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:41:39Z","source":"gt","type":"done","actor":"localwardleymaps/furiosa","payload":{"bead":"furiosa-mkbg4dpy","branch":"polecat/furiosa-mkbg4dpy"},"visibility":"feed"}
+{"ts":"2026-01-12T17:43:07Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T17:43:09Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-waj","target":"localwardleymaps/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:43:27Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Base updated. Fix lo-waj: find the actual fullscreen toggle mechanism and make it default to fullscreen. The mapOnlyView=true change didn't work - find what controls hiding the left editor panel.","rig":"localwardleymaps","target":"localwardleymaps/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:43:47Z","source":"gt","type":"mail","actor":"localwardleymaps/refinery","payload":{"subject":"MR lo-lr6: Build still failing - same TS error","to":"localwardleymaps/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:46:28Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] START WORKING\\! Check lo-waj on your hook. Search for 'fullscreen' or 'mapOnlyView' in the codebase. Find ResizableSplitPane and how it shows/hides the left panel. Make the left panel hidden by default.","rig":"localwardleymaps","target":"localwardleymaps/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:50:26Z","source":"gt","type":"unhook","actor":"localwardleymaps/polecats/furiosa","payload":{"bead":"lo-waj"},"visibility":"feed"}
+{"ts":"2026-01-12T17:51:53Z","source":"gt","type":"mail","actor":"mayor/","payload":{"subject":"🚚 Convoy landed: UI fullscreen + collapsed monitor","to":"mayor/"},"visibility":"feed"}
+{"ts":"2026-01-12T17:53:02Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"nux","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T17:53:04Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-4og","target":"localwardleymaps/polecats/nux"},"visibility":"feed"}
+{"ts":"2026-01-12T17:53:18Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Base updated. Work on lo-4og: add file persistence using IndexedDB to store FileSystemFileHandle. On page load, retrieve handle and request permission to resume monitoring.","rig":"localwardleymaps","target":"localwardleymaps/nux"},"visibility":"feed"}
+{"ts":"2026-01-12T17:53:45Z","source":"gt","type":"mail","actor":"localwardleymaps/refinery","payload":{"subject":"Build still failing - TS fix required","to":"localwardleymaps/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T17:53:46Z","source":"gt","type":"mail","actor":"localwardleymaps/refinery","payload":{"subject":"Build failing - TS fix required","to":"localwardleymaps/polecats/nux"},"visibility":"feed"}
+{"ts":"2026-01-12T17:57:42Z","source":"gt","type":"done","actor":"localwardleymaps/nux","payload":{"bead":"nux-mkbgnq9w","branch":"polecat/nux-mkbgnq9w"},"visibility":"feed"}
+{"ts":"2026-01-12T17:58:47Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"nux","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T17:58:48Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-4og","target":"localwardleymaps/polecats/nux"},"visibility":"feed"}
+{"ts":"2026-01-12T17:58:58Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Start working on lo-4og: persist FileSystemFileHandle in IndexedDB, restore on page load.","rig":"localwardleymaps","target":"localwardleymaps/nux"},"visibility":"feed"}
+{"ts":"2026-01-12T17:59:29Z","source":"gt","type":"mail","actor":"localwardleymaps/refinery","payload":{"subject":"MR lo-ush REJECTED - must fix TS error first","to":"localwardleymaps/polecats/nux"},"visibility":"feed"}
+{"ts":"2026-01-12T18:22:50Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"slit","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T18:22:52Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-hck","target":"localwardleymaps/polecats/slit"},"visibility":"feed"}
+{"ts":"2026-01-12T18:23:03Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Base updated. Implement lo-hck: Add Save button to write mapText back to file using FileSystemFileHandle.createWritable()","rig":"localwardleymaps","target":"localwardleymaps/slit"},"visibility":"feed"}
+{"ts":"2026-01-12T18:30:49Z","source":"gt","type":"mail","actor":"localwardleymaps/refinery","payload":{"subject":"MR lo-ush merged locally - push blocked","to":"localwardleymaps/witness"},"visibility":"feed"}
+{"ts":"2026-01-12T18:33:38Z","source":"gt","type":"done","actor":"localwardleymaps/slit","payload":{"bead":"slit-mkbhq270","branch":"polecat/slit-mkbhq270"},"visibility":"feed"}
+{"ts":"2026-01-12T18:48:11Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"slit","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T18:48:13Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-u76","target":"localwardleymaps/polecats/slit"},"visibility":"feed"}
+{"ts":"2026-01-12T18:48:41Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Base updated. Implement lo-u76: Add Electron wrapper. Consider using nextron or manual setup with electron + electron-builder. Create main process, configure static export, add build scripts.","rig":"localwardleymaps","target":"localwardleymaps/slit"},"visibility":"feed"}
+{"ts":"2026-01-12T19:01:01Z","source":"gt","type":"done","actor":"localwardleymaps/slit","payload":{"bead":"slit-mkbimnpd","branch":"polecat/slit-mkbimnpd"},"visibility":"feed"}
+{"ts":"2026-01-12T19:22:54Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"slit","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T19:22:56Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-w8q","target":"localwardleymaps/polecats/slit"},"visibility":"feed"}
+{"ts":"2026-01-12T19:23:05Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Base updated. Implement lo-w8q: Parse CLI args in main.ts, expose file path via preload, auto-start monitoring in renderer if path provided.","rig":"localwardleymaps","target":"localwardleymaps/slit"},"visibility":"feed"}
+{"ts":"2026-01-12T19:24:22Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Main process IPC handlers done. Now need:\n1. Update preload.ts to expose: getCliFilePath, readFile, writeFile, getFileStats via contextBridge\n2. Update useFileMonitor.ts to check for CLI file path on mount and use IPC for file operations when in Electron\n3. Detect Electron environment (window.electronAPI exists)","rig":"localwardleymaps","target":"localwardleymaps/slit"},"visibility":"feed"}
+{"ts":"2026-01-12T19:30:16Z","source":"gt","type":"unhook","actor":"localwardleymaps/polecats/slit","payload":{"bead":"lo-w8q"},"visibility":"feed"}
+{"ts":"2026-01-12T19:30:32Z","source":"gt","type":"mail","actor":"localwardleymaps/slit","payload":{"subject":"lo-w8q complete","to":"mayor/"},"visibility":"feed"}
+{"ts":"2026-01-12T19:37:24Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-32127","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-32127"},"visibility":"feed"}
+{"ts":"2026-01-12T19:46:26Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-79739","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-79739"},"visibility":"feed"}
+{"ts":"2026-01-12T19:46:43Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-80461","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-80461"},"visibility":"feed"}
+{"ts":"2026-01-12T19:50:44Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"rictus","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T19:50:46Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-115","target":"localwardleymaps/polecats/rictus"},"visibility":"feed"}
+{"ts":"2026-01-12T19:53:30Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"llmbrandchecker"},"visibility":"feed"}
+{"ts":"2026-01-12T19:53:33Z","source":"gt","type":"session_start","actor":"llmbrandchecker/witness","payload":{"actor_pid":"llmbrandchecker/witness-14671","cwd":"/Users/mandrigin/gt/llmbrandchecker/witness","role":"llmbrandchecker/witness","session_id":"llmbrandchecker/witness-14671","topic":"patrol"},"visibility":"feed"}
+{"ts":"2026-01-12T19:53:43Z","source":"gt","type":"session_start","actor":"llmbrandchecker/witness","payload":{"actor_pid":"llmbrandchecker/witness-16549","cwd":"/Users/mandrigin/gt/llmbrandchecker/witness","role":"llmbrandchecker/witness","session_id":"llmbrandchecker/witness-16549","topic":"patrol"},"visibility":"feed"}
+{"ts":"2026-01-12T19:54:21Z","source":"gt","type":"nudge","actor":"llmbrandchecker/witness","payload":{"reason":"[from llmbrandchecker/witness] You are working on ll-0gr (Build Electron app for URL review). Please continue with your assigned task.","rig":"llmbrandchecker","target":"llmbrandchecker/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T19:54:52Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"ll-0gr","target":"llmbrandchecker/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T19:54:57Z","source":"gt","type":"session_start","actor":"/refinery","payload":{"actor_pid":"/refinery-24019","cwd":"/Users/mandrigin/gt","role":"/refinery","session_id":"/refinery-24019","topic":"patrol"},"visibility":"feed"}
+{"ts":"2026-01-12T19:58:17Z","source":"gt","type":"done","actor":"localwardleymaps/rictus","payload":{"bead":"rictus-mkbkv3hc","branch":"polecat/rictus-mkbkv3hc"},"visibility":"feed"}
+{"ts":"2026-01-12T19:58:37Z","source":"gt","type":"mail","actor":"llmbrandchecker/furiosa","payload":{"subject":"ll-0gr complete","to":"llmbrandchecker/witness"},"visibility":"feed"}
+{"ts":"2026-01-12T19:58:48Z","source":"gt","type":"done","actor":"llmbrandchecker/furiosa","payload":{"bead":"furiosa-mkbkynnt","branch":"polecat/furiosa-mkbkynnt"},"visibility":"feed"}
+{"ts":"2026-01-12T20:06:57Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"rictus","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T20:06:58Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-115","target":"localwardleymaps/polecats/rictus"},"visibility":"feed"}
+{"ts":"2026-01-12T20:08:20Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"llmbrandchecker"},"visibility":"feed"}
+{"ts":"2026-01-12T20:08:22Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"ll-0gr","target":"llmbrandchecker/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-12T20:09:53Z","source":"gt","type":"done","actor":"llmbrandchecker/furiosa","payload":{"bead":"furiosa-mkbli1l7","branch":"polecat/furiosa-mkbli1l7"},"visibility":"feed"}
+{"ts":"2026-01-12T20:16:23Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"dementus","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T20:16:25Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-p60","target":"localwardleymaps/polecats/dementus"},"visibility":"feed"}
+{"ts":"2026-01-12T20:22:02Z","source":"gt","type":"mail","actor":"localwardleymaps/dementus","payload":{"subject":"✅ COMPLETE: lo-p60 Screenshot button fix","to":"localwardleymaps/witness"},"visibility":"feed"}
+{"ts":"2026-01-12T20:25:43Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"capable","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T20:25:45Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-6ez","target":"localwardleymaps/polecats/capable"},"visibility":"feed"}
+{"ts":"2026-01-12T20:31:49Z","source":"gt","type":"unhook","actor":"localwardleymaps/polecats/capable","payload":{"bead":"lo-6ez"},"visibility":"feed"}
+{"ts":"2026-01-12T20:32:05Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"toast","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-12T20:32:07Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-9o6","target":"localwardleymaps/polecats/toast"},"visibility":"feed"}
+{"ts":"2026-01-12T21:10:46Z","source":"gt","type":"mail","actor":"localwardleymaps/toast","payload":{"subject":"🤝 HANDOFF: lo-9o6 complete - push pending","to":"mayor/"},"visibility":"feed"}
+{"ts":"2026-01-13T11:07:15Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"llmbrandchecker"},"visibility":"feed"}
+{"ts":"2026-01-13T11:07:17Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"ll-dzb","target":"llmbrandchecker/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T11:08:16Z","source":"gt","type":"mail","actor":"llmbrandchecker/refinery","payload":{"subject":"Rebase needed: ll-90a conflicts with main","to":"llmbrandchecker/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T11:09:32Z","source":"gt","type":"done","actor":"llmbrandchecker/furiosa","payload":{"bead":"furiosa-mkchm1x1","branch":"polecat/furiosa-mkchm1x1"},"visibility":"feed"}
+{"ts":"2026-01-13T11:19:55Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"llmbrandchecker"},"visibility":"feed"}
+{"ts":"2026-01-13T11:19:57Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"ll-fa5","target":"llmbrandchecker/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T11:21:28Z","source":"gt","type":"done","actor":"llmbrandchecker/furiosa","payload":{"bead":"furiosa-mkci2c97","branch":"polecat/furiosa-mkci2c97"},"visibility":"feed"}
+{"ts":"2026-01-13T11:26:06Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"llmbrandchecker"},"visibility":"feed"}
+{"ts":"2026-01-13T11:26:08Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"ll-zc3","target":"llmbrandchecker/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T11:30:00Z","source":"gt","type":"done","actor":"llmbrandchecker/furiosa","payload":{"bead":"furiosa-mkciaas8","branch":"polecat/furiosa-mkciaas8"},"visibility":"feed"}
+{"ts":"2026-01-13T11:36:22Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"llmbrandchecker"},"visibility":"feed"}
+{"ts":"2026-01-13T11:36:24Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"ll-1ha","target":"llmbrandchecker/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T11:39:17Z","source":"gt","type":"done","actor":"llmbrandchecker/furiosa","payload":{"bead":"furiosa-mkcinide","branch":"polecat/furiosa-mkcinide"},"visibility":"feed"}
+{"ts":"2026-01-13T11:44:35Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"llmbrandchecker"},"visibility":"feed"}
+{"ts":"2026-01-13T11:44:37Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"ll-s6m","target":"llmbrandchecker/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T11:48:17Z","source":"gt","type":"done","actor":"llmbrandchecker/furiosa","payload":{"bead":"furiosa-mkciy2bn","branch":"polecat/furiosa-mkciy2bn"},"visibility":"feed"}
+{"ts":"2026-01-13T11:55:53Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"llmbrandchecker"},"visibility":"feed"}
+{"ts":"2026-01-13T11:55:55Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"ll-pwx","target":"llmbrandchecker/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T12:01:27Z","source":"gt","type":"done","actor":"llmbrandchecker/furiosa","payload":{"bead":"furiosa-mkcjclkw","branch":"polecat/furiosa-mkcjclkw"},"visibility":"feed"}
+{"ts":"2026-01-13T12:05:06Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"dag","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-13T12:05:08Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-hig","target":"localwardleymaps/polecats/dag"},"visibility":"feed"}
+{"ts":"2026-01-13T12:08:19Z","source":"gt","type":"mail","actor":"localwardleymaps/dag","payload":{"subject":"lo-hig closed - issue does not exist","to":"localwardleymaps/mayor/"},"visibility":"feed"}
+{"ts":"2026-01-13T12:12:09Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-82325","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-82325"},"visibility":"feed"}
+{"ts":"2026-01-13T12:12:17Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-83101","cwd":"/Users/mandrigin/gt","role":"mayor","session_id":"mayor-83101"},"visibility":"feed"}
+{"ts":"2026-01-13T12:13:31Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"llmbrandchecker"},"visibility":"feed"}
+{"ts":"2026-01-13T12:13:33Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"ll-3f2","target":"llmbrandchecker/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T12:13:52Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"cheedo","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-13T12:13:54Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-727","target":"localwardleymaps/polecats/cheedo"},"visibility":"feed"}
+{"ts":"2026-01-13T12:14:28Z","source":"gt","type":"done","actor":"llmbrandchecker/furiosa","payload":{"bead":"furiosa-mkcjz9uj","branch":"polecat/furiosa-mkcjz9uj"},"visibility":"feed"}
+{"ts":"2026-01-13T12:15:23Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"llmbrandchecker"},"visibility":"feed"}
+{"ts":"2026-01-13T12:15:24Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"ll-3f2","target":"llmbrandchecker/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T12:15:48Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] You have work on your hook (ll-3f2). Run gt hook and execute.","rig":"llmbrandchecker","target":"llmbrandchecker/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T12:16:08Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] You have work on your hook (lo-727). Run gt hook and execute.","rig":"localwardleymaps","target":"localwardleymaps/cheedo"},"visibility":"feed"}
+{"ts":"2026-01-13T12:16:16Z","source":"gt","type":"done","actor":"llmbrandchecker/furiosa","payload":{"bead":"furiosa-mkck1nuq","branch":"polecat/furiosa-mkck1nuq"},"visibility":"feed"}
+{"ts":"2026-01-13T12:16:31Z","source":"gt","type":"unhook","actor":"localwardleymaps/polecats/cheedo","payload":{"bead":"lo-727"},"visibility":"feed"}
+{"ts":"2026-01-13T12:16:32Z","source":"gt","type":"mail","actor":"localwardleymaps/cheedo","payload":{"subject":"lo-727 closed as invalid","to":"mayor/"},"visibility":"feed"}
+{"ts":"2026-01-13T12:23:56Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"valkyrie","rig":"localwardleymaps"},"visibility":"feed"}
+{"ts":"2026-01-13T12:23:57Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"lo-x6z","target":"localwardleymaps/polecats/valkyrie"},"visibility":"feed"}
+{"ts":"2026-01-13T12:25:07Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] You have work on hook (lo-x6z). Run gt hook and fix the TypeScript createWritable modifier issue.","rig":"localwardleymaps","target":"localwardleymaps/valkyrie"},"visibility":"feed"}
+{"ts":"2026-01-13T12:27:22Z","source":"gt","type":"mail","actor":"localwardleymaps/valkyrie","payload":{"subject":"lo-x6z: Issue doesn't exist","to":"mayor/"},"visibility":"feed"}
+{"ts":"2026-01-13T12:27:38Z","source":"gt","type":"unhook","actor":"localwardleymaps/polecats/valkyrie","payload":{"bead":"lo-x6z"},"visibility":"feed"}
+{"ts":"2026-01-13T12:38:58Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-73874","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-73874"},"visibility":"feed"}
+{"ts":"2026-01-13T12:39:43Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-79541","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-79541"},"visibility":"feed"}
+{"ts":"2026-01-13T13:02:39Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-14215","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-14215"},"visibility":"feed"}
+{"ts":"2026-01-13T13:03:51Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-22240","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-22240"},"visibility":"feed"}
+{"ts":"2026-01-13T14:41:25Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-50366","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-50366"},"visibility":"feed"}
+{"ts":"2026-01-13T14:42:38Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-57987","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-57987"},"visibility":"feed"}
+{"ts":"2026-01-13T14:59:10Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-55044","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-55044"},"visibility":"feed"}
+{"ts":"2026-01-13T14:59:32Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-57462","cwd":"/Users/mandrigin/gt","role":"mayor","session_id":"mayor-57462"},"visibility":"feed"}
+{"ts":"2026-01-13T15:12:01Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:12:02Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-8f8","target":"invoices/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T15:17:44Z","source":"gt","type":"done","actor":"invoices/furiosa","payload":{"bead":"furiosa-mkcqcivs","branch":"polecat/furiosa-mkcqcivs"},"visibility":"feed"}
+{"ts":"2026-01-13T15:20:39Z","source":"gt","type":"session_start","actor":"/refinery","payload":{"actor_pid":"/refinery-92169","cwd":"/Users/mandrigin/gt","role":"/refinery","session_id":"/refinery-92169","topic":"patrol"},"visibility":"feed"}
+{"ts":"2026-01-13T15:20:53Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:20:54Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-2xj","target":"invoices/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T15:21:13Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"nux","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:21:15Z","source":"gt","type":"session_start","actor":"invoices/witness","payload":{"actor_pid":"invoices/witness-98814","cwd":"/Users/mandrigin/gt/invoices/witness","role":"invoices/witness","session_id":"invoices/witness-98814","topic":"patrol"},"visibility":"feed"}
+{"ts":"2026-01-13T15:21:20Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-xzq","target":"invoices/polecats/nux"},"visibility":"feed"}
+{"ts":"2026-01-13T15:21:39Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"slit","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:21:41Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-bol","target":"invoices/polecats/slit"},"visibility":"feed"}
+{"ts":"2026-01-13T15:24:24Z","source":"gt","type":"done","actor":"invoices/slit","payload":{"bead":"slit-mkcqowi4","branch":"polecat/slit-mkcqowi4"},"visibility":"feed"}
+{"ts":"2026-01-13T15:26:00Z","source":"gt","type":"unhook","actor":"invoices/polecats/nux","payload":{"bead":"in-xzq"},"visibility":"feed"}
+{"ts":"2026-01-13T15:26:09Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:26:10Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-2xj","target":"invoices/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T15:26:44Z","source":"gt","type":"nudge","actor":"invoices/witness","payload":{"reason":"[from invoices/witness] Phase 3 work done but no MR filed. Please run: bd mol mr-create polecat/nux-mkcqoca1 in-xzq \u0026\u0026 gt mail send invoices/witness -s 'POLECAT_DONE nux' -m 'Exit: COMPLETED' to complete lifecycle.","rig":"invoices","target":"invoices/nux"},"visibility":"feed"}
+{"ts":"2026-01-13T15:27:08Z","source":"gt","type":"done","actor":"invoices/nux","payload":{"bead":"in-xzq","branch":"polecat/nux-mkcqoca1"},"visibility":"feed"}
+{"ts":"2026-01-13T15:27:35Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Process MQ - in-qsi ready","rig":"invoices","target":"invoices/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T15:30:14Z","source":"gt","type":"done","actor":"invoices/furiosa","payload":{"bead":"in-2xj","branch":"polecat/furiosa-mkcquovg"},"visibility":"feed"}
+{"ts":"2026-01-13T15:30:45Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:30:47Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-edr","target":"invoices/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T15:31:05Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"nux","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:31:07Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-agv","target":"invoices/polecats/nux"},"visibility":"feed"}
+{"ts":"2026-01-13T15:31:26Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"slit","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:31:28Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-2kx","target":"invoices/polecats/slit"},"visibility":"feed"}
+{"ts":"2026-01-13T15:31:37Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Process MQ - Phase 2 ready","rig":"invoices","target":"invoices/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T15:33:02Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"rictus","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:33:04Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-1th","target":"invoices/polecats/rictus"},"visibility":"feed"}
+{"ts":"2026-01-13T15:34:15Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] IMPORTANT: Before merging any MR, run: DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project InvoiceFiler.xcodeproj -scheme InvoiceFiler -configuration Debug build 2\u003e\u00261 | tail -20. Only merge if BUILD SUCCEEDED. Reject MR if build fails.","rig":"invoices","target":"invoices/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T15:36:10Z","source":"gt","type":"unhook","actor":"invoices/polecats/nux","payload":{"bead":"in-agv"},"visibility":"feed"}
+{"ts":"2026-01-13T15:36:41Z","source":"gt","type":"done","actor":"invoices/slit","payload":{"bead":"slit-mkcr1hhp","branch":"polecat/slit-mkcr1hhp"},"visibility":"feed"}
+{"ts":"2026-01-13T15:37:14Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"slit","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:37:16Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-p35","target":"invoices/polecats/slit"},"visibility":"feed"}
+{"ts":"2026-01-13T15:39:28Z","source":"gt","type":"unhook","actor":"invoices/polecats/slit","payload":{"bead":"in-p35"},"visibility":"feed"}
+{"ts":"2026-01-13T15:44:50Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"dementus","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:44:52Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-787","target":"invoices/polecats/dementus"},"visibility":"feed"}
+{"ts":"2026-01-13T15:45:11Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"capable","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:45:13Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-qg3","target":"invoices/polecats/capable"},"visibility":"feed"}
+{"ts":"2026-01-13T15:46:50Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"toast","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T15:46:52Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-qxj","target":"invoices/polecats/toast"},"visibility":"feed"}
+{"ts":"2026-01-13T15:49:08Z","source":"gt","type":"unhook","actor":"invoices/polecats/capable","payload":{"bead":"in-qg3"},"visibility":"feed"}
+{"ts":"2026-01-13T15:49:41Z","source":"gt","type":"unhook","actor":"invoices/polecats/dementus","payload":{"bead":"in-787"},"visibility":"feed"}
+{"ts":"2026-01-13T15:49:57Z","source":"gt","type":"done","actor":"invoices/toast","payload":{"bead":"toast-mkcrlaty","branch":"polecat/toast-mkcrlaty"},"visibility":"feed"}
+{"ts":"2026-01-13T15:50:12Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Process MQ - in-qli ready (menu bar fix)","rig":"invoices","target":"invoices/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T15:59:35Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Submit MR for in-qg3 using: bd mr create polecat/capable-mkcrj5vz in-qg3","rig":"invoices","target":"invoices/capable"},"visibility":"feed"}
+{"ts":"2026-01-13T15:59:48Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Submit MR for in-787 using: bd mr create polecat/dementus-mkcriptp in-787","rig":"invoices","target":"invoices/dementus"},"visibility":"feed"}
+{"ts":"2026-01-13T16:00:36Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Check for branches: polecat/capable-mkcrj5vz and polecat/dementus-mkcriptp - both ready for merge. Run build verification before merging.","rig":"invoices","target":"invoices/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T16:03:45Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"toast","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T16:03:47Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-xop","target":"invoices/polecats/toast"},"visibility":"feed"}
+{"ts":"2026-01-13T16:04:07Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"dag","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T16:04:09Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-3to","target":"invoices/polecats/dag"},"visibility":"feed"}
+{"ts":"2026-01-13T16:04:28Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"cheedo","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T16:04:30Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-rw4","target":"invoices/polecats/cheedo"},"visibility":"feed"}
+{"ts":"2026-01-13T16:06:30Z","source":"gt","type":"done","actor":"invoices/toast","payload":{"bead":"toast-mkcs71wr","branch":"polecat/toast-mkcs71wr"},"visibility":"feed"}
+{"ts":"2026-01-13T16:07:00Z","source":"gt","type":"unhook","actor":"invoices/polecats/cheedo","payload":{"bead":"in-rw4"},"visibility":"feed"}
+{"ts":"2026-01-13T16:07:07Z","source":"gt","type":"unhook","actor":"invoices/polecats/dag","payload":{"bead":"in-3to"},"visibility":"feed"}
+{"ts":"2026-01-13T16:07:20Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"toast","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T16:07:22Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-blb","target":"invoices/polecats/toast"},"visibility":"feed"}
+{"ts":"2026-01-13T16:07:35Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Process all pending branches from phases 9, 10, 11, 12. Build verify before merge.","rig":"invoices","target":"invoices/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T16:11:16Z","source":"gt","type":"done","actor":"invoices/toast","payload":{"bead":"toast-mkcsbnea","branch":"polecat/toast-mkcsbnea"},"visibility":"feed"}
+{"ts":"2026-01-13T16:13:20Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"toast","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T16:13:22Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-grc","target":"invoices/polecats/toast"},"visibility":"feed"}
+{"ts":"2026-01-13T16:20:59Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Process Phase 14 MR - final integration. Build verify before merge.","rig":"invoices","target":"invoices/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T16:21:09Z","source":"gt","type":"unhook","actor":"invoices/polecats/toast","payload":{"bead":"in-grc"},"visibility":"feed"}
+{"ts":"2026-01-13T16:22:06Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Push your branch: git push origin HEAD \u0026\u0026 create MR bead for Phase 14","rig":"invoices","target":"invoices/toast"},"visibility":"feed"}
+{"ts":"2026-01-13T16:23:11Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Process Phase 14 branch: polecat/toast-mkcsjd4s - build verify and merge","rig":"invoices","target":"invoices/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T16:35:25Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"valkyrie","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T16:35:27Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-qop","target":"invoices/polecats/valkyrie"},"visibility":"feed"}
+{"ts":"2026-01-13T16:37:36Z","source":"gt","type":"unhook","actor":"invoices/polecats/valkyrie","payload":{"bead":"in-qop"},"visibility":"feed"}
+{"ts":"2026-01-13T16:39:13Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"keeper","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T16:39:15Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-amh","target":"invoices/polecats/keeper"},"visibility":"feed"}
+{"ts":"2026-01-13T16:39:35Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"morsov","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T16:39:37Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-cjc","target":"invoices/polecats/morsov"},"visibility":"feed"}
+{"ts":"2026-01-13T16:39:57Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"ace","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T16:39:59Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-88m","target":"invoices/polecats/ace"},"visibility":"feed"}
+{"ts":"2026-01-13T16:42:24Z","source":"gt","type":"done","actor":"invoices/morsov","payload":{"bead":"morsov-mkcth4iz","branch":"polecat/morsov-mkcth4iz"},"visibility":"feed"}
+{"ts":"2026-01-13T16:45:17Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Process all pending MRs - 4 new features ready. Build verify before merge.","rig":"invoices","target":"invoices/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T16:45:43Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Check branches: polecat/keeper-mkctgnhq, polecat/ace-mkcthls1, polecat/morsov-mkcth4iz - all features complete, process and merge with build verification","rig":"invoices","target":"invoices/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T16:47:45Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-73215","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-73215"},"visibility":"feed"}
+{"ts":"2026-01-13T16:49:08Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-82188","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-82188"},"visibility":"feed"}
+{"ts":"2026-01-13T16:53:32Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"morsov","rig":"invoices"},"visibility":"feed"}
+{"ts":"2026-01-13T16:53:35Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"in-dl3","target":"invoices/polecats/morsov"},"visibility":"feed"}
+{"ts":"2026-01-13T16:58:28Z","source":"gt","type":"unhook","actor":"invoices/polecats/morsov","payload":{"bead":"in-dl3"},"visibility":"feed"}
+{"ts":"2026-01-13T16:59:35Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Create MR bead for your branch polecat/morsov-mkctz2cm. Use: bd create --type=mr --title='Add log viewer UI' --body='branch: polecat/morsov-mkctz2cm' then bd sync","rig":"invoices","target":"invoices/morsov"},"visibility":"feed"}
+{"ts":"2026-01-13T17:01:15Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Process MR in-4n4 for log viewer UI. Build before merge: DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project InvoiceFiler.xcodeproj -scheme InvoiceFiler build","rig":"invoices","target":"invoices/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T17:06:32Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-9031","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-9031"},"visibility":"feed"}
+{"ts":"2026-01-13T17:06:41Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-9903","cwd":"/Users/mandrigin/gt","role":"mayor","session_id":"mayor-9903"},"visibility":"feed"}
+{"ts":"2026-01-13T17:08:10Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-19982","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-19982"},"visibility":"feed"}
+{"ts":"2026-01-13T17:08:20Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-20930","cwd":"/Users/mandrigin/gt","role":"mayor","session_id":"mayor-20930"},"visibility":"feed"}
+{"ts":"2026-01-13T17:08:44Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-22903","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-22903"},"visibility":"feed"}
+{"ts":"2026-01-13T17:08:53Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-23690","cwd":"/Users/mandrigin/gt","role":"mayor","session_id":"mayor-23690"},"visibility":"feed"}
+{"ts":"2026-01-13T17:13:11Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-55631","cwd":"/Users/mandrigin/gt/mayor","role":"mayor","session_id":"mayor-55631"},"visibility":"feed"}
+{"ts":"2026-01-13T17:13:20Z","source":"gt","type":"session_start","actor":"mayor","payload":{"actor_pid":"mayor-56448","cwd":"/Users/mandrigin/gt","role":"mayor","session_id":"mayor-56448"},"visibility":"feed"}
+{"ts":"2026-01-13T17:15:42Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"furiosa","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:15:42Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-dne","target":"prompter/polecats/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T17:16:07Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"nux","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:16:10Z","source":"gt","type":"session_start","actor":"prompter/witness","payload":{"actor_pid":"prompter/witness-78628","cwd":"/Users/mandrigin/gt/prompter/witness","role":"prompter/witness","session_id":"prompter/witness-78628","topic":"patrol"},"visibility":"feed"}
+{"ts":"2026-01-13T17:16:20Z","source":"gt","type":"session_start","actor":"prompter/witness","payload":{"actor_pid":"prompter/witness-80380","cwd":"/Users/mandrigin/gt/prompter/witness","role":"prompter/witness","session_id":"prompter/witness-80380","topic":"patrol"},"visibility":"feed"}
+{"ts":"2026-01-13T17:17:29Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-7th","target":"prompter/polecats/nux"},"visibility":"feed"}
+{"ts":"2026-01-13T17:18:03Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Check your hook and start working on pr-dne - Create Xcode project structure with build scripts","rig":"prompter","target":"prompter/furiosa"},"visibility":"feed"}
+{"ts":"2026-01-13T17:18:04Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Check your hook and start working on pr-7th - Set up GitHub Actions build CI","rig":"prompter","target":"prompter/nux"},"visibility":"feed"}
+{"ts":"2026-01-13T17:18:22Z","source":"gt","type":"unhook","actor":"prompter/polecats/nux","payload":{"bead":"pr-7th"},"visibility":"feed"}
+{"ts":"2026-01-13T17:21:50Z","source":"gt","type":"unhook","actor":"prompter/polecats/furiosa","payload":{"bead":"pr-dne"},"visibility":"feed"}
+{"ts":"2026-01-13T17:22:37Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"slit","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:22:39Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-9cp","target":"prompter/polecats/slit"},"visibility":"feed"}
+{"ts":"2026-01-13T17:22:57Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"rictus","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:22:59Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-dzy","target":"prompter/polecats/rictus"},"visibility":"feed"}
+{"ts":"2026-01-13T17:26:42Z","source":"gt","type":"done","actor":"prompter/slit","payload":{"bead":"slit-mkcv0gqy","branch":"polecat/slit-mkcv0gqy"},"visibility":"feed"}
+{"ts":"2026-01-13T17:30:21Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Fix beads sync with 'bd sync --import-only' and continue working on pr-dzy UI components","rig":"prompter","target":"prompter/rictus"},"visibility":"feed"}
+{"ts":"2026-01-13T17:30:33Z","source":"gt","type":"unhook","actor":"prompter/polecats/rictus","payload":{"bead":"pr-dzy"},"visibility":"feed"}
+{"ts":"2026-01-13T17:31:56Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Process all polecat branches: furiosa, nux, rictus, slit. Merge to main after build verification.","rig":"prompter","target":"prompter/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T17:36:58Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"slit","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:37:00Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-q2s","target":"prompter/polecats/slit"},"visibility":"feed"}
+{"ts":"2026-01-13T17:39:11Z","source":"gt","type":"unhook","actor":"prompter/polecats/slit","payload":{"bead":"pr-q2s"},"visibility":"feed"}
+{"ts":"2026-01-13T17:39:23Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Merge polecat/slit-mkcvixjz - CI workflow fix","rig":"prompter","target":"prompter/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T17:43:10Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"dementus","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:43:12Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-iwt","target":"prompter/polecats/dementus"},"visibility":"feed"}
+{"ts":"2026-01-13T17:43:30Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"capable","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:43:32Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-z7r","target":"prompter/polecats/capable"},"visibility":"feed"}
+{"ts":"2026-01-13T17:43:52Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"toast","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:43:54Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-5nw","target":"prompter/polecats/toast"},"visibility":"feed"}
+{"ts":"2026-01-13T17:45:10Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"dag","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:45:12Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-3g0","target":"prompter/polecats/dag"},"visibility":"feed"}
+{"ts":"2026-01-13T17:45:42Z","source":"gt","type":"done","actor":"prompter/toast","payload":{"bead":"toast-mkcvrsks","branch":"polecat/toast-mkcvrsks"},"visibility":"feed"}
+{"ts":"2026-01-13T17:45:56Z","source":"gt","type":"mail","actor":"prompter/dementus","payload":{"subject":"🔧 pr-iwt ready for merge","to":"prompter/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T17:46:12Z","source":"gt","type":"done","actor":"prompter/dementus","payload":{"bead":"dementus-mkcvqw1a","branch":"polecat/dementus-mkcvqw1a"},"visibility":"feed"}
+{"ts":"2026-01-13T17:47:05Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Process all pending polecat branches: capable, dag, toast. Merge to main after build verification.","rig":"prompter","target":"prompter/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T17:47:25Z","source":"gt","type":"mail","actor":"prompter/dag","payload":{"subject":"pr-3g0 complete","to":"prompter/witness"},"visibility":"feed"}
+{"ts":"2026-01-13T17:47:34Z","source":"gt","type":"done","actor":"prompter/capable","payload":{"bead":"pr-z7r","branch":"polecat/capable-mkcvrc7c"},"visibility":"feed"}
+{"ts":"2026-01-13T17:47:39Z","source":"gt","type":"done","actor":"prompter/dag","payload":{"bead":"dag-mkcvth34","branch":"polecat/dag-mkcvth34"},"visibility":"feed"}
+{"ts":"2026-01-13T17:50:43Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"dementus","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:50:45Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-afp","target":"prompter/polecats/dementus"},"visibility":"feed"}
+{"ts":"2026-01-13T17:53:04Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"capable","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:53:06Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-g4w","target":"prompter/polecats/capable"},"visibility":"feed"}
+{"ts":"2026-01-13T17:53:11Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"toast","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:53:13Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-p3x","target":"prompter/polecats/toast"},"visibility":"feed"}
+{"ts":"2026-01-13T17:54:05Z","source":"gt","type":"done","actor":"prompter/dementus","payload":{"bead":"dementus-mkcw0xb6","branch":"polecat/dementus-mkcw0xb6"},"visibility":"feed"}
+{"ts":"2026-01-13T17:54:16Z","source":"gt","type":"mail","actor":"prompter/toast","payload":{"subject":"BLOCKED: pr-p3x - feature not implemented","to":"prompter/witness"},"visibility":"feed"}
+{"ts":"2026-01-13T17:54:28Z","source":"gt","type":"done","actor":"prompter/toast","payload":{"bead":"toast-mkcw435r","branch":"polecat/toast-mkcw435r"},"visibility":"feed"}
+{"ts":"2026-01-13T17:54:38Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] The system prompt setting was implemented by dementus - pull main and update the docs. Branch: polecat/dementus-*","rig":"prompter","target":"prompter/toast"},"visibility":"feed"}
+{"ts":"2026-01-13T17:54:39Z","source":"gt","type":"mail","actor":"prompter/witness","payload":{"subject":"ESCALATION: pr-p3x blocked - feature missing","to":"mayor/"},"visibility":"feed"}
+{"ts":"2026-01-13T17:54:58Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"dementus","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:55:00Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-kat","target":"prompter/polecats/dementus"},"visibility":"feed"}
+{"ts":"2026-01-13T17:55:06Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"dag","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:55:08Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-dxy","target":"prompter/polecats/dag"},"visibility":"feed"}
+{"ts":"2026-01-13T17:55:31Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Merge all pending polecat branches - dementus has system prompt setting, capable has output view. Process MQ.","rig":"prompter","target":"prompter/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T17:55:38Z","source":"gt","type":"done","actor":"prompter/capable","payload":{"bead":"pr-g4w","branch":"polecat/capable-mkcw3xws"},"visibility":"feed"}
+{"ts":"2026-01-13T17:55:39Z","source":"gt","type":"done","actor":"prompter/toast","payload":{"bead":"toast-mkcw435r","branch":"polecat/toast-mkcw435r"},"visibility":"feed"}
+{"ts":"2026-01-13T17:57:10Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"capable","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T17:57:10Z","source":"gt","type":"done","actor":"prompter/dag","payload":{"bead":"dag-mkcw6jmz","branch":"polecat/dag-mkcw6jmz"},"visibility":"feed"}
+{"ts":"2026-01-13T17:57:12Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-yar","target":"prompter/polecats/capable"},"visibility":"feed"}
+{"ts":"2026-01-13T17:57:28Z","source":"gt","type":"done","actor":"prompter/dementus","payload":{"bead":"dementus-mkcw6dgu","branch":"polecat/dementus-mkcw6dgu"},"visibility":"feed"}
+{"ts":"2026-01-13T17:57:37Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Merge all pending branches: dementus (error dialog), dag (progress indicator). Process MQ.","rig":"prompter","target":"prompter/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T18:00:33Z","source":"gt","type":"done","actor":"prompter/capable","payload":{"bead":"pr-yar","branch":"polecat/capable-mkcw97k5"},"visibility":"feed"}
+{"ts":"2026-01-13T18:00:40Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Merge all pending branches including capable (archive feature). Process MQ.","rig":"prompter","target":"prompter/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T18:02:12Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"dementus","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T18:02:14Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-8rj","target":"prompter/polecats/dementus"},"visibility":"feed"}
+{"ts":"2026-01-13T18:03:37Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"capable","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T18:03:39Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-r4p","target":"prompter/polecats/capable"},"visibility":"feed"}
+{"ts":"2026-01-13T18:03:43Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"toast","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T18:03:45Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-rou","target":"prompter/polecats/toast"},"visibility":"feed"}
+{"ts":"2026-01-13T18:05:11Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"dag","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T18:05:13Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-2d7","target":"prompter/polecats/dag"},"visibility":"feed"}
+{"ts":"2026-01-13T18:05:53Z","source":"gt","type":"done","actor":"prompter/capable","payload":{"bead":"pr-r4p","branch":"polecat/capable-mkcwhi20"},"visibility":"feed"}
+{"ts":"2026-01-13T18:06:43Z","source":"gt","type":"done","actor":"prompter/toast","payload":{"bead":"toast-mkcwhn8h","branch":"polecat/toast-mkcwhn8h"},"visibility":"feed"}
+{"ts":"2026-01-13T18:06:47Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"capable","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T18:06:49Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-5q4","target":"prompter/polecats/capable"},"visibility":"feed"}
+{"ts":"2026-01-13T18:06:55Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"toast","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T18:06:57Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-9ex","target":"prompter/polecats/toast"},"visibility":"feed"}
+{"ts":"2026-01-13T18:07:17Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"cheedo","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T18:07:19Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-8fw","target":"prompter/polecats/cheedo"},"visibility":"feed"}
+{"ts":"2026-01-13T18:07:26Z","source":"gt","type":"mail","actor":"prompter/toast","payload":{"subject":"ESCALATE: pr-9ex requires human to take screenshot","to":"prompter/witness"},"visibility":"feed"}
+{"ts":"2026-01-13T18:07:34Z","source":"gt","type":"done","actor":"prompter/toast","payload":{"bead":"toast-mkcwlqt3","branch":"polecat/toast-mkcwlqt3"},"visibility":"feed"}
+{"ts":"2026-01-13T18:07:42Z","source":"gt","type":"mail","actor":"prompter/witness","payload":{"subject":"ESCALATION: pr-9ex needs human screenshot","to":"mayor/"},"visibility":"feed"}
+{"ts":"2026-01-13T18:07:53Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Process all pending branches and merge to main","rig":"prompter","target":"prompter/refinery"},"visibility":"feed"}
+{"ts":"2026-01-13T18:08:13Z","source":"gt","type":"done","actor":"prompter/dementus","payload":{"bead":"dementus-mkcwfohe","branch":"polecat/dementus-mkcwfohe"},"visibility":"feed"}
+{"ts":"2026-01-13T18:08:16Z","source":"gt","type":"done","actor":"prompter/capable","payload":{"bead":"pr-5q4","branch":"polecat/capable-mkcwlkyv"},"visibility":"feed"}
+{"ts":"2026-01-13T18:10:19Z","source":"gt","type":"done","actor":"prompter/dag","payload":{"bead":"dag-mkcwjidw","branch":"polecat/dag-mkcwjidw"},"visibility":"feed"}
+{"ts":"2026-01-13T18:11:02Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"dementus","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T18:11:04Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-ped","target":"prompter/polecats/dementus"},"visibility":"feed"}
+{"ts":"2026-01-13T18:11:09Z","source":"gt","type":"spawn","actor":"gt","payload":{"polecat":"capable","rig":"prompter"},"visibility":"feed"}
+{"ts":"2026-01-13T18:11:11Z","source":"gt","type":"sling","actor":"mayor","payload":{"bead":"pr-cgl","target":"prompter/polecats/capable"},"visibility":"feed"}
+{"ts":"2026-01-13T18:11:13Z","source":"gt","type":"nudge","actor":"mayor","payload":{"reason":"[from mayor] Merge all pending branches: dag (theme), cheedo (icon). Process MQ.","rig":"prompter","target":"prompter/refinery"},"visibility":"feed"}

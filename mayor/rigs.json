@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "rigs": {
+    "llmbrandchecker": {
+      "git_url": "git@github.com:mandrigin/llm-brand-checker-gateway.git",
+      "added_at": "2026-01-12T20:35:43.39766+01:00",
+      "beads": {
+        "repo": "",
+        "prefix": "ll"
+      }
+    },
+    "localwardleymaps": {
+      "git_url": "git@github.com:damonsk/onlinewardleymaps.git",
+      "added_at": "2026-01-12T17:39:41.57882+01:00",
+      "beads": {
+        "repo": "",
+        "prefix": "lo"
+      }
+    },
+    "prompter": {
+      "git_url": "git@github.com:mandrigin/prompter.git",
+      "added_at": "2026-01-13T18:05:56.054121+01:00",
+      "beads": {
+        "repo": "",
+        "prefix": "pr"
+      }
+    }
+  }
+}

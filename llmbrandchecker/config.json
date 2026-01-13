@@ -1,0 +1,11 @@
+{
+  "type": "rig",
+  "version": 1,
+  "name": "llmbrandchecker",
+  "git_url": "git@github.com:mandrigin/llm-brand-checker-gateway.git",
+  "default_branch": "main",
+  "created_at": "2026-01-12T20:35:35.926962+01:00",
+  "beads": {
+    "prefix": "ll"
+  }
+}
