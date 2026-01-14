@@ -3,3 +3,4 @@
 {"prefix":"ll-","path":"llmbrandchecker"}
 {"prefix":"in-","path":"invoices"}
 {"prefix":"pr-","path":"prompter"}
+{"prefix":"gr-","path":"gw_research"}
