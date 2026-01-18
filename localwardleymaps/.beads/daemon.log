@@ -13161,3 +13161,956 @@ time=2026-01-18T16:01:14.401+01:00 level=INFO msg="JSONL removed/renamed, re-est
 time=2026-01-18T16:01:14.452+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
 time=2026-01-18T16:01:14.452+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
 time=2026-01-18T16:01:14.654+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:15.184+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:15.235+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:15.235+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:15.357+01:00 level=INFO msg="Git ref change detected: %s" !BADKEY=/Users/mandrigin/gt/.git/refs/heads/main.lock
+time=2026-01-18T16:01:15.456+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:16.092+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:16.143+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:16.143+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:16.449+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:17.260+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:17.574+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:17.574+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:17.576+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:18.321+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:18.321+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:18.322+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:18.444+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:18.496+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:18.496+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:19.035+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:19.498+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:19.498+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:19.499+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:19.558+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:19.609+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:19.609+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:20.075+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:20.075+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:20.076+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:20.355+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:20.405+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:20.405+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:20.432+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:20.472+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:20.523+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:20.523+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:20.609+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:20.610+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:20.610+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:21.526+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:21.527+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:21.527+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:22.731+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:22.782+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:22.782+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:22.907+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:22.968+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:23.019+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:23.019+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:24.002+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:24.098+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:24.099+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:24.099+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:24.846+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:25.061+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:25.061+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:25.062+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:25.676+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:26.739+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:26.739+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:26.739+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:27.078+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:27.899+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:28.405+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:28.711+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:28.762+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:28.762+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:28.960+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:29.859+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:30.229+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:30.229+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:30.230+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:30.372+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:30.422+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:30.422+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:30.756+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:30.807+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:30.807+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:30.918+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:30.918+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:30.919+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:31.161+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:32.224+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:32.224+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:32.224+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:32.579+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:32.950+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:33.001+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:33.002+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:33.266+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:33.819+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:34.834+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:35.117+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:35.118+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:35.119+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:35.669+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:35.897+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:35.898+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:35.898+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:36.679+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:37.083+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:37.084+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:37.084+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:37.531+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:37.649+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:37.700+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:37.700+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:37.751+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:37.751+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:37.752+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:38.076+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:38.271+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:38.321+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:38.321+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:39.224+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:39.323+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:39.323+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:39.324+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:39.747+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:39.799+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:39.799+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:40.618+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:40.799+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:40.799+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:40.800+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:41.682+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:41.683+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:41.683+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:42.756+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:42.806+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:42.806+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:43.088+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:44.153+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:44.256+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:44.256+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:44.257+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:44.275+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:44.326+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:44.326+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:44.993+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:45.328+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:45.328+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:45.329+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:45.330+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:45.381+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:45.381+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:45.828+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:45.914+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:45.965+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:45.965+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:46.298+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:46.349+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:46.349+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:47.238+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:47.350+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:47.350+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:47.350+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:48.016+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:48.067+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:48.067+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:48.114+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:48.615+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:48.892+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:48.943+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:48.943+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:49.317+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:50.007+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:50.377+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:50.378+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:50.379+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:51.070+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:51.071+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:51.071+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:51.312+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:51.907+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:51.958+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:51.958+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:52.174+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:52.225+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:52.225+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:52.374+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:52.374+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:52.375+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:52.753+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:53.227+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:53.227+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:53.227+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:53.417+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:53.815+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:53.815+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:53.816+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:53.978+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:54.804+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:54.855+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:54.855+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:54.992+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:55.173+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:55.223+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:55.224+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:55.265+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:55.265+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:55.266+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:55.820+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:56.225+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:56.225+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:56.226+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:56.689+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:56.740+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:56.740+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:56.889+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:56.899+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:56.950+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:56.950+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:57.236+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:57.236+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:57.237+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:57.248+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:57.299+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:57.299+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:57.700+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:58.240+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:58.314+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:01:58.365+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:01:58.365+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:01:59.367+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:01:59.367+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:01:59.368+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:01:59.381+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:00.563+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:00.563+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:00.564+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:00.779+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:00.801+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:00.852+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:00.852+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:00.974+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:01.024+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:01.024+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:01.220+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:01.271+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:01.271+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:02.272+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:02.272+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:02.272+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:03.233+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:04.325+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:04.408+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:04.408+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:04.409+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:04.878+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:04.929+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:04.929+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:05.149+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:05.319+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:05.370+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:05.370+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:05.388+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:05.388+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:05.389+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:05.992+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:06.034+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:06.085+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:06.085+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:06.117+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:06.170+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:06.170+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:06.306+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:06.357+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:06.357+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:06.690+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:06.741+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:06.741+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:07.203+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:07.253+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:07.253+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:07.399+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:07.743+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:07.743+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:07.744+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:08.203+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:08.703+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:09.254+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:10.009+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:10.060+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:10.060+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:10.159+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:10.527+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:10.532+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:10.532+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:10.533+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:10.578+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:10.578+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:11.462+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:11.580+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:11.580+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:11.580+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:12.524+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:12.524+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:12.525+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:12.552+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:12.603+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:12.603+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:12.898+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:12.948+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:12.948+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:12.968+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:13.231+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:13.283+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:13.283+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:13.568+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:14.082+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:15.167+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:15.425+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:15.425+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:15.426+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:15.975+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:16.234+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:16.234+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:16.235+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:16.299+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:16.350+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:16.350+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:16.515+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:16.566+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:16.566+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:17.040+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:17.909+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:18.105+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:18.105+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:18.106+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:18.436+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:18.468+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:18.518+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:18.519+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:19.553+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:19.553+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:19.554+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:19.561+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:19.879+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:19.930+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:19.930+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:19.944+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:19.995+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:19.995+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:20.013+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:20.064+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:20.064+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:20.441+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:20.493+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:20.493+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:20.942+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:21.407+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:21.458+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:21.458+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:22.460+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:22.461+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:22.461+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:23.383+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:24.502+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:24.558+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:24.558+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:24.559+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:25.338+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:25.566+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:25.566+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:25.566+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:25.844+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:27.285+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:27.285+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:27.285+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:27.551+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:28.354+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:28.420+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:28.471+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:28.471+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:28.857+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:29.410+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:29.793+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:29.844+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:29.844+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:30.314+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:30.736+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:30.786+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:30.786+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:31.619+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:31.788+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:31.788+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:31.789+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:31.842+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:31.892+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:31.893+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:32.510+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:32.561+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:32.561+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:32.894+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:32.894+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:32.895+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:33.062+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:33.562+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:33.562+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:33.563+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:33.721+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:33.785+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:33.836+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:33.836+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:33.980+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:34.031+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:34.031+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:34.134+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:34.134+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:34.135+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:34.279+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:35.304+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:35.355+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:35.355+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:35.395+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:35.595+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:35.595+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:35.596+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:35.666+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:35.718+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:35.718+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:36.124+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:37.188+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:37.545+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:37.545+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:37.546+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:38.080+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:38.252+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:38.252+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:38.253+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:38.413+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:38.464+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:38.464+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:38.609+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:39.630+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:39.680+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:39.680+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:39.717+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:39.717+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:39.718+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:39.733+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:40.950+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:40.951+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:40.951+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:41.094+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:42.157+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:42.157+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:42.158+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:43.318+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:43.369+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:43.369+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:43.376+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:43.427+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:43.427+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:43.534+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:44.666+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:44.710+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:44.711+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:44.712+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:44.837+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:44.888+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:44.888+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:45.025+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:45.076+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:45.076+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:45.392+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:45.442+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:45.442+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:45.494+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:46.002+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:46.547+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:46.597+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:46.597+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:47.516+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:47.567+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:47.567+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:47.599+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:47.599+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:47.600+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:47.714+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:47.935+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:47.986+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:47.986+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:48.319+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:48.369+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:48.370+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:48.515+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:48.711+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:48.762+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:48.762+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:49.017+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:49.070+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:49.121+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:49.121+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:49.437+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:49.488+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:49.488+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:49.566+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:49.845+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:49.896+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:49.896+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:50.076+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:50.127+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:50.127+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:50.466+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:51.529+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:51.529+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:51.530+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:51.777+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:52.107+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:52.157+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:52.157+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:52.709+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:52.761+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:52.761+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:53.159+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:53.159+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:53.160+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:53.224+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:53.881+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:54.286+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:54.287+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:54.287+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:54.452+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:54.941+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:54.942+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:54.942+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:54.999+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:55.050+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:55.050+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:55.053+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:55.104+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:55.104+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:55.490+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:56.275+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:56.556+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:56.556+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:56.557+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:56.779+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:56.830+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:56.830+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:57.169+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:57.219+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:57.220+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:57.362+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:57.407+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:57.458+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:57.458+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:57.533+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:57.583+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:57.583+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:57.667+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:57.718+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:57.718+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:57.892+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:57.943+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:57.943+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:58.236+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:58.677+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:02:58.730+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:02:58.730+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:58.770+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:02:59.870+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:02:59.871+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:02:59.871+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:02:59.890+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:01.096+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:01.096+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:01.097+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:01.266+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:01.336+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:01.387+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:01.387+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:01.459+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:01.509+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:01.509+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:01.542+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:01.593+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:01.593+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:02.481+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:02.531+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:02.531+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:02.595+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:02.595+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:02.596+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:03.069+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:03.119+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:03.120+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:03.187+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:03.238+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:03.238+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:03.550+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:03.557+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:03.557+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:03.558+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:03.601+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:03.601+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:03.684+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:03.904+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:03.955+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:03.955+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:04.611+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:04.663+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:04.663+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:04.837+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:04.956+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:04.956+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:04.958+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:05.644+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:05.902+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:05.902+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:05.902+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:06.154+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:06.553+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:06.604+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:06.604+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:07.606+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:07.606+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:07.607+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:07.880+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:08.673+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:09.231+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:09.556+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:09.607+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:09.607+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:09.659+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:09.710+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:09.710+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:09.756+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:09.807+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:09.807+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:09.943+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:10.618+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:10.800+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:10.851+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:10.852+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:11.004+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:11.005+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:11.005+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:11.853+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:11.853+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:11.853+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:11.928+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:12.991+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:12.991+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:12.992+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:13.243+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:13.294+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:13.294+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:13.374+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:14.034+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:14.439+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:14.439+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:14.440+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:14.631+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:14.798+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:14.850+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:14.850+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:14.976+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:15.026+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:15.026+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:15.097+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:15.098+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:15.098+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:15.649+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:16.027+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:16.027+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:16.028+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:16.431+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:16.712+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:16.713+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:16.713+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:16.963+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:17.014+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:17.014+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:17.514+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:18.152+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:18.203+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:18.203+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:18.382+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:18.577+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:18.577+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:18.578+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:18.940+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:19.222+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:19.272+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:19.272+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:20.050+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:20.273+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:20.273+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:20.274+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:20.388+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:20.439+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:20.439+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:20.950+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:21.001+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:21.001+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:21.424+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:21.440+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:21.440+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:21.441+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:22.120+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:22.171+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:22.171+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:22.485+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:22.485+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:22.486+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:23.173+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:23.173+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:23.173+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:23.836+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:24.373+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:24.424+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:24.424+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:24.653+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:24.703+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:24.704+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:24.993+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:25.070+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:25.121+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:25.121+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:25.794+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:26.123+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:26.123+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:26.124+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:26.308+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:27.258+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:27.309+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:27.309+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:27.619+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:27.670+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:27.670+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:27.747+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:27.747+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:27.748+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:27.842+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:27.894+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:27.894+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:27.991+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:28.042+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:28.042+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:28.101+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:28.371+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:28.421+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:28.421+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:28.675+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:28.726+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:28.727+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:28.800+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:28.851+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:28.851+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:28.904+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:29.826+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:30.155+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:30.206+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:30.206+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:30.286+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:30.336+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:30.336+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:30.771+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:30.859+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:30.910+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:30.910+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:31.912+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:31.912+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:31.913+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:32.084+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:32.227+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:32.278+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:32.278+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:32.595+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:32.646+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:32.646+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:33.016+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:33.068+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:33.068+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:33.080+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:33.131+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:33.131+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:33.530+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:34.186+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:34.592+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:34.592+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:34.593+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:34.832+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:34.945+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:34.997+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:34.997+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:35.252+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:35.252+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:35.253+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:35.801+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:36.086+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:36.087+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:36.088+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:36.590+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:36.623+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:36.674+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:36.674+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:36.784+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:36.834+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:36.834+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:36.866+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:36.866+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:36.868+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:37.351+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:37.402+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:37.402+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:37.577+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:37.628+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:37.628+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:37.664+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:37.810+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:37.861+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:37.861+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:37.962+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:38.013+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:38.013+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:38.364+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:38.415+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:38.415+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:38.496+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:38.547+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:38.547+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:38.549+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:39.120+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:40.035+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:40.086+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:40.086+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:40.198+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:40.199+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:40.199+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:40.219+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:41.427+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:41.428+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:41.428+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:41.577+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:41.919+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:41.969+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:41.969+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:42.240+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:42.291+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:42.291+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:42.352+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:42.403+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:42.403+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:43.404+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:43.404+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:43.405+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:43.985+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:44.213+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:44.264+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:44.264+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:44.628+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:44.679+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:44.679+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:45.151+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:45.945+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:46.214+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:46.214+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:46.215+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:46.467+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:46.625+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:46.676+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:46.676+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:47.897+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:47.897+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:47.898+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:48.193+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:49.002+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:49.434+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:49.484+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:49.484+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:49.546+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:49.737+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:49.788+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:49.788+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:50.049+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:50.100+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:50.100+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:50.248+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:50.923+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:51.315+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:51.316+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:51.317+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:51.860+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:51.910+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:51.910+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:51.986+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:51.986+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:51.987+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:52.216+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:52.266+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:52.266+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:52.303+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:52.739+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:52.789+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:52.789+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:53.677+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:53.791+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:53.791+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:53.792+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:54.345+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:54.739+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:54.739+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:54.740+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:55.001+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:55.411+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:55.412+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:55.412+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:55.527+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:55.578+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:55.578+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:55.593+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:55.645+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:55.645+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:55.655+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:55.706+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:55.706+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:55.954+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:56.373+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:56.424+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:56.424+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:56.594+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:56.644+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:56.644+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:56.750+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:57.827+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:58.000+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:58.050+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:58.051+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:58.189+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:58.189+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:58.190+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:58.692+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:59.053+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T16:03:59.053+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T16:03:59.054+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T16:03:59.189+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:59.241+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:59.241+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:59.282+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:59.433+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:59.485+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:59.485+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:03:59.854+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:03:59.905+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:03:59.905+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:04:00.014+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T16:04:00.050+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T16:04:00.100+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T16:04:00.100+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
