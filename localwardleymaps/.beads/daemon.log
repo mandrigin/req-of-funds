@@ -1,0 +1,484 @@
+time=2026-01-18T14:16:52.168+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:16:52.168+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:16:52.176+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:16:52.176+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:16:52.176+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:16:52.177+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:16:58.556+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:16:58.556+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:16:58.565+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:16:58.565+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:16:58.565+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:16:58.565+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:17:26.449+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:17:26.449+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:17:26.457+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:17:26.458+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:17:26.458+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:17:26.458+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:17:31.597+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:17:31.597+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:17:31.606+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:17:31.606+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:17:31.606+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:17:31.606+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:20:55.558+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:20:55.558+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:20:55.566+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:20:55.566+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:20:55.566+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:20:55.566+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:20:59.331+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:20:59.331+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:20:59.339+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:20:59.339+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:20:59.339+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:20:59.339+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:21:16.185+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:21:16.185+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:21:16.192+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:21:16.192+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:21:16.192+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:21:16.192+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:21:36.250+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:21:36.251+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:21:36.258+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:21:36.258+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:21:36.258+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:21:36.258+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:21:44.992+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:21:44.992+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:21:44.999+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:21:44.999+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:21:44.999+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:21:44.999+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:23:09.889+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:23:09.889+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:23:09.896+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:23:09.896+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:23:09.896+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:23:09.896+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:23:35.178+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:23:35.179+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:23:35.187+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:23:35.187+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:23:35.187+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:23:35.187+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:23:57.336+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:23:57.336+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:23:57.345+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:23:57.345+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:23:57.345+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:23:57.346+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:24:58.959+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:24:58.959+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:24:58.967+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:24:58.967+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:24:58.967+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:24:58.967+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:25:19.213+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:25:19.214+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:25:19.222+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:25:19.222+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:25:19.222+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:25:19.222+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:25:24.339+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:25:24.340+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:25:24.347+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:25:24.347+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:25:24.347+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:25:24.348+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:25:32.236+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:25:32.236+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:25:32.244+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:25:32.244+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:25:32.244+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:25:32.244+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:25:44.585+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:25:44.585+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:25:44.593+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:25:44.593+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:25:44.593+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:25:44.593+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:26:05.791+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:26:05.792+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:26:05.800+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:26:05.800+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:26:05.800+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:26:05.800+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:26:25.120+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:26:25.121+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:26:25.128+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:26:25.128+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:26:25.128+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:26:25.128+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:26:51.613+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:26:51.613+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:26:51.621+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:26:51.621+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:26:51.621+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:26:51.621+01:00 level=ERROR msg="repository fingerprint validation failed" error="\nLEGACY DATABASE DETECTED!\n\nThis database was created before version 0.17.5 and lacks a repository fingerprint.\nTo continue using this database, you must explicitly set its repository ID:\n\n  bd migrate --update-repo-id\n\nThis ensures the database is bound to this repository and prevents accidental\ndatabase sharing between different repositories.\n\nIf this is a fresh clone, run:\n  rm -rf .beads && bd init\n\nNote: Auto-claiming legacy databases is intentionally disabled to prevent\nsilent corruption when databases are copied between repositories.\n"
+time=2026-01-18T14:26:57.792+01:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-18T14:26:57.792+01:00 level=INFO msg="using database" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db
+time=2026-01-18T14:26:57.800+01:00 level=INFO msg="database opened" path=/Users/mandrigin/gt/localwardleymaps/.beads/beads.db freshness_checking=true
+time=2026-01-18T14:26:57.800+01:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-18T14:26:57.800+01:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-18T14:26:57.825+01:00 level=INFO msg="Repository fingerprint validated: %s" !BADKEY=067c9fdd
+time=2026-01-18T14:26:57.825+01:00 level=WARN msg="database missing version metadata" setting_to=0.46.0
+time=2026-01-18T14:26:57.825+01:00 level=INFO msg="starting RPC server" socket=/Users/mandrigin/gt/localwardleymaps/.beads/bd.sock
+time=2026-01-18T14:26:57.825+01:00 level=INFO msg="RPC server ready (socket listening)"
+time=2026-01-18T14:26:57.833+01:00 level=INFO msg="registered in global registry"
+time=2026-01-18T14:26:57.833+01:00 level=INFO msg="Starting %s..." !BADKEY="sync cycle"
+time=2026-01-18T14:26:57.836+01:00 level=INFO msg="Exported to JSONL"
+time=2026-01-18T14:26:57.899+01:00 level=INFO msg="Imported from JSONL"
+time=2026-01-18T14:26:57.921+01:00 level=INFO msg="Sync cycle complete"
+time=2026-01-18T14:26:57.921+01:00 level=INFO msg="monitoring parent process" pid=0
+time=2026-01-18T14:26:57.921+01:00 level=INFO msg="using event-driven mode"
+time=2026-01-18T14:26:57.921+01:00 level=INFO msg="Auto-pull disabled: use 'git pull' manually to sync remote changes"
+time=2026-01-18T14:27:03.648+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T14:27:03.699+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T14:27:03.699+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:27:04.701+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:27:04.701+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:27:04.701+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:27:04.933+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:27:05.935+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:27:05.935+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:27:05.936+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:27:16.848+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T14:27:16.900+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T14:27:16.900+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:27:17.901+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:27:17.902+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:27:17.902+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:27:24.234+01:00 level=INFO msg="Mutation detected: %s %s" create=jasper-q0y
+time=2026-01-18T14:27:24.735+01:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-18T14:27:24.735+01:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-18T14:27:24.738+01:00 level=INFO msg="Exported to JSONL"
+time=2026-01-18T14:27:24.738+01:00 level=INFO msg="Export complete"
+time=2026-01-18T14:27:24.738+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T14:27:24.790+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T14:27:24.790+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:27:25.009+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:27:26.032+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:27:26.032+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:27:26.033+01:00 level=INFO msg="JSONL content changed, proceeding with %s..." !BADKEY=auto-import
+time=2026-01-18T14:27:26.047+01:00 level=INFO msg="⚠️  WARNING: Uncommitted local changes detected in %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:27:26.047+01:00 level=INFO msg="   Pulling from remote may overwrite local unpushed changes."
+time=2026-01-18T14:27:26.047+01:00 level=INFO msg="   Consider running 'bd sync' to commit and push your changes first."
+time=2026-01-18T14:27:26.065+01:00 level=INFO msg="Imported from JSONL"
+time=2026-01-18T14:27:26.065+01:00 level=INFO msg="Auto-import complete"
+time=2026-01-18T14:27:27.550+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T14:27:27.601+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T14:27:27.601+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:27:28.602+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:27:28.602+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:27:28.603+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:27:30.054+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:27:31.078+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:27:31.079+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:27:31.079+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:27:41.170+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T14:27:41.222+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T14:27:41.222+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:27:42.223+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:27:42.223+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:27:42.224+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:27:45.079+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:27:46.103+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:27:46.103+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:27:46.103+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:27:50.069+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T14:27:50.121+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T14:27:50.121+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:27:50.131+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:27:51.156+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:27:51.157+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:27:51.157+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:28:05.151+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:28:06.174+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:28:06.174+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:28:06.175+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:28:10.202+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:28:11.225+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:28:11.225+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:28:11.226+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:28:25.231+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:28:26.254+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:28:26.255+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:28:26.256+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:28:30.272+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:28:31.295+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:28:31.295+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:28:31.295+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:28:45.313+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:28:46.335+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:28:46.335+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:28:46.335+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:28:50.346+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:28:51.369+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:28:51.369+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:28:51.369+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:29:05.388+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:29:06.410+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:29:06.410+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:29:06.411+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:29:10.415+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:29:11.438+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:29:11.438+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:29:11.438+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:32:04.692+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:32:05.728+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:32:05.728+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:32:05.728+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:32:24.906+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:32:26.094+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:32:26.095+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:32:26.096+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T14:32:45.687+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T14:32:46.888+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T14:32:46.889+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T14:32:46.889+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:00:00.330+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:00:01.458+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:00:01.458+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:00:01.458+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:00:20.254+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:00:21.328+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:00:21.328+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:00:21.329+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:00:37.613+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:00:37.664+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:00:37.664+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:00:38.678+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:00:38.678+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:00:38.679+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:00:40.330+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:00:41.400+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:00:41.400+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:00:41.400+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:00:43.618+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:00:43.669+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:00:43.669+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:00:44.670+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:00:44.670+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:00:44.671+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:00:49.252+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:00:49.303+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:00:49.303+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:00:50.306+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:00:50.306+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:00:50.307+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:01:00.405+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:01:01.466+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:01:01.467+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:01:01.467+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:01:11.401+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:01:11.451+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:01:11.451+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:01:12.455+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:01:12.455+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:01:12.458+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:01:16.408+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:01:16.459+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:01:16.459+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:01:17.462+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:01:17.463+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:01:17.464+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:01:20.485+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:01:21.539+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:01:21.539+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:01:21.539+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:01:22.950+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:01:23.002+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:01:23.002+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:01:24.006+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:01:24.006+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:01:24.007+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:01:32.660+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:01:32.712+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:01:32.712+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:01:33.714+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:01:33.714+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:01:33.715+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:01:40.568+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:01:41.610+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:01:41.610+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:01:41.610+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:01:43.193+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:01:43.244+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:01:43.244+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:01:44.246+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:01:44.246+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:01:44.247+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:01:47.877+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:01:47.929+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:01:47.929+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:01:48.933+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:01:48.933+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:01:48.935+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:01:54.592+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:01:54.643+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:01:54.643+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:01:55.651+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:01:55.651+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:01:55.653+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:02:00.649+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:02:01.683+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:02:01.685+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:02:01.686+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:02:05.926+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:02:05.978+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:02:05.978+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:02:06.979+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:02:06.979+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:02:06.981+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:02:20.722+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:02:21.753+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:02:21.753+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:02:21.754+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:02:29.504+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:02:29.554+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:02:29.554+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:02:30.557+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:02:30.557+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:02:30.558+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:02:37.577+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:02:37.628+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:02:37.628+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:02:38.630+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:02:38.630+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:02:38.631+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:02:40.802+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:02:41.833+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:02:41.833+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:02:41.833+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:02:43.514+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:02:43.565+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:02:43.565+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:02:44.568+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:02:44.568+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:02:44.568+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:02:46.795+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:02:46.846+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:02:46.846+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:02:47.848+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:02:47.848+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:02:47.849+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:03:00.874+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:03:01.750+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:03:01.801+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:03:01.801+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:03:01.899+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:03:01.899+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:03:01.900+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:03:02.803+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:03:02.803+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:03:02.803+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:03:09.723+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:03:09.773+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:03:09.773+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:03:10.776+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:03:10.776+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:03:10.777+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:03:20.946+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:03:21.976+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:03:21.977+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:03:21.978+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:03:26.599+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:03:26.651+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:03:26.651+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:03:27.657+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:03:27.657+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:03:27.658+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:03:34.577+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:03:34.629+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:03:34.629+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:03:35.635+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:03:35.636+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:03:35.636+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:03:41.025+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:03:42.049+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:03:42.049+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:03:42.049+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:03:49.904+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:03:49.955+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:03:49.955+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:03:50.959+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:03:50.960+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:03:50.961+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:03:55.856+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:03:55.907+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:03:55.907+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:03:56.909+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:03:56.909+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:03:56.911+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:04:01.098+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:04:02.122+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:04:02.122+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:04:02.123+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:04:07.399+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:04:07.450+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:04:07.450+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:04:08.452+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:04:08.452+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:04:08.453+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:04:13.665+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:04:13.717+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:04:13.717+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:04:14.719+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:04:14.719+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:04:14.720+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:04:21.172+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:04:22.198+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:04:22.199+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:04:22.199+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:04:35.947+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:04:35.998+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:04:35.998+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:04:37.000+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:04:37.000+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:04:37.002+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:04:41.250+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:04:42.276+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:04:42.276+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:04:42.277+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:04:46.723+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:04:46.774+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:04:46.774+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:04:47.776+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:04:47.776+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:04:47.779+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:04:58.154+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:04:58.205+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:04:58.205+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:04:59.207+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:04:59.207+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:04:59.208+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:05:01.328+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:05:02.353+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:05:02.353+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:05:02.354+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:05:12.514+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:05:12.565+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:05:12.565+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:05:13.566+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:05:13.567+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:05:13.569+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:05:21.404+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:05:22.429+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:05:22.429+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:05:22.429+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:05:23.285+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:05:23.336+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:05:23.336+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:05:24.337+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:05:24.338+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:05:24.339+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:05:31.000+01:00 level=INFO msg="JSONL removed/renamed, re-establishing watch"
+time=2026-01-18T15:05:31.051+01:00 level=INFO msg="Successfully re-established JSONL watch after %v" !BADKEY=50ms
+time=2026-01-18T15:05:31.051+01:00 level=INFO msg="JSONL file created: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
+time=2026-01-18T15:05:32.084+01:00 level=INFO msg="Import triggered by file change"
+time=2026-01-18T15:05:32.084+01:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-18T15:05:32.085+01:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-18T15:05:41.482+01:00 level=INFO msg="File change detected: %s" !BADKEY=/Users/mandrigin/gt/localwardleymaps/.beads/issues.jsonl
