@@ -9,20 +9,28 @@
         "prefix": "ll"
       }
     },
-    "localwardleymaps": {
-      "git_url": "git@github.com:damonsk/onlinewardleymaps.git",
-      "added_at": "2026-01-12T17:39:41.57882+01:00",
+    "miden": {
+      "git_url": "git@github.com:mandrigin/aggkit-proxy.git",
+      "added_at": "2026-01-14T18:24:21.796754+01:00",
       "beads": {
         "repo": "",
-        "prefix": "lo"
+        "prefix": "mi"
       }
     },
-    "prompter": {
-      "git_url": "git@github.com:mandrigin/prompter.git",
-      "added_at": "2026-01-13T18:05:56.054121+01:00",
+    "omnifocus": {
+      "git_url": "git@github.com:mandrigin/open-omni-focus.git",
+      "added_at": "2026-01-17T12:05:58.258572+01:00",
       "beads": {
         "repo": "",
-        "prefix": "pr"
+        "prefix": "om"
+      }
+    },
+    "stablecoins": {
+      "git_url": "git@github.com:mandrigin/stablecoin-poc.git",
+      "added_at": "2026-01-14T16:24:02.905982+01:00",
+      "beads": {
+        "repo": "",
+        "prefix": "st"
       }
     }
   }
