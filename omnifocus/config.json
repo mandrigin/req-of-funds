@@ -1,0 +1,11 @@
+{
+  "type": "rig",
+  "version": 1,
+  "name": "omnifocus",
+  "git_url": "git@github.com:mandrigin/open-omni-focus.git",
+  "default_branch": "main",
+  "created_at": "2026-01-17T12:05:50.566889+01:00",
+  "beads": {
+    "prefix": "om"
+  }
+}
