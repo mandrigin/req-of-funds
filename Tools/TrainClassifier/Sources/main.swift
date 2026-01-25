@@ -118,7 +118,9 @@ func trainClassifier(config: TrainingConfig) throws {
     print("Evaluating model on validation set...")
     let evaluationMetrics = classifier.evaluation(on: validationData, textColumn: "text", labelColumn: "label")
 
-    print("Validation Accuracy: \(String(format: "%.2f%%", evaluationMetrics.classificationError * 100))")
+    let accuracy = (1.0 - evaluationMetrics.classificationError) * 100
+    print("Validation Accuracy: \(String(format: "%.2f%%", accuracy))")
+    print("Classification Error: \(String(format: "%.2f%%", evaluationMetrics.classificationError * 100))")
     print("")
 
     // Save the model
