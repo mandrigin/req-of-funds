@@ -26,6 +26,21 @@ enum CurrencyFilter: Hashable {
     }
 }
 
+/// Recipient filter for document list
+enum RecipientFilter: Hashable {
+    case all
+    case specific(String)
+
+    var displayName: String {
+        switch self {
+        case .all:
+            return "All Recipients"
+        case .specific(let recipient):
+            return recipient
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
 
@@ -49,6 +64,7 @@ struct ContentView: View {
 
     @State private var selectedFilter: DocumentFilter = .inbox
     @State private var selectedCurrencyFilter: CurrencyFilter = .all
+    @State private var selectedRecipientFilter: RecipientFilter = .all
 
     /// Documents to display based on current filters
     private var documents: [RFFDocument] {
@@ -63,11 +79,20 @@ struct ContentView: View {
         }
 
         // Apply currency filter
+        let currencyFiltered: [RFFDocument]
         switch selectedCurrencyFilter {
         case .all:
-            return statusFiltered
+            currencyFiltered = statusFiltered
         case .specific(let currency):
-            return statusFiltered.filter { $0.currency == currency }
+            currencyFiltered = statusFiltered.filter { $0.currency == currency }
+        }
+
+        // Apply recipient filter
+        switch selectedRecipientFilter {
+        case .all:
+            return currencyFiltered
+        case .specific(let recipient):
+            return currencyFiltered.filter { $0.recipient == recipient }
         }
     }
 
@@ -85,6 +110,22 @@ struct ContentView: View {
         let currencies = Set(statusFiltered.map { $0.currency })
         return Currency.allCases.filter { currencies.contains($0) }
     }
+
+    /// Available recipients in the current document set (for filter menu)
+    private var availableRecipients: [String] {
+        let statusFiltered: [RFFDocument]
+        switch selectedFilter {
+        case .inbox:
+            statusFiltered = inboxDocuments
+        case .confirmed:
+            statusFiltered = confirmedDocuments
+        case .paid:
+            statusFiltered = paidDocuments
+        }
+        let recipients = Set(statusFiltered.compactMap { $0.recipient })
+        return recipients.sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+    }
+
     @State private var isImportingPDF = false
     @State private var importError: String?
     @State private var showingImportError = false
@@ -260,6 +301,12 @@ struct ContentView: View {
                 // Clear selection when switching filters
                 selectedDocuments.removeAll()
                 selectedDocument = nil
+                // Reset recipient filter if selected recipient no longer available
+                if case .specific(let recipient) = selectedRecipientFilter {
+                    if !availableRecipients.contains(recipient) {
+                        selectedRecipientFilter = .all
+                    }
+                }
             }
             .contextMenu(forSelectionType: RFFDocument.ID.self) { ids in
                 if !ids.isEmpty {
@@ -331,6 +378,37 @@ struct ContentView: View {
                         }
                     } label: {
                         Label(currencyFilterLabel, systemImage: "dollarsign.circle")
+                    }
+
+                    // Recipient filter menu
+                    if !availableRecipients.isEmpty {
+                        Menu {
+                            Button {
+                                selectedRecipientFilter = .all
+                            } label: {
+                                if case .all = selectedRecipientFilter {
+                                    Label("All Recipients", systemImage: "checkmark")
+                                } else {
+                                    Text("All Recipients")
+                                }
+                            }
+
+                            Divider()
+
+                            ForEach(availableRecipients, id: \.self) { recipient in
+                                Button {
+                                    selectedRecipientFilter = .specific(recipient)
+                                } label: {
+                                    if case .specific(let selected) = selectedRecipientFilter, selected == recipient {
+                                        Label(recipient, systemImage: "checkmark")
+                                    } else {
+                                        Text(recipient)
+                                    }
+                                }
+                            }
+                        } label: {
+                            Label(recipientFilterLabel, systemImage: "person.crop.circle")
+                        }
                     }
                 }
 
@@ -626,6 +704,19 @@ struct ContentView: View {
             return "All"
         case .specific(let currency):
             return currency.symbol
+        }
+    }
+
+    private var recipientFilterLabel: String {
+        switch selectedRecipientFilter {
+        case .all:
+            return "All"
+        case .specific(let recipient):
+            // Truncate long recipient names for the label
+            if recipient.count > 15 {
+                return String(recipient.prefix(12)) + "..."
+            }
+            return recipient
         }
     }
 
