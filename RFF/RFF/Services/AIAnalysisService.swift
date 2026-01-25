@@ -509,19 +509,51 @@ actor AIAnalysisService {
         return text
     }
 
+    /// Extract JSON from AI response, handling markdown code blocks and surrounding text
+    private func extractJSON(from response: String) -> String {
+        // Try to find JSON within markdown code blocks first
+        // Match ```json ... ``` or ``` ... ``` anywhere in the response
+        if let jsonBlockRange = response.range(of: "```json\\s*\\n?([\\s\\S]*?)```", options: .regularExpression) {
+            let match = String(response[jsonBlockRange])
+            // Remove the opening ```json and closing ```
+            var jsonContent = match
+            if let startRange = jsonContent.range(of: "```json") {
+                jsonContent.removeSubrange(startRange)
+            }
+            if let endRange = jsonContent.range(of: "```", options: .backwards) {
+                jsonContent.removeSubrange(endRange)
+            }
+            return jsonContent.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        // Try plain ``` blocks
+        if let codeBlockRange = response.range(of: "```\\s*\\n?([\\s\\S]*?)```", options: .regularExpression) {
+            let match = String(response[codeBlockRange])
+            var jsonContent = match
+            // Remove leading ```
+            if let startRange = jsonContent.range(of: "```") {
+                jsonContent.removeSubrange(startRange)
+            }
+            // Remove trailing ```
+            if let endRange = jsonContent.range(of: "```", options: .backwards) {
+                jsonContent.removeSubrange(endRange)
+            }
+            return jsonContent.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        // No code blocks found - try to extract JSON object directly
+        // Find the first { and last } to extract the JSON
+        guard let firstBrace = response.firstIndex(of: "{"),
+              let lastBrace = response.lastIndex(of: "}") else {
+            return response.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        return String(response[firstBrace...lastBrace])
+    }
+
     private func parseAnalysisResponse(_ response: String) throws -> AIAnalysisResult {
-        // Clean up response - remove markdown code blocks if present
-        var cleanResponse = response
-        if cleanResponse.hasPrefix("```json") {
-            cleanResponse = String(cleanResponse.dropFirst(7))
-        }
-        if cleanResponse.hasPrefix("```") {
-            cleanResponse = String(cleanResponse.dropFirst(3))
-        }
-        if cleanResponse.hasSuffix("```") {
-            cleanResponse = String(cleanResponse.dropLast(3))
-        }
-        cleanResponse = cleanResponse.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Extract JSON from response - handle various AI response formats
+        let cleanResponse = extractJSON(from: response)
 
         guard let data = cleanResponse.data(using: .utf8),
               let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
