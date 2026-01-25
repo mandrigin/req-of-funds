@@ -822,7 +822,6 @@ struct DocumentDetailView: View {
     @State private var pdfDocument: PDFDocument?
     @State private var highlights: [HighlightRegion] = []
     @State private var selectedHighlight: HighlightRegion?
-    @State private var showLegend = true
     @State private var isDetectingFields = false
     @State private var showConfirmationPanel = true
     @State private var showingConfirmationAlert = false
@@ -1028,20 +1027,6 @@ struct DocumentDetailView: View {
                                         .frame(height: 20)
 
                                     Button {
-                                        withAnimation {
-                                            showLegend.toggle()
-                                        }
-                                    } label: {
-                                        Label(
-                                            showLegend ? "Hide Legend" : "Show Legend",
-                                            systemImage: showLegend ? "list.bullet.rectangle" : "list.bullet.rectangle.fill"
-                                        )
-                                    }
-
-                                    Divider()
-                                        .frame(height: 20)
-
-                                    Button {
                                         performAIAnalysis()
                                     } label: {
                                         if isAnalyzingWithAI {
@@ -1079,7 +1064,13 @@ struct DocumentDetailView: View {
 
                                 Divider()
 
-                                ZStack(alignment: .topLeading) {
+                                VStack(spacing: 0) {
+                                    // Fixed legend header
+                                    if !highlights.isEmpty {
+                                        HighlightLegendView()
+                                        Divider()
+                                    }
+
                                     PDFViewer(
                                         document: pdfDocument,
                                         highlights: highlights,
@@ -1090,13 +1081,6 @@ struct DocumentDetailView: View {
                                             }
                                         }
                                     )
-
-                                    // Legend overlay
-                                    if showLegend {
-                                        HighlightLegendView()
-                                            .padding(8)
-                                            .transition(.move(edge: .leading).combined(with: .opacity))
-                                    }
                                 }
 
                                 // Selected field info panel
