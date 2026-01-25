@@ -63,6 +63,9 @@ struct ConfirmationFormView: View {
     @Bindable var document: RFFDocument
     @Environment(\.modelContext) private var modelContext
 
+    /// Called when the user cancels the form (optional)
+    var onCancel: (() -> Void)?
+
     // Track original values to detect manual edits
     @State private var originalOrganization: String = ""
     @State private var originalAmount: Decimal = 0
@@ -230,24 +233,37 @@ struct ConfirmationFormView: View {
                 .foregroundStyle(.secondary)
             }
 
-            // Confirm button
-            Button {
-                showingConfirmation = true
-            } label: {
-                HStack {
-                    if isConfirming {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                    } else {
-                        Image(systemName: "checkmark.circle.fill")
-                    }
-                    Text("Confirm & Submit")
+            // Action buttons
+            HStack(spacing: 12) {
+                // Cancel button
+                Button {
+                    cancelEdits()
+                } label: {
+                    Text("Cancel")
+                        .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+
+                // Confirm button
+                Button {
+                    showingConfirmation = true
+                } label: {
+                    HStack {
+                        if isConfirming {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                        } else {
+                            Image(systemName: "checkmark.circle.fill")
+                        }
+                        Text("Confirm & Submit")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .disabled(isConfirming || !isValid)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .disabled(isConfirming || !isValid)
         }
         .padding()
     }
@@ -296,6 +312,29 @@ struct ConfirmationFormView: View {
         amountSource = .extracted
         currencySource = .extracted
         dueDateSource = .extracted
+    }
+
+    private func cancelEdits() {
+        // Reset document to original values
+        document.requestingOrganization = originalOrganization
+        document.amount = originalAmount
+        document.currency = originalCurrency
+        document.dueDate = originalDueDate
+
+        // Reset editing state to original values
+        editingOrganization = originalOrganization
+        editingAmount = originalAmount
+        editingCurrency = originalCurrency
+        editingDueDate = originalDueDate
+
+        // Reset source indicators
+        organizationSource = .extracted
+        amountSource = .extracted
+        currencySource = .extracted
+        dueDateSource = .extracted
+
+        // Notify parent if callback provided
+        onCancel?()
     }
 
     private func confirmDocument() {
