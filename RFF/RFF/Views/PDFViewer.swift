@@ -16,7 +16,7 @@ enum FieldHighlightColor {
             return NSColor.systemOrange.withAlphaComponent(0.3)
         case .invoiceNumber, .poNumber:
             return NSColor.systemPurple.withAlphaComponent(0.3)
-        case .customerName, .customerAddress:
+        case .recipient, .customerName, .customerAddress:
             return NSColor.systemTeal.withAlphaComponent(0.3)
         case .lineItemDescription, .lineItemQuantity:
             return NSColor.systemGray.withAlphaComponent(0.3)

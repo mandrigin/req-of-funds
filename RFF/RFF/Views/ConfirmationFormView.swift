@@ -68,18 +68,21 @@ struct ConfirmationFormView: View {
 
     // Track original values to detect manual edits
     @State private var originalOrganization: String = ""
+    @State private var originalRecipient: String = ""
     @State private var originalAmount: Decimal = 0
     @State private var originalCurrency: Currency = .usd
     @State private var originalDueDate: Date = Date()
 
     // Track which fields have been manually edited
     @State private var organizationSource: FieldSource = .extracted
+    @State private var recipientSource: FieldSource = .extracted
     @State private var amountSource: FieldSource = .extracted
     @State private var currencySource: FieldSource = .extracted
     @State private var dueDateSource: FieldSource = .extracted
 
     // Local editing state
     @State private var editingOrganization: String = ""
+    @State private var editingRecipient: String = ""
     @State private var editingAmount: Decimal = 0
     @State private var editingCurrency: Currency = .usd
     @State private var editingDueDate: Date = Date()
@@ -98,6 +101,7 @@ struct ConfirmationFormView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     organizationField
+                    recipientField
                     amountField
                     currencyField
                     dueDateField
@@ -157,6 +161,21 @@ struct ConfirmationFormView: View {
                         organizationSource = .manual
                     }
                     document.requestingOrganization = newValue
+                }
+        }
+    }
+
+    // MARK: - Recipient Field
+
+    private var recipientField: some View {
+        ConfirmationField(label: "Recipient", source: recipientSource) {
+            TextField("Recipient (who invoice is addressed to)", text: $editingRecipient)
+                .textFieldStyle(.roundedBorder)
+                .onChange(of: editingRecipient) { _, newValue in
+                    if newValue != originalRecipient {
+                        recipientSource = .manual
+                    }
+                    document.recipient = newValue.isEmpty ? nil : newValue
                 }
         }
     }
@@ -271,12 +290,13 @@ struct ConfirmationFormView: View {
     // MARK: - Helpers
 
     private var hasEdits: Bool {
-        organizationSource == .manual || amountSource == .manual || currencySource == .manual || dueDateSource == .manual
+        organizationSource == .manual || recipientSource == .manual || amountSource == .manual || currencySource == .manual || dueDateSource == .manual
     }
 
     private var editSummary: String {
         var edited: [String] = []
         if organizationSource == .manual { edited.append("organization") }
+        if recipientSource == .manual { edited.append("recipient") }
         if amountSource == .manual { edited.append("amount") }
         if currencySource == .manual { edited.append("currency") }
         if dueDateSource == .manual { edited.append("due date") }
@@ -296,12 +316,14 @@ struct ConfirmationFormView: View {
     private func initializeFields() {
         // Store original values for edit detection
         originalOrganization = document.requestingOrganization
+        originalRecipient = document.recipient ?? ""
         originalAmount = document.amount
         originalCurrency = document.currency
         originalDueDate = document.dueDate
 
         // Initialize editing state
         editingOrganization = document.requestingOrganization
+        editingRecipient = document.recipient ?? ""
         editingAmount = document.amount
         editingCurrency = document.currency
         editingDueDate = document.dueDate
@@ -309,6 +331,7 @@ struct ConfirmationFormView: View {
         // Assume values are extracted initially
         // (In a full implementation, this could come from document metadata)
         organizationSource = .extracted
+        recipientSource = .extracted
         amountSource = .extracted
         currencySource = .extracted
         dueDateSource = .extracted
@@ -317,18 +340,21 @@ struct ConfirmationFormView: View {
     private func cancelEdits() {
         // Reset document to original values
         document.requestingOrganization = originalOrganization
+        document.recipient = originalRecipient.isEmpty ? nil : originalRecipient
         document.amount = originalAmount
         document.currency = originalCurrency
         document.dueDate = originalDueDate
 
         // Reset editing state to original values
         editingOrganization = originalOrganization
+        editingRecipient = originalRecipient
         editingAmount = originalAmount
         editingCurrency = originalCurrency
         editingDueDate = originalDueDate
 
         // Reset source indicators
         organizationSource = .extracted
+        recipientSource = .extracted
         amountSource = .extracted
         currencySource = .extracted
         dueDateSource = .extracted
@@ -345,8 +371,14 @@ struct ConfirmationFormView: View {
             await recordCorrections()
         }
 
-        // Update document status to underReview
-        document.status = .underReview
+        // Store confirmed values
+        document.confirmedOrganization = document.requestingOrganization
+        document.confirmedAmount = document.amount
+        document.confirmedDueDate = document.dueDate
+        document.confirmedAt = Date()
+
+        // Update document status to approved (moves to Confirmed tab)
+        document.status = .approved
         document.updatedAt = Date()
 
         // Save changes
@@ -355,6 +387,13 @@ struct ConfirmationFormView: View {
         } catch {
             print("Failed to save document: \(error)")
         }
+
+        // Post notification for UI updates
+        NotificationCenter.default.post(
+            name: .documentStatusChanged,
+            object: nil,
+            userInfo: ["documentId": document.id, "status": RFFStatus.approved]
+        )
 
         isConfirming = false
     }

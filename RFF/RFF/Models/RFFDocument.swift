@@ -56,6 +56,9 @@ final class RFFDocument {
     /// Organization requesting the funding
     var requestingOrganization: String
 
+    /// Recipient (who the invoice is addressed to)
+    var recipient: String?
+
     /// Requested funding amount
     var amount: Decimal
 
@@ -114,6 +117,7 @@ final class RFFDocument {
         id: UUID = UUID(),
         title: String,
         requestingOrganization: String,
+        recipient: String? = nil,
         amount: Decimal,
         currency: Currency = .usd,
         dueDate: Date,
@@ -125,6 +129,7 @@ final class RFFDocument {
         self.id = id
         self.title = title
         self.requestingOrganization = requestingOrganization
+        self.recipient = recipient
         self.amount = amount
         self.currency = currency
         self.dueDate = dueDate

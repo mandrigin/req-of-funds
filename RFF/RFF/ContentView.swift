@@ -26,6 +26,24 @@ enum CurrencyFilter: Hashable {
     }
 }
 
+/// Recipient filter for document list
+enum RecipientFilter: Hashable {
+    case all
+    case specific(String)
+    case unassigned
+
+    var displayName: String {
+        switch self {
+        case .all:
+            return "All Recipients"
+        case .specific(let recipient):
+            return recipient
+        case .unassigned:
+            return "No Recipient"
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
 
@@ -49,6 +67,7 @@ struct ContentView: View {
 
     @State private var selectedFilter: DocumentFilter = .inbox
     @State private var selectedCurrencyFilter: CurrencyFilter = .all
+    @State private var selectedRecipientFilter: RecipientFilter = .all
 
     /// Documents to display based on current filters
     private var documents: [RFFDocument] {
@@ -63,11 +82,22 @@ struct ContentView: View {
         }
 
         // Apply currency filter
+        let currencyFiltered: [RFFDocument]
         switch selectedCurrencyFilter {
         case .all:
-            return statusFiltered
+            currencyFiltered = statusFiltered
         case .specific(let currency):
-            return statusFiltered.filter { $0.currency == currency }
+            currencyFiltered = statusFiltered.filter { $0.currency == currency }
+        }
+
+        // Apply recipient filter
+        switch selectedRecipientFilter {
+        case .all:
+            return currencyFiltered
+        case .specific(let recipient):
+            return currencyFiltered.filter { $0.recipient == recipient }
+        case .unassigned:
+            return currencyFiltered.filter { $0.recipient == nil || $0.recipient?.isEmpty == true }
         }
     }
 
@@ -84,6 +114,35 @@ struct ContentView: View {
         }
         let currencies = Set(statusFiltered.map { $0.currency })
         return Currency.allCases.filter { currencies.contains($0) }
+    }
+
+    /// Available recipients in the current document set (for filter menu)
+    private var availableRecipients: [String] {
+        let statusFiltered: [RFFDocument]
+        switch selectedFilter {
+        case .inbox:
+            statusFiltered = inboxDocuments
+        case .confirmed:
+            statusFiltered = confirmedDocuments
+        case .paid:
+            statusFiltered = paidDocuments
+        }
+        let recipients = Set(statusFiltered.compactMap { $0.recipient }.filter { !$0.isEmpty })
+        return recipients.sorted()
+    }
+
+    /// Whether there are documents without recipients in the current filter
+    private var hasUnassignedRecipients: Bool {
+        let statusFiltered: [RFFDocument]
+        switch selectedFilter {
+        case .inbox:
+            statusFiltered = inboxDocuments
+        case .confirmed:
+            statusFiltered = confirmedDocuments
+        case .paid:
+            statusFiltered = paidDocuments
+        }
+        return statusFiltered.contains { $0.recipient == nil || $0.recipient?.isEmpty == true }
     }
     @State private var isImportingPDF = false
     @State private var importError: String?
@@ -199,6 +258,49 @@ struct ContentView: View {
                         Label(currencyFilterLabel, systemImage: "dollarsign.circle")
                     }
 
+                    // Recipient filter menu
+                    Menu {
+                        Button {
+                            selectedRecipientFilter = .all
+                        } label: {
+                            if case .all = selectedRecipientFilter {
+                                Label("All Recipients", systemImage: "checkmark")
+                            } else {
+                                Text("All Recipients")
+                            }
+                        }
+
+                        if hasUnassignedRecipients {
+                            Button {
+                                selectedRecipientFilter = .unassigned
+                            } label: {
+                                if case .unassigned = selectedRecipientFilter {
+                                    Label("No Recipient", systemImage: "checkmark")
+                                } else {
+                                    Text("No Recipient")
+                                }
+                            }
+                        }
+
+                        if !availableRecipients.isEmpty {
+                            Divider()
+
+                            ForEach(availableRecipients, id: \.self) { recipient in
+                                Button {
+                                    selectedRecipientFilter = .specific(recipient)
+                                } label: {
+                                    if case .specific(let selected) = selectedRecipientFilter, selected == recipient {
+                                        Label(recipient, systemImage: "checkmark")
+                                    } else {
+                                        Text(recipient)
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(recipientFilterLabel, systemImage: "person.crop.circle")
+                    }
+
                     Spacer()
                 }
                 .padding(.horizontal)
@@ -210,6 +312,17 @@ struct ContentView: View {
                     Text(document.requestingOrganization)
                 }
                 .width(min: 120, ideal: 180)
+
+                TableColumn("Recipient") { document in
+                    if let recipient = document.recipient, !recipient.isEmpty {
+                        Text(recipient)
+                            .foregroundStyle(.primary)
+                    } else {
+                        Text("—")
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .width(min: 80, ideal: 120)
 
                 TableColumn("Amount") { document in
                     Text(document.amount, format: .currency(code: document.currency.currencyCode))
@@ -682,6 +795,21 @@ struct ContentView: View {
         }
     }
 
+    private var recipientFilterLabel: String {
+        switch selectedRecipientFilter {
+        case .all:
+            return "All"
+        case .specific(let recipient):
+            // Truncate long recipient names for the label
+            if recipient.count > 15 {
+                return String(recipient.prefix(12)) + "..."
+            }
+            return recipient
+        case .unassigned:
+            return "None"
+        }
+    }
+
     private var emptyStateTitle: String {
         switch selectedFilter {
         case .inbox:
@@ -1063,6 +1191,7 @@ struct DocumentDetailView: View {
                 Section("Document Info") {
                     LabeledContent("Title", value: document.title)
                     LabeledContent("Organization", value: document.requestingOrganization)
+                    LabeledContent("Recipient", value: document.recipient ?? "—")
                     LabeledContent("Amount", value: document.amount, format: .currency(code: document.currency.currencyCode))
                     LabeledContent("Currency", value: "\(document.currency.symbol) \(document.currency.displayName)")
                     LabeledContent("Due Date", value: document.dueDate, format: .dateTime)
@@ -2070,6 +2199,8 @@ struct LibraryAIAnalysisResultSheet: View {
         switch suggestion.fieldType {
         case "vendor":
             document.requestingOrganization = suggestion.value
+        case "recipient":
+            document.recipient = suggestion.value
         case "total", "subtotal":
             if let amount = parseAmount(suggestion.value) {
                 document.amount = amount
@@ -2183,6 +2314,7 @@ struct LibraryAISuggestionRow: View {
         case "invoice_date": return "Invoice Date"
         case "due_date": return "Due Date"
         case "vendor": return "Vendor"
+        case "recipient": return "Recipient"
         case "customer_name": return "Customer"
         case "subtotal": return "Subtotal"
         case "tax": return "Tax"
@@ -2748,6 +2880,7 @@ struct TextEntrySheet: View {
         case "invoice_date": return "Invoice Date"
         case "due_date": return "Due Date"
         case "vendor": return "Vendor"
+        case "recipient": return "Recipient"
         case "customer_name": return "Customer"
         case "subtotal": return "Subtotal"
         case "tax": return "Tax"
