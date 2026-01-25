@@ -2145,6 +2145,8 @@ struct LibraryAIAnalysisResultSheet: View {
     let onDismiss: () -> Void
 
     @State private var selectedSuggestions: Set<UUID> = []
+    /// Maps suggestion ID to the selected option ID (for fields with multiple options)
+    @State private var selectedOptions: [UUID: UUID] = [:]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -2177,7 +2179,8 @@ struct LibraryAIAnalysisResultSheet: View {
                     ForEach(result.suggestions) { suggestion in
                         LibraryAISuggestionRow(
                             suggestion: suggestion,
-                            isSelected: selectedSuggestions.contains(suggestion.id)
+                            isSelected: selectedSuggestions.contains(suggestion.id),
+                            selectedOptionId: selectedOptionBinding(for: suggestion)
                         )
                         .tag(suggestion.id)
                     }
@@ -2220,20 +2223,43 @@ struct LibraryAIAnalysisResultSheet: View {
         }
         .frame(width: 500, height: 500)
         .onAppear {
-            // Pre-select high confidence suggestions
-            selectedSuggestions = Set(
-                result.suggestions
-                    .filter { $0.confidence >= 0.7 }
-                    .map { $0.id }
-            )
+            // Pre-select high confidence suggestions and their primary options
+            for suggestion in result.suggestions where suggestion.confidence >= 0.7 {
+                selectedSuggestions.insert(suggestion.id)
+                if let primaryOption = suggestion.options.first {
+                    selectedOptions[suggestion.id] = primaryOption.id
+                }
+            }
         }
+    }
+
+    /// Creates a binding for the selected option ID for a given suggestion
+    private func selectedOptionBinding(for suggestion: AIFieldSuggestion) -> Binding<UUID?> {
+        Binding(
+            get: { selectedOptions[suggestion.id] ?? suggestion.options.first?.id },
+            set: { newValue in
+                if let newValue = newValue {
+                    selectedOptions[suggestion.id] = newValue
+                }
+            }
+        )
+    }
+
+    /// Gets the selected option for a suggestion, defaulting to the primary (first) option
+    private func getSelectedOption(for suggestion: AIFieldSuggestion) -> AIFieldOption? {
+        if let selectedId = selectedOptions[suggestion.id] {
+            return suggestion.options.first { $0.id == selectedId }
+        }
+        return suggestion.options.first
     }
 
     private func applySelectedSuggestions() {
         let selectedItems = result.suggestions.filter { selectedSuggestions.contains($0.id) }
 
         for suggestion in selectedItems {
-            applyFieldSuggestion(suggestion)
+            if let option = getSelectedOption(for: suggestion) {
+                applyFieldSuggestion(suggestion, option: option)
+            }
         }
 
         // Save schema if suggested
@@ -2245,27 +2271,28 @@ struct LibraryAIAnalysisResultSheet: View {
         onDismiss()
     }
 
-    private func applyFieldSuggestion(_ suggestion: AIFieldSuggestion) {
+    private func applyFieldSuggestion(_ suggestion: AIFieldSuggestion, option: AIFieldOption) {
+        let value = option.value
         switch suggestion.fieldType {
         case "vendor":
-            document.requestingOrganization = suggestion.value
+            document.requestingOrganization = value
         case "recipient", "customer_name":
-            document.recipient = suggestion.value
+            document.recipient = value
         case "total":
-            if let amount = Decimal(string: suggestion.value) {
+            if let amount = Decimal(string: value) {
                 document.amount = amount
             }
         case "due_date":
-            if let date = parseISODate(suggestion.value) {
+            if let date = parseISODate(value) {
                 document.dueDate = date
             }
         case "currency":
-            if let currency = Currency(rawValue: suggestion.value.uppercased()) {
+            if let currency = Currency(rawValue: value.uppercased()) {
                 document.currency = currency
             }
         case "invoice_number":
             if document.title == "New Document" || document.title.isEmpty {
-                document.title = "Invoice \(suggestion.value)"
+                document.title = "Invoice \(value)"
             }
         default:
             break
@@ -2317,25 +2344,61 @@ struct LibraryAIAnalysisResultSheet: View {
 struct LibraryAISuggestionRow: View {
     let suggestion: AIFieldSuggestion
     let isSelected: Bool
+    @Binding var selectedOptionId: UUID?
+
+    /// The currently selected option (defaults to first/primary option)
+    private var selectedOption: AIFieldOption? {
+        if let id = selectedOptionId {
+            return suggestion.options.first { $0.id == id }
+        }
+        return suggestion.options.first
+    }
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 4) {
+            // Field header with name
+            HStack {
+                Text(displayName(for: suggestion.fieldType))
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+
+                Spacer()
+
+                if suggestion.hasAlternatives {
+                    Text("\(suggestion.options.count) options")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            // Options - show as selectable list if multiple
+            if suggestion.hasAlternatives {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(suggestion.options) { option in
+                        LibraryAIOptionRow(
+                            option: option,
+                            isSelected: option.id == selectedOptionId || (selectedOptionId == nil && option.id == suggestion.options.first?.id),
+                            isFieldSelected: isSelected
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            selectedOptionId = option.id
+                        }
+                    }
+                }
+            } else if let option = suggestion.options.first {
+                // Single option - show inline
                 HStack {
-                    Text(displayName(for: suggestion.fieldType))
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                    Text(option.value)
+                        .font(.body)
+                        .foregroundStyle(isSelected ? .primary : .secondary)
 
                     Spacer()
 
-                    LibraryConfidenceBadge(confidence: suggestion.confidence)
+                    LibraryConfidenceBadge(confidence: option.confidence)
                 }
 
-                Text(suggestion.value)
-                    .font(.body)
-                    .foregroundStyle(isSelected ? .primary : .secondary)
-
-                if let reasoning = suggestion.reasoning {
+                if let reasoning = option.reasoning {
                     Text(reasoning)
                         .font(.caption)
                         .foregroundStyle(.tertiary)
@@ -2360,6 +2423,36 @@ struct LibraryAISuggestionRow: View {
         case "payment_terms": return "Payment Terms"
         default: return fieldType.replacingOccurrences(of: "_", with: " ").capitalized
         }
+    }
+}
+
+/// Row for a single AI field option (used when field has multiple options)
+struct LibraryAIOptionRow: View {
+    let option: AIFieldOption
+    let isSelected: Bool
+    let isFieldSelected: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            // Selection indicator
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(isSelected ? .blue : .secondary)
+                .font(.caption)
+
+            // Value
+            Text(option.value)
+                .font(.callout)
+                .foregroundStyle(isSelected && isFieldSelected ? .primary : .secondary)
+
+            Spacer()
+
+            // Confidence badge
+            LibraryConfidenceBadge(confidence: option.confidence)
+        }
+        .padding(.vertical, 2)
+        .padding(.horizontal, 4)
+        .background(isSelected ? Color.blue.opacity(0.1) : Color.clear)
+        .cornerRadius(4)
     }
 }
 

@@ -39,21 +39,61 @@ enum AIProvider: String, CaseIterable, Codable {
     }
 }
 
-/// Suggested field from AI analysis
-struct AIFieldSuggestion: Identifiable, Codable, Sendable {
+/// A single option for an extracted field value
+struct AIFieldOption: Identifiable, Codable, Sendable, Hashable {
     let id: UUID
-    let fieldType: String
     let value: String
     let confidence: Double
     let reasoning: String?
 
-    init(id: UUID = UUID(), fieldType: String, value: String, confidence: Double, reasoning: String? = nil) {
+    init(id: UUID = UUID(), value: String, confidence: Double, reasoning: String? = nil) {
         self.id = id
-        self.fieldType = fieldType
         self.value = value
         self.confidence = confidence
         self.reasoning = reasoning
     }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    static func == (lhs: AIFieldOption, rhs: AIFieldOption) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
+/// Suggested field from AI analysis with up to 3 options
+struct AIFieldSuggestion: Identifiable, Codable, Sendable {
+    let id: UUID
+    let fieldType: String
+    /// Up to 3 options for this field, sorted by confidence (highest first)
+    let options: [AIFieldOption]
+
+    init(id: UUID = UUID(), fieldType: String, options: [AIFieldOption]) {
+        self.id = id
+        self.fieldType = fieldType
+        // Sort options by confidence descending and limit to 3
+        self.options = Array(options.sorted { $0.confidence > $1.confidence }.prefix(3))
+    }
+
+    /// Convenience initializer for single-value suggestions (backwards compatibility)
+    init(id: UUID = UUID(), fieldType: String, value: String, confidence: Double, reasoning: String? = nil) {
+        self.id = id
+        self.fieldType = fieldType
+        self.options = [AIFieldOption(value: value, confidence: confidence, reasoning: reasoning)]
+    }
+
+    /// Primary (highest confidence) value - for backwards compatibility
+    var value: String { options.first?.value ?? "" }
+
+    /// Primary (highest confidence) confidence score - for backwards compatibility
+    var confidence: Double { options.first?.confidence ?? 0 }
+
+    /// Primary (highest confidence) reasoning - for backwards compatibility
+    var reasoning: String? { options.first?.reasoning }
+
+    /// Whether this suggestion has multiple options to choose from
+    var hasAlternatives: Bool { options.count > 1 }
 
     /// Convert to InvoiceFieldType if valid
     /// Handles aliases for backwards compatibility
@@ -388,15 +428,26 @@ actor AIAnalysisService {
             "suggestions": [
                 {
                     "fieldType": "invoice_number|invoice_date|due_date|vendor|recipient|subtotal|tax|total|currency|po_number",
-                    "value": "extracted value",
-                    "confidence": 0.0-1.0,
-                    "reasoning": "brief explanation"
+                    "options": [
+                        {"value": "extracted value", "confidence": 0.0-1.0, "reasoning": "brief explanation"},
+                        {"value": "alternative value", "confidence": 0.0-1.0, "reasoning": "why this might be correct"}
+                    ]
                 }
             ],
             "schemaName": "suggested name for this invoice format (e.g., 'Amazon Business', 'Staples Invoice')",
             "summary": "one-line summary of the invoice",
             "notes": ["any warnings or observations about data quality"]
         }
+
+        IMPORTANT: For each field, return up to 3 options when there is ambiguity or multiple candidates:
+        - If you're highly confident (>0.9), you may return just one option
+        - If there are multiple plausible values, return 2-3 options with different confidence levels
+        - Order options by confidence (highest first)
+        - Examples of when to provide alternatives:
+          - Multiple dates that could be invoice date vs due date
+          - Multiple company names (vendor vs recipient unclear)
+          - Multiple amounts that could be the total
+          - Ambiguous formatting (e.g., date could be MM/DD or DD/MM)
 
         Focus on extracting:
         - Invoice number (invoice_number)
@@ -681,20 +732,44 @@ actor AIAnalysisService {
 
         if let suggestionsArray = json["suggestions"] as? [[String: Any]] {
             for item in suggestionsArray {
-                guard let fieldType = item["fieldType"] as? String,
-                      let value = item["value"] as? String else {
+                guard let fieldType = item["fieldType"] as? String else {
                     continue
                 }
 
-                let confidence = item["confidence"] as? Double ?? 0.5
-                let reasoning = item["reasoning"] as? String
+                // Try new format with options array first
+                if let optionsArray = item["options"] as? [[String: Any]] {
+                    var options: [AIFieldOption] = []
+                    for optionItem in optionsArray {
+                        guard let value = optionItem["value"] as? String else {
+                            continue
+                        }
+                        let confidence = optionItem["confidence"] as? Double ?? 0.5
+                        let reasoning = optionItem["reasoning"] as? String
+                        options.append(AIFieldOption(
+                            value: value,
+                            confidence: confidence,
+                            reasoning: reasoning
+                        ))
+                    }
+                    if !options.isEmpty {
+                        suggestions.append(AIFieldSuggestion(
+                            fieldType: fieldType,
+                            options: options
+                        ))
+                    }
+                }
+                // Fall back to legacy single-value format for backwards compatibility
+                else if let value = item["value"] as? String {
+                    let confidence = item["confidence"] as? Double ?? 0.5
+                    let reasoning = item["reasoning"] as? String
 
-                suggestions.append(AIFieldSuggestion(
-                    fieldType: fieldType,
-                    value: value,
-                    confidence: confidence,
-                    reasoning: reasoning
-                ))
+                    suggestions.append(AIFieldSuggestion(
+                        fieldType: fieldType,
+                        value: value,
+                        confidence: confidence,
+                        reasoning: reasoning
+                    ))
+                }
             }
         }
 
@@ -717,9 +792,16 @@ extension AIAnalysisResult {
     static var preview: AIAnalysisResult {
         AIAnalysisResult(
             suggestions: [
-                AIFieldSuggestion(fieldType: "vendor", value: "Acme Corp", confidence: 0.95, reasoning: "Found at top of invoice"),
+                AIFieldSuggestion(fieldType: "vendor", options: [
+                    AIFieldOption(value: "Acme Corp", confidence: 0.95, reasoning: "Found at top of invoice"),
+                    AIFieldOption(value: "ACME Corporation", confidence: 0.7, reasoning: "Full legal name in footer")
+                ]),
                 AIFieldSuggestion(fieldType: "invoice_number", value: "INV-2024-001", confidence: 0.9, reasoning: "Standard invoice number format"),
-                AIFieldSuggestion(fieldType: "total", value: "1234.56", confidence: 0.85, reasoning: "Largest amount on invoice")
+                AIFieldSuggestion(fieldType: "total", options: [
+                    AIFieldOption(value: "1234.56", confidence: 0.85, reasoning: "Labeled 'Total Due'"),
+                    AIFieldOption(value: "1134.56", confidence: 0.6, reasoning: "Subtotal before tax"),
+                    AIFieldOption(value: "1334.56", confidence: 0.4, reasoning: "Grand total with shipping")
+                ])
             ],
             suggestedSchemaName: "Acme Corp Invoice",
             summary: "Invoice from Acme Corp for office supplies",
