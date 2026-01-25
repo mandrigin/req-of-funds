@@ -131,6 +131,21 @@ struct PDFViewer: NSViewRepresentable {
 
         // Force layout refresh to ensure overlays are redrawn
         pdfView.layoutDocumentView()
+
+        // Force redisplay of the document view to trigger overlay recreation
+        // This is necessary because PDFKit aggressively caches overlay views
+        if let documentView = pdfView.documentView {
+            documentView.needsDisplay = true
+            // Also mark all subviews (page views) as needing display
+            for subview in documentView.subviews {
+                subview.needsDisplay = true
+            }
+        }
+
+        // Navigate to current page to force PDFKit to request new overlays
+        if let currentPage = pdfView.currentPage {
+            pdfView.go(to: currentPage)
+        }
     }
 
     func makeCoordinator() -> Coordinator {
