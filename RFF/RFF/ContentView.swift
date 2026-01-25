@@ -405,10 +405,11 @@ struct ContentView: View {
             }
             .contextMenu(forSelectionType: RFFDocument.ID.self) { ids in
                 if !ids.isEmpty {
-                    // AI Analyze - only for single document selection
+                    // AI Analyze - only for single document selection, not for read-only docs
                     if ids.count == 1, let id = ids.first,
                        let doc = documents.first(where: { $0.id == id }),
-                       !(doc.extractedText ?? "").isEmpty {
+                       !(doc.extractedText ?? "").isEmpty,
+                       !doc.isReadOnly {
                         Button {
                             performLibraryAIAnalysis(documentId: id)
                         } label: {
@@ -1335,7 +1336,8 @@ struct DocumentDetailView: View {
                                             Label("AI Analyze", systemImage: "sparkles")
                                         }
                                     }
-                                    .disabled(isAnalyzingWithAI || (document.extractedText ?? "").isEmpty)
+                                    .disabled(document.isReadOnly || isAnalyzingWithAI || (document.extractedText ?? "").isEmpty)
+                                    .help(document.isReadOnly ? "Document is locked" : "Analyze document with AI")
 
                                     Button {
                                         withAnimation {
@@ -1344,7 +1346,8 @@ struct DocumentDetailView: View {
                                     } label: {
                                         Label("Edit Schema", systemImage: "rectangle.and.pencil.and.ellipsis")
                                     }
-                                    .help("Visually map document fields to schema")
+                                    .disabled(document.isReadOnly)
+                                    .help(document.isReadOnly ? "Document is locked" : "Visually map document fields to schema")
 
                                     Spacer()
                                     Button {
@@ -1818,11 +1821,13 @@ struct SelectedFieldPanel: View {
             }
             .labelsHidden()
             .frame(width: 140)
+            .disabled(document.isReadOnly)
 
             // Editable value
             TextField("Value", text: $editedValue)
                 .textFieldStyle(.roundedBorder)
                 .frame(minWidth: 150)
+                .disabled(document.isReadOnly)
 
             // Current document value for this field
             if let currentValue = currentDocumentValue {
@@ -1837,10 +1842,10 @@ struct SelectedFieldPanel: View {
             Button {
                 onApply(selectedFieldType, editedValue)
             } label: {
-                Label("Apply", systemImage: "checkmark.circle.fill")
+                Label(document.isReadOnly ? "Locked" : "Apply", systemImage: document.isReadOnly ? "lock.fill" : "checkmark.circle.fill")
             }
             .buttonStyle(.borderedProminent)
-            .disabled(editedValue.isEmpty)
+            .disabled(document.isReadOnly || editedValue.isEmpty)
 
             // Dismiss button
             Button {

@@ -137,13 +137,15 @@ struct ConfirmationFormView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Image(systemName: "checkmark.circle")
-                    .foregroundStyle(.blue)
-                Text("Confirm Details")
+                Image(systemName: document.isReadOnly ? "lock.fill" : "checkmark.circle")
+                    .foregroundStyle(document.isReadOnly ? Color.secondary : Color.blue)
+                Text(document.isReadOnly ? "Document Locked" : "Confirm Details")
                     .font(.headline)
             }
 
-            Text("Review and edit the extracted information below.")
+            Text(document.isReadOnly
+                ? "This document has been confirmed and cannot be edited."
+                : "Review and edit the extracted information below.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -156,6 +158,7 @@ struct ConfirmationFormView: View {
         ConfirmationField(label: "Organization", source: organizationSource) {
             TextField("Organization name", text: $editingOrganization)
                 .textFieldStyle(.roundedBorder)
+                .disabled(document.isReadOnly)
                 .onChange(of: editingOrganization) { _, newValue in
                     if newValue != originalOrganization {
                         organizationSource = .manual
@@ -171,6 +174,7 @@ struct ConfirmationFormView: View {
         ConfirmationField(label: "Recipient", source: recipientSource) {
             TextField("Recipient (who invoice is addressed to)", text: $editingRecipient)
                 .textFieldStyle(.roundedBorder)
+                .disabled(document.isReadOnly)
                 .onChange(of: editingRecipient) { _, newValue in
                     if newValue != originalRecipient {
                         recipientSource = .manual
@@ -189,6 +193,7 @@ struct ConfirmationFormView: View {
                     .foregroundStyle(.secondary)
                 TextField("0.00", value: $editingAmount, format: .number.precision(.fractionLength(2)))
                     .textFieldStyle(.roundedBorder)
+                    .disabled(document.isReadOnly)
                     .onChange(of: editingAmount) { _, newValue in
                         if newValue != originalAmount {
                             amountSource = .manual
@@ -210,6 +215,7 @@ struct ConfirmationFormView: View {
                 }
             }
             .labelsHidden()
+            .disabled(document.isReadOnly)
             .onChange(of: editingCurrency) { _, newValue in
                 if newValue != originalCurrency {
                     currencySource = .manual
@@ -226,6 +232,7 @@ struct ConfirmationFormView: View {
             DatePicker("", selection: $editingDueDate, displayedComponents: [.date])
                 .datePickerStyle(.field)
                 .labelsHidden()
+                .disabled(document.isReadOnly)
                 .onChange(of: editingDueDate) { _, newValue in
                     // Check if date changed by more than 1 day (to account for time component)
                     let calendar = Calendar.current
@@ -241,47 +248,58 @@ struct ConfirmationFormView: View {
 
     private var footer: some View {
         VStack(spacing: 12) {
-            // Summary of changes
-            if hasEdits {
+            if document.isReadOnly {
+                // Read-only notice
                 HStack(spacing: 4) {
-                    Image(systemName: "info.circle")
+                    Image(systemName: "lock.fill")
                         .font(.caption)
-                    Text(editSummary)
+                    Text("Document is locked and cannot be modified")
                         .font(.caption)
                 }
                 .foregroundStyle(.secondary)
-            }
-
-            // Action buttons
-            HStack(spacing: 12) {
-                // Cancel button
-                Button {
-                    cancelEdits()
-                } label: {
-                    Text("Cancel")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-
-                // Confirm button
-                Button {
-                    showingConfirmation = true
-                } label: {
-                    HStack {
-                        if isConfirming {
-                            ProgressView()
-                                .scaleEffect(0.7)
-                        } else {
-                            Image(systemName: "checkmark.circle.fill")
-                        }
-                        Text("Confirm & Submit")
+            } else {
+                // Summary of changes
+                if hasEdits {
+                    HStack(spacing: 4) {
+                        Image(systemName: "info.circle")
+                            .font(.caption)
+                        Text(editSummary)
+                            .font(.caption)
                     }
-                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(isConfirming || !isValid)
+
+                // Action buttons
+                HStack(spacing: 12) {
+                    // Cancel button
+                    Button {
+                        cancelEdits()
+                    } label: {
+                        Text("Cancel")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+
+                    // Confirm button
+                    Button {
+                        showingConfirmation = true
+                    } label: {
+                        HStack {
+                            if isConfirming {
+                                ProgressView()
+                                    .scaleEffect(0.7)
+                            } else {
+                                Image(systemName: "checkmark.circle.fill")
+                            }
+                            Text("Confirm & Submit")
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(isConfirming || !isValid)
+                }
             }
         }
         .padding()

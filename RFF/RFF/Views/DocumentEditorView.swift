@@ -16,7 +16,7 @@ struct DocumentEditorView: View {
     var body: some View {
         NavigationSplitView {
             // Sidebar with document info
-            DocumentInfoSidebar(document: $document.data)
+            DocumentInfoSidebar(document: $document.data, isReadOnly: document.data.isReadOnly)
                 .frame(minWidth: 250)
         } detail: {
             // Main content with table view
@@ -25,13 +25,14 @@ struct DocumentEditorView: View {
                 LineItemsTableView(
                     lineItems: $document.data.lineItems,
                     selection: $selectedLineItems,
-                    currency: document.data.currency
+                    currency: document.data.currency,
+                    isReadOnly: document.data.isReadOnly
                 )
 
                 Divider()
 
                 // Bottom bar with totals and actions
-                BottomBar(document: $document.data, selectedCount: selectedLineItems.count) {
+                BottomBar(document: $document.data, selectedCount: selectedLineItems.count, isReadOnly: document.data.isReadOnly) {
                     deleteSelectedItems()
                 }
             }
@@ -43,14 +44,16 @@ struct DocumentEditorView: View {
                 } label: {
                     Label("Add Line Item", systemImage: "plus")
                 }
-                .help("Add a new line item to this document")
+                .disabled(document.data.isReadOnly)
+                .help(document.data.isReadOnly ? "Document is locked" : "Add a new line item to this document")
 
                 Button {
                     isImporting = true
                 } label: {
                     Label("Import PDF", systemImage: "doc.badge.plus")
                 }
-                .help("Import a PDF file to extract text and data from")
+                .disabled(document.data.isReadOnly)
+                .help(document.data.isReadOnly ? "Document is locked" : "Import a PDF file to extract text and data from")
 
                 Button {
                     performAIAnalysis()
@@ -62,8 +65,8 @@ struct DocumentEditorView: View {
                         Label("AI Analyze", systemImage: "sparkles")
                     }
                 }
-                .disabled(isAnalyzingWithAI || (document.data.extractedText ?? "").isEmpty)
-                .help("Use AI to analyze the document and extract fields automatically")
+                .disabled(document.data.isReadOnly || isAnalyzingWithAI || (document.data.extractedText ?? "").isEmpty)
+                .help(document.data.isReadOnly ? "Document is locked" : "Use AI to analyze the document and extract fields automatically")
             }
         }
         .sheet(isPresented: $showingAddLineItem) {
@@ -86,7 +89,7 @@ struct DocumentEditorView: View {
             handleFileImport(result)
         }
         .dropDestination(for: RFFDocumentData.self) { items, _ in
-            guard let first = items.first else { return false }
+            guard !document.data.isReadOnly, let first = items.first else { return false }
             document.data = first
             return true
         }
@@ -205,6 +208,7 @@ struct DocumentEditorView: View {
 
 struct DocumentInfoSidebar: View {
     @Binding var document: RFFDocumentData
+    let isReadOnly: Bool
 
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -215,9 +219,18 @@ struct DocumentInfoSidebar: View {
 
     var body: some View {
         Form {
+            if isReadOnly {
+                Section {
+                    Label("This document is locked", systemImage: "lock.fill")
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             Section("Document") {
                 TextField("Title", text: $document.title)
+                    .disabled(isReadOnly)
                 TextField("Organization", text: $document.requestingOrganization)
+                    .disabled(isReadOnly)
             }
 
             Section("Financial") {
@@ -226,6 +239,7 @@ struct DocumentInfoSidebar: View {
                         Text("\(currency.symbol) \(currency.displayName)").tag(currency)
                     }
                 }
+                .disabled(isReadOnly)
 
                 HStack {
                     Text("Amount")
@@ -233,6 +247,7 @@ struct DocumentInfoSidebar: View {
                     TextField("Amount", value: $document.amount, format: .currency(code: document.currency.currencyCode))
                         .multilineTextAlignment(.trailing)
                         .frame(width: 120)
+                        .disabled(isReadOnly)
                 }
 
                 HStack {
@@ -245,6 +260,7 @@ struct DocumentInfoSidebar: View {
 
             Section("Timeline") {
                 DatePicker("Due Date", selection: $document.dueDate, displayedComponents: [.date])
+                    .disabled(isReadOnly)
 
                 LabeledContent("Status") {
                     Picker("", selection: $document.status) {
@@ -293,6 +309,7 @@ struct DocumentInfoSidebar: View {
                     set: { document.notes = $0.isEmpty ? nil : $0 }
                 ))
                 .frame(minHeight: 100)
+                .disabled(isReadOnly)
             }
         }
         .formStyle(.grouped)
@@ -305,6 +322,7 @@ struct LineItemsTableView: View {
     @Binding var lineItems: [RFFDocumentData.LineItemData]
     @Binding var selection: Set<RFFDocumentData.LineItemData.ID>
     let currency: Currency
+    let isReadOnly: Bool
 
     var body: some View {
         Table(lineItems, selection: $selection) {
@@ -339,7 +357,7 @@ struct LineItemsTableView: View {
             .width(100)
         }
         .contextMenu(forSelectionType: RFFDocumentData.LineItemData.ID.self) { ids in
-            if !ids.isEmpty {
+            if !ids.isEmpty && !isReadOnly {
                 Button("Delete", role: .destructive) {
                     lineItems.removeAll { ids.contains($0.id) }
                     selection.subtract(ids)
@@ -354,11 +372,12 @@ struct LineItemsTableView: View {
 struct BottomBar: View {
     @Binding var document: RFFDocumentData
     let selectedCount: Int
+    let isReadOnly: Bool
     let onDelete: () -> Void
 
     var body: some View {
         HStack {
-            if selectedCount > 0 {
+            if selectedCount > 0 && !isReadOnly {
                 Text("\(selectedCount) selected")
                     .foregroundStyle(.secondary)
 
