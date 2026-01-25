@@ -112,36 +112,8 @@ struct ConfirmationFormView: View {
         .onAppear {
             initializeFields()
         }
-        // Re-sync local state when document changes externally (e.g., from AI analysis)
-        .onChange(of: document.requestingOrganization) { oldValue, newValue in
-            // Only update if the change came from outside (not from our own editing)
-            if editingOrganization == oldValue && newValue != oldValue {
-                editingOrganization = newValue
-                originalOrganization = newValue
-                organizationSource = .extracted
-            }
-        }
-        .onChange(of: document.amount) { oldValue, newValue in
-            if editingAmount == oldValue && newValue != oldValue {
-                editingAmount = newValue
-                originalAmount = newValue
-                amountSource = .extracted
-            }
-        }
-        .onChange(of: document.currency) { oldValue, newValue in
-            if editingCurrency == oldValue && newValue != oldValue {
-                editingCurrency = newValue
-                originalCurrency = newValue
-                currencySource = .extracted
-            }
-        }
-        .onChange(of: document.dueDate) { oldValue, newValue in
-            let calendar = Calendar.current
-            if calendar.isDate(editingDueDate, inSameDayAs: oldValue) && !calendar.isDate(newValue, inSameDayAs: oldValue) {
-                editingDueDate = newValue
-                originalDueDate = newValue
-                dueDateSource = .extracted
-            }
+        .onChange(of: document.id) { _, _ in
+            initializeFields()
         }
         .alert("Confirm Document", isPresented: $showingConfirmation) {
             Button("Cancel", role: .cancel) { }
