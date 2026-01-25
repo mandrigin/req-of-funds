@@ -3,8 +3,8 @@ import AppKit
 
 /// Identifiers for table columns that can be shown/hidden
 enum LibraryColumn: String, CaseIterable, Identifiable {
-    case organization = "Organization"
     case recipient = "Recipient"
+    case from = "From"
     case amount = "Amount"
     case currency = "Currency"
     case dueDate = "Due Date"
