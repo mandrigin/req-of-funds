@@ -557,6 +557,7 @@ struct ContentView: View {
                 }
             }
         }
+        .frame(minWidth: 900, maxWidth: 1400, minHeight: 500)
     }
 
     private func handlePDFImport(_ result: Result<[URL], Error>) {
@@ -1453,7 +1454,7 @@ struct DocumentDetailView: View {
         .sheet(isPresented: $showingSchemaEditor) {
             if let path = document.documentPath {
                 SchemaEditorView(documentURL: URL(fileURLWithPath: path))
-                    .frame(minWidth: 1000, minHeight: 700)
+                    .frame(minWidth: 850, minHeight: 600)
             }
         }
         .sheet(isPresented: $showingSchemaExtractionResults) {

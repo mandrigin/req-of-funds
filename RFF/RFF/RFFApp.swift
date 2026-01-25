@@ -34,6 +34,8 @@ struct RFFApp: App {
                 }
         }
         .modelContainer(sharedModelContainer)
+        .defaultSize(width: 1100, height: 700)
+        .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(after: .newItem) {
                 Button("Open Library") {
