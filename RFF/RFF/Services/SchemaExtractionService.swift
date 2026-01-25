@@ -220,7 +220,7 @@ actor SchemaExtractionService {
             switch field.fieldType {
             case .vendor:
                 document.requestingOrganization = field.value
-            case .customerName:
+            case .recipient, .customerName:
                 document.recipient = field.value
             case .total:
                 if let amount = parseAmount(field.value) {

@@ -60,8 +60,8 @@ struct AIFieldSuggestion: Identifiable, Codable, Sendable {
         }
         // Handle aliases
         switch fieldType.lowercased() {
-        case "recipient", "recipient_name", "buyer", "buyer_name", "bill_to":
-            return .customerName
+        case "recipient_name", "buyer", "buyer_name", "bill_to", "customer_name", "customer":
+            return .recipient
         case "seller", "seller_name", "from":
             return .vendor
         default:
@@ -383,7 +383,7 @@ actor AIAnalysisService {
         {
             "suggestions": [
                 {
-                    "fieldType": "invoice_number|invoice_date|due_date|vendor|customer_name|subtotal|tax|total|currency|po_number",
+                    "fieldType": "invoice_number|invoice_date|due_date|vendor|recipient|subtotal|tax|total|currency|po_number",
                     "value": "extracted value",
                     "confidence": 0.0-1.0,
                     "reasoning": "brief explanation"
@@ -399,7 +399,7 @@ actor AIAnalysisService {
         - Invoice date (invoice_date) - format as ISO 8601 (YYYY-MM-DD)
         - Due date (due_date) - format as ISO 8601 (YYYY-MM-DD)
         - Vendor/seller name (vendor)
-        - Recipient/buyer name (customer_name)
+        - Recipient/buyer name (recipient)
         - Subtotal before tax (subtotal) - numeric value only
         - Tax amount (tax) - numeric value only
         - Total amount (total) - numeric value only. Look for synonyms: "Balance Due", "Amount Due", "Grand Total", "Total Due" all refer to the total

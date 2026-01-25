@@ -604,6 +604,8 @@ struct AIAnalysisResultSheet: View {
         switch suggestion.fieldType {
         case "vendor":
             document.requestingOrganization = suggestion.value
+        case "recipient", "customer_name":
+            document.recipient = suggestion.value
         case "total":
             if let amount = Decimal(string: suggestion.value) {
                 document.amount = amount
@@ -707,7 +709,7 @@ struct AISuggestionRow: View {
         case "invoice_date": return "Invoice Date"
         case "due_date": return "Due Date"
         case "vendor": return "Vendor"
-        case "customer_name": return "Recipient"
+        case "recipient", "customer_name": return "Recipient"
         case "subtotal": return "Subtotal"
         case "tax": return "Tax"
         case "total": return "Total"
