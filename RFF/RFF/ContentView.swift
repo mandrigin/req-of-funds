@@ -97,6 +97,14 @@ struct ContentView: View {
     // Text entry state
     @State private var showingTextEntry = false
 
+    // Library AI Analysis state (for context menu)
+    @State private var isAnalyzingFromLibrary = false
+    @State private var showingLibraryAIResults = false
+    @State private var libraryAIAnalysisResult: AIAnalysisResult?
+    @State private var libraryAITargetDocument: RFFDocument?
+    @State private var libraryAIErrorMessage: String?
+    @State private var showingLibraryAIError = false
+
     // Paste preview state
     @State private var showingPastePreview = false
     @State private var pastedImageData: Data?
@@ -277,6 +285,24 @@ struct ContentView: View {
             }
             .contextMenu(forSelectionType: RFFDocument.ID.self) { ids in
                 if !ids.isEmpty {
+                    // AI Analyze - only for single document selection
+                    if ids.count == 1, let id = ids.first,
+                       let doc = documents.first(where: { $0.id == id }),
+                       !(doc.extractedText ?? "").isEmpty {
+                        Button {
+                            performLibraryAIAnalysis(documentId: id)
+                        } label: {
+                            if isAnalyzingFromLibrary {
+                                Label("Analyzing...", systemImage: "sparkles")
+                            } else {
+                                Label("AI Analyze", systemImage: "sparkles")
+                            }
+                        }
+                        .disabled(isAnalyzingFromLibrary)
+                    }
+
+                    Divider()
+
                     Button(role: .destructive) {
                         deleteDocuments(ids: ids)
                     } label: {
@@ -438,6 +464,21 @@ struct ContentView: View {
                     )
                 }
             }
+        }
+        .sheet(isPresented: $showingLibraryAIResults) {
+            if let result = libraryAIAnalysisResult,
+               let document = libraryAITargetDocument {
+                LibraryAIAnalysisResultSheet(
+                    result: result,
+                    document: document,
+                    onDismiss: { showingLibraryAIResults = false }
+                )
+            }
+        }
+        .alert("AI Analysis Error", isPresented: $showingLibraryAIError) {
+            Button("OK") { }
+        } message: {
+            Text(libraryAIErrorMessage ?? "Unknown error")
         }
     }
 
@@ -681,6 +722,37 @@ struct ContentView: View {
             }
             selectedDocuments.removeAll()
             selectedDocument = nil
+        }
+    }
+
+    // MARK: - Library AI Analysis
+
+    private func performLibraryAIAnalysis(documentId: RFFDocument.ID) {
+        guard let document = documents.first(where: { $0.id == documentId }) else { return }
+        guard let extractedText = document.extractedText, !extractedText.isEmpty else {
+            libraryAIErrorMessage = "No extracted text available. Import a document first."
+            showingLibraryAIError = true
+            return
+        }
+
+        isAnalyzingFromLibrary = true
+        libraryAITargetDocument = document
+
+        Task {
+            do {
+                let result = try await AIAnalysisService.shared.analyzeDocument(text: extractedText)
+                await MainActor.run {
+                    libraryAIAnalysisResult = result
+                    showingLibraryAIResults = true
+                    isAnalyzingFromLibrary = false
+                }
+            } catch {
+                await MainActor.run {
+                    libraryAIErrorMessage = error.localizedDescription
+                    showingLibraryAIError = true
+                    isAnalyzingFromLibrary = false
+                }
+            }
         }
     }
 
