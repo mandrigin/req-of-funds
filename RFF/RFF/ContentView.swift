@@ -26,6 +26,24 @@ enum CurrencyFilter: Hashable {
     }
 }
 
+/// Grouping options for document list
+enum DocumentGrouping: String, CaseIterable {
+    case none = "None"
+    case byRecipient = "Recipient"
+    case byMonth = "Month"
+
+    var icon: String {
+        switch self {
+        case .none:
+            return "list.bullet"
+        case .byRecipient:
+            return "building.2"
+        case .byMonth:
+            return "calendar"
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
 
@@ -49,6 +67,7 @@ struct ContentView: View {
 
     @State private var selectedFilter: DocumentFilter = .inbox
     @State private var selectedCurrencyFilter: CurrencyFilter = .all
+    @State private var selectedGrouping: DocumentGrouping = .none
 
     /// Documents to display based on current filters
     private var documents: [RFFDocument] {
@@ -85,6 +104,30 @@ struct ContentView: View {
         let currencies = Set(statusFiltered.map { $0.currency })
         return Currency.allCases.filter { currencies.contains($0) }
     }
+
+    /// Documents grouped by recipient (organization)
+    private var documentsByRecipient: [(key: String, documents: [RFFDocument])] {
+        let grouped = Dictionary(grouping: documents) { $0.requestingOrganization }
+        return grouped.map { (key: $0.key, documents: $0.value) }
+            .sorted { $0.key.localizedCaseInsensitiveCompare($1.key) == .orderedAscending }
+    }
+
+    /// Documents grouped by month (based on due date)
+    private var documentsByMonth: [(key: String, date: Date, documents: [RFFDocument])] {
+        let calendar = Calendar.current
+        let grouped = Dictionary(grouping: documents) { doc -> DateComponents in
+            calendar.dateComponents([.year, .month], from: doc.dueDate)
+        }
+        return grouped.map { components, docs -> (key: String, date: Date, documents: [RFFDocument]) in
+            let date = calendar.date(from: components) ?? Date()
+            let formatter = DateFormatter()
+            formatter.dateFormat = "MMMM yyyy"
+            let key = formatter.string(from: date)
+            return (key: key, date: date, documents: docs)
+        }
+        .sorted { $0.date > $1.date } // Most recent first
+    }
+
     @State private var isImportingPDF = false
     @State private var importError: String?
     @State private var showingImportError = false
@@ -199,13 +242,167 @@ struct ContentView: View {
                         Label(currencyFilterLabel, systemImage: "dollarsign.circle")
                     }
 
+                    // Grouping menu
+                    Menu {
+                        ForEach(DocumentGrouping.allCases, id: \.self) { grouping in
+                            Button {
+                                selectedGrouping = grouping
+                            } label: {
+                                if selectedGrouping == grouping {
+                                    Label(grouping.rawValue, systemImage: "checkmark")
+                                } else {
+                                    Text(grouping.rawValue)
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(
+                            selectedGrouping == .none ? "Group" : selectedGrouping.rawValue,
+                            systemImage: selectedGrouping.icon
+                        )
+                    }
+
                     Spacer()
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
 
-                // Table view with columns
-                Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
+                // Document list - grouped or flat table
+                if selectedGrouping == .none {
+                    // Flat table view
+                    documentTable
+                } else {
+                    // Grouped list view
+                    groupedDocumentList
+                }
+
+                // Totals bar at bottom
+                if !documents.isEmpty {
+                    Divider()
+                    HStack {
+                        Text(totalsDisplayText)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text("\(documentsForTotals.count) of \(documents.count) documents")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    .background(.bar)
+                }
+            }
+            .navigationTitle("Library")
+        } detail: {
+            if let document = selectedDocument {
+                DocumentDetailView(document: document)
+            } else {
+                ContentUnavailableView(
+                    "No Document Selected",
+                    systemImage: "doc.text",
+                    description: Text("Select a document from the library to view details")
+                )
+            }
+        }
+        .fileImporter(
+            isPresented: $isImportingPDF,
+            allowedContentTypes: [.pdf],
+            allowsMultipleSelection: false
+        ) { result in
+            handlePDFImport(result)
+        }
+        .alert("Import Error", isPresented: $showingImportError) {
+            Button("OK") { }
+        } message: {
+            Text(importError ?? "Unknown error")
+        }
+        .onPasteCommand(of: [.png, .jpeg, .tiff]) { providers in
+            handleImagePaste(providers: providers)
+        }
+        .overlay {
+            if isProcessingPaste {
+                ZStack {
+                    Color.black.opacity(0.3)
+                    VStack(spacing: 12) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                        Text("Processing pasted image...")
+                            .font(.headline)
+                    }
+                    .padding(24)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .openLibrary)) { _ in
+            // Bring the library window to front when notification is received
+            if let window = NSApp.windows.first(where: { $0.title == "RFF Library" }) {
+                window.makeKeyAndOrderFront(nil)
+                NSApp.activate(ignoringOtherApps: true)
+            }
+        }
+        .sheet(isPresented: $showingPastePreview) {
+            if let imageData = pastedImageData,
+               let ocrResult = pastedOCRResult,
+               let extractedData = pastedExtractedData,
+               let entities = pastedEntities {
+                PastePreviewSheet(
+                    imageData: imageData,
+                    ocrResult: ocrResult,
+                    extractedData: extractedData,
+                    entities: entities
+                ) { confirmedEntities in
+                    // Create document with confirmed data
+                    let newDocument = RFFDocument(
+                        title: confirmedEntities.organizationName ?? "Pasted Document",
+                        requestingOrganization: confirmedEntities.organizationName ?? "Unknown",
+                        amount: confirmedEntities.amount ?? Decimal.zero,
+                        currency: confirmedEntities.currency ?? .usd,
+                        dueDate: confirmedEntities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
+                        extractedText: ocrResult.fullText
+                    )
+                    modelContext.insert(newDocument)
+
+                    // Schedule notification
+                    Task {
+                        try? await NotificationService.shared.scheduleDeadlineNotification(
+                            documentId: newDocument.id,
+                            title: newDocument.title,
+                            organization: newDocument.requestingOrganization,
+                            dueDate: newDocument.dueDate
+                        )
+                    }
+
+                    // Clear paste state
+                    pastedImageData = nil
+                    pastedOCRResult = nil
+                    pastedExtractedData = nil
+                    pastedEntities = nil
+                }
+            }
+        }
+        .sheet(isPresented: $showingTextEntry) {
+            TextEntrySheet { document in
+                modelContext.insert(document)
+
+                // Schedule deadline notification
+                Task {
+                    try? await NotificationService.shared.scheduleDeadlineNotification(
+                        documentId: document.id,
+                        title: document.title,
+                        organization: document.requestingOrganization,
+                        dueDate: document.dueDate
+                    )
+                }
+            }
+        }
+    }
+
+    /// Flat table view for documents (no grouping)
+    @ViewBuilder
+    private var documentTable: some View {
+        Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
                 TableColumn("Organization", value: \.requestingOrganization) { document in
                     Text(document.requestingOrganization)
                 }
@@ -349,126 +546,123 @@ struct ContentView: View {
                     }
                 }
             }
+    }
 
-                // Totals bar at bottom
-                if !documents.isEmpty {
-                    Divider()
-                    HStack {
-                        Text(totalsDisplayText)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text("\(documentsForTotals.count) of \(documents.count) documents")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+    /// Grouped document list view (by recipient or month)
+    @ViewBuilder
+    private var groupedDocumentList: some View {
+        List(selection: $selectedDocuments) {
+            switch selectedGrouping {
+            case .none:
+                // Should not happen, but handle it
+                EmptyView()
+
+            case .byRecipient:
+                ForEach(documentsByRecipient, id: \.key) { group in
+                    Section {
+                        ForEach(group.documents) { document in
+                            DocumentRowView(document: document)
+                                .tag(document.id)
+                        }
+                    } header: {
+                        HStack {
+                            Image(systemName: "building.2")
+                            Text(group.key)
+                                .font(.headline)
+                            Spacer()
+                            Text("\(group.documents.count)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    .background(.bar)
+                }
+
+            case .byMonth:
+                ForEach(documentsByMonth, id: \.key) { group in
+                    Section {
+                        ForEach(group.documents) { document in
+                            DocumentRowView(document: document)
+                                .tag(document.id)
+                        }
+                    } header: {
+                        HStack {
+                            Image(systemName: "calendar")
+                            Text(group.key)
+                                .font(.headline)
+                            Spacer()
+                            Text("\(group.documents.count)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
             }
-        } detail: {
-            if let document = selectedDocument {
-                DocumentDetailView(document: document)
+        }
+        .listStyle(.sidebar)
+        .onChange(of: selectedDocuments) { _, newSelection in
+            if let first = newSelection.first {
+                selectedDocument = documents.first { $0.id == first }
             } else {
-                ContentUnavailableView(
-                    "No Document Selected",
-                    systemImage: "doc.text",
-                    description: Text("Select a document from the library to view details")
-                )
+                selectedDocument = nil
             }
         }
-        .fileImporter(
-            isPresented: $isImportingPDF,
-            allowedContentTypes: [.pdf],
-            allowsMultipleSelection: false
-        ) { result in
-            handlePDFImport(result)
-        }
-        .alert("Import Error", isPresented: $showingImportError) {
-            Button("OK") { }
-        } message: {
-            Text(importError ?? "Unknown error")
-        }
-        .onPasteCommand(of: [.png, .jpeg, .tiff]) { providers in
-            handleImagePaste(providers: providers)
+        .onDrop(of: [.pdf, .image], isTargeted: nil) { providers in
+            handleFileDrop(providers: providers)
+            return true
         }
         .overlay {
-            if isProcessingPaste {
+            if isProcessingDrop {
                 ZStack {
                     Color.black.opacity(0.3)
                     VStack(spacing: 12) {
                         ProgressView()
                             .scaleEffect(1.5)
-                        Text("Processing pasted image...")
-                            .font(.headline)
+                        if dropProcessingTotal > 1 {
+                            Text("Processing \(dropProcessingCount) of \(dropProcessingTotal) files...")
+                                .font(.headline)
+                        } else {
+                            Text("Processing invoice...")
+                                .font(.headline)
+                        }
                     }
                     .padding(24)
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .openLibrary)) { _ in
-            // Bring the library window to front when notification is received
-            if let window = NSApp.windows.first(where: { $0.title == "RFF Library" }) {
-                window.makeKeyAndOrderFront(nil)
-                NSApp.activate(ignoringOtherApps: true)
-            }
-        }
-        .sheet(isPresented: $showingPastePreview) {
-            if let imageData = pastedImageData,
-               let ocrResult = pastedOCRResult,
-               let extractedData = pastedExtractedData,
-               let entities = pastedEntities {
-                PastePreviewSheet(
-                    imageData: imageData,
-                    ocrResult: ocrResult,
-                    extractedData: extractedData,
-                    entities: entities
-                ) { confirmedEntities in
-                    // Create document with confirmed data
-                    withAnimation {
-                        let newDocument = RFFDocument(
-                            title: generateTitle(from: confirmedEntities),
-                            requestingOrganization: confirmedEntities.organizationName ?? "Unknown",
-                            amount: confirmedEntities.amount ?? Decimal(0),
-                            currency: confirmedEntities.currency ?? .usd,
-                            dueDate: confirmedEntities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
-                            extractedText: ocrResult.fullText
-                        )
-                        modelContext.insert(newDocument)
-
-                        // Schedule deadline notification
-                        Task {
-                            try? await NotificationService.shared.scheduleDeadlineNotification(
-                                documentId: newDocument.id,
-                                title: newDocument.title,
-                                organization: newDocument.requestingOrganization,
-                                dueDate: newDocument.dueDate
-                            )
-                        }
-                    }
-
-                    // Clear paste state
-                    pastedImageData = nil
-                    pastedOCRResult = nil
-                    pastedExtractedData = nil
-                    pastedEntities = nil
+            } else if documents.isEmpty {
+                ContentUnavailableView {
+                    Label(
+                        emptyStateTitle,
+                        systemImage: emptyStateIcon
+                    )
+                } description: {
+                    Text(emptyStateDescription)
                 }
             }
         }
-        .sheet(isPresented: $showingTextEntry) {
-            TextEntrySheet { document in
-                modelContext.insert(document)
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button(action: { isImportingPDF = true }) {
+                    Label("Import PDF", systemImage: "doc.badge.plus")
+                }
+                .help("Import an invoice or document from a PDF file")
+                Button(action: { showingTextEntry = true }) {
+                    Label("Enter Text", systemImage: "text.badge.plus")
+                }
+                .help("Manually enter document details as text")
+                Button(action: addDocument) {
+                    Label("Add Document", systemImage: "plus")
+                }
+                .help("Create a new blank document")
+            }
 
-                // Schedule deadline notification
-                Task {
-                    try? await NotificationService.shared.scheduleDeadlineNotification(
-                        documentId: document.id,
-                        title: document.title,
-                        organization: document.requestingOrganization,
-                        dueDate: document.dueDate
-                    )
+            ToolbarItemGroup(placement: .secondaryAction) {
+                if !selectedDocuments.isEmpty {
+                    Button(role: .destructive) {
+                        deleteDocuments(ids: selectedDocuments)
+                    } label: {
+                        Label("Delete Selected", systemImage: "trash")
+                    }
+                    .help("Delete the selected documents")
                 }
             }
         }
@@ -939,6 +1133,37 @@ struct StatusBadge: View {
         case .paid:
             return .orange
         }
+    }
+}
+
+// MARK: - Document Row View (for grouped lists)
+
+struct DocumentRowView: View {
+    let document: RFFDocument
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(document.requestingOrganization)
+                    .font(.headline)
+                HStack(spacing: 8) {
+                    Text(document.amount, format: .currency(code: document.currency.currencyCode))
+                        .font(.subheadline)
+                        .monospacedDigit()
+                    Text(document.dueDate, format: .dateTime.month().day().year())
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if document.dueDate < Date() && document.status != .completed && document.status != .paid {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.red)
+                            .font(.caption)
+                    }
+                }
+            }
+            Spacer()
+            StatusBadge(status: document.status)
+        }
+        .padding(.vertical, 4)
     }
 }
 
