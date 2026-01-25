@@ -304,21 +304,29 @@ struct ContentView: View {
             }
             .contextMenu(forSelectionType: RFFDocument.ID.self) { ids in
                 if !ids.isEmpty {
-                    // AI Analyze button - works with single or multiple documents
+                    // AI Analyze buttons - works with single or multiple documents
                     let selectedDocs = documents.filter { ids.contains($0.id) }
                     let docsWithText = selectedDocs.filter { !($0.extractedText ?? "").isEmpty }
                     let anyAnalyzing = selectedDocs.contains { AIAnalysisProgressManager.shared.isAnalyzing(documentId: $0.id) }
+                    let countSuffix = ids.count > 1 ? " (\(docsWithText.count))" : ""
 
+                    // Cloud AI option (uses configured provider: Claude Code, Anthropic, or OpenAI)
                     Button {
                         performBatchAIAnalysis(documentIds: ids)
                     } label: {
-                        if ids.count == 1 {
-                            Label("AI Analyze", systemImage: "sparkles")
-                        } else {
-                            Label("AI Analyze (\(docsWithText.count))", systemImage: "sparkles")
-                        }
+                        Label("Analyze with Claude\(countSuffix)", systemImage: "cloud")
                     }
                     .disabled(docsWithText.isEmpty || anyAnalyzing)
+
+                    // On-Device AI option (Apple Foundation Models, macOS 26+)
+                    if #available(macOS 26, *) {
+                        Button {
+                            performBatchAIAnalysis(documentIds: ids, provider: .foundation)
+                        } label: {
+                            Label("Analyze On-Device\(countSuffix)", systemImage: "desktopcomputer")
+                        }
+                        .disabled(docsWithText.isEmpty || anyAnalyzing)
+                    }
 
                     Divider()
 
@@ -811,7 +819,7 @@ struct ContentView: View {
 
     // MARK: - Batch AI Analysis
 
-    private func performBatchAIAnalysis(documentIds: Set<RFFDocument.ID>) {
+    private func performBatchAIAnalysis(documentIds: Set<RFFDocument.ID>, provider: AIProvider? = nil) {
         // Get documents with extracted text
         let docsToAnalyze = documents.filter { doc in
             documentIds.contains(doc.id) && !(doc.extractedText ?? "").isEmpty
@@ -826,7 +834,7 @@ struct ContentView: View {
         }
 
         Task {
-            await AIAnalysisProgressManager.shared.startBatchAnalysis(documents: docData)
+            await AIAnalysisProgressManager.shared.startBatchAnalysis(documents: docData, provider: provider)
         }
     }
 
@@ -1159,6 +1167,7 @@ struct DocumentDetailView: View {
                     Section("AI Analysis") {
                         let isAnalyzing = AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id)
 
+                        // Cloud AI option (uses configured provider: Claude Code, Anthropic, or OpenAI)
                         Button {
                             Task {
                                 await AIAnalysisProgressManager.shared.startAnalysis(
@@ -1173,11 +1182,35 @@ struct DocumentDetailView: View {
                                         .controlSize(.small)
                                     Text("Analyzing...")
                                 } else {
-                                    Label("AI Analyze", systemImage: "sparkles")
+                                    Label("Analyze with Claude", systemImage: "cloud")
                                 }
                             }
                         }
                         .disabled(isAnalyzing)
+
+                        // On-Device AI option (Apple Foundation Models, macOS 26+)
+                        if #available(macOS 26, *) {
+                            Button {
+                                Task {
+                                    await AIAnalysisProgressManager.shared.startAnalysis(
+                                        documentId: document.id,
+                                        text: document.extractedText ?? "",
+                                        provider: .foundation
+                                    )
+                                }
+                            } label: {
+                                HStack {
+                                    if isAnalyzing {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                        Text("Analyzing...")
+                                    } else {
+                                        Label("Analyze On-Device", systemImage: "desktopcomputer")
+                                    }
+                                }
+                            }
+                            .disabled(isAnalyzing)
+                        }
                     }
                 }
 
@@ -1289,8 +1322,21 @@ struct DocumentDetailView: View {
                                     Divider()
                                         .frame(height: 20)
 
-                                    Button {
-                                        performAIAnalysis()
+                                    // AI Analysis menu with Cloud and On-Device options
+                                    Menu {
+                                        Button {
+                                            performAIAnalysis()
+                                        } label: {
+                                            Label("Analyze with Claude", systemImage: "cloud")
+                                        }
+
+                                        if #available(macOS 26, *) {
+                                            Button {
+                                                performAIAnalysis(using: .foundation)
+                                            } label: {
+                                                Label("Analyze On-Device", systemImage: "desktopcomputer")
+                                            }
+                                        }
                                     } label: {
                                         if AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) {
                                             ProgressView()
@@ -1682,6 +1728,10 @@ struct DocumentDetailView: View {
     }
 
     private func performAIAnalysis() {
+        performAIAnalysis(using: nil)
+    }
+
+    private func performAIAnalysis(using provider: AIProvider?) {
         guard let extractedText = document.extractedText, !extractedText.isEmpty else {
             aiErrorMessage = "No extracted text available. Import a document first."
             showingAIError = true
@@ -1691,7 +1741,8 @@ struct DocumentDetailView: View {
         Task {
             await AIAnalysisProgressManager.shared.startAnalysis(
                 documentId: document.id,
-                text: extractedText
+                text: extractedText,
+                provider: provider
             )
         }
     }
