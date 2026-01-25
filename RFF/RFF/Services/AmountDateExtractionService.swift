@@ -126,6 +126,22 @@ actor AmountDateExtractionService {
             }
         }
 
+        // CHF patterns (Swiss Franc)
+        // Swiss format uses apostrophe as thousands separator: 1'234.56
+        // Some OCR outputs use spaces: 2 605.25
+        let chfPatterns = [
+            #"CHF\s*[\d'\s.,]+\.\d{2}"#,           // CHF 1'234.56 or CHF 2 605.25
+            #"[\d'\s.,]+\.\d{2}\s*CHF"#,           // 1'234.56 CHF or 2 605.25 CHF
+            #"Fr\.\s*[\d'\s.,]+\.\d{2}"#,          // Fr. 1'234.56
+            #"SFr\.\s*[\d'\s.,]+\.\d{2}"#,         // SFr. 1'234.56
+            #"[\d'.,]+\.?\d*\s*(?:francs?|Franken)"# // 1'234.56 francs/Franken
+        ]
+        for pattern in chfPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .chf))
+            }
+        }
+
         return patterns
     }()
 
@@ -227,6 +243,9 @@ actor AmountDateExtractionService {
             .replacingOccurrences(of: "USD", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "EUR", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "GBP", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "CHF", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "SFr.", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "Fr.", with: "", options: .caseInsensitive)
             // Remove currency words
             .replacingOccurrences(of: "dollars", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "dollar", with: "", options: .caseInsensitive)
@@ -234,12 +253,20 @@ actor AmountDateExtractionService {
             .replacingOccurrences(of: "euro", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "pounds", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "pound", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "francs", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "franc", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "Franken", with: "", options: .caseInsensitive)
             // Remove whitespace
             .replacingOccurrences(of: " ", with: "")
             .trimmingCharacters(in: .whitespaces)
 
+        // Handle Swiss number format (1'234.56) - apostrophe as thousands separator
+        if currency == .chf {
+            cleaned = cleaned.replacingOccurrences(of: "'", with: "")
+            cleaned = cleaned.replacingOccurrences(of: ",", with: "")
+        }
         // Handle European number format (1.234,56) for EUR
-        if currency == .eur && cleaned.contains(",") {
+        else if currency == .eur && cleaned.contains(",") {
             // Check if it's European format: has comma as decimal separator
             // European: 1.234,56 -> 1234.56
             // American: 1,234.56 -> 1234.56
