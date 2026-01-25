@@ -39,21 +39,61 @@ enum AIProvider: String, CaseIterable, Codable {
     }
 }
 
-/// Suggested field from AI analysis
-struct AIFieldSuggestion: Identifiable, Codable, Sendable {
+/// A single option for an extracted field value
+struct AIFieldOption: Identifiable, Codable, Sendable, Hashable {
     let id: UUID
-    let fieldType: String
     let value: String
     let confidence: Double
     let reasoning: String?
 
-    init(id: UUID = UUID(), fieldType: String, value: String, confidence: Double, reasoning: String? = nil) {
+    init(id: UUID = UUID(), value: String, confidence: Double, reasoning: String? = nil) {
         self.id = id
-        self.fieldType = fieldType
         self.value = value
         self.confidence = confidence
         self.reasoning = reasoning
     }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    static func == (lhs: AIFieldOption, rhs: AIFieldOption) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
+/// Suggested field from AI analysis with up to 3 options
+struct AIFieldSuggestion: Identifiable, Codable, Sendable {
+    let id: UUID
+    let fieldType: String
+    /// Up to 3 options for this field, sorted by confidence (highest first)
+    let options: [AIFieldOption]
+
+    init(id: UUID = UUID(), fieldType: String, options: [AIFieldOption]) {
+        self.id = id
+        self.fieldType = fieldType
+        // Sort options by confidence descending and limit to 3
+        self.options = Array(options.sorted { $0.confidence > $1.confidence }.prefix(3))
+    }
+
+    /// Convenience initializer for single-value suggestions (backwards compatibility)
+    init(id: UUID = UUID(), fieldType: String, value: String, confidence: Double, reasoning: String? = nil) {
+        self.id = id
+        self.fieldType = fieldType
+        self.options = [AIFieldOption(value: value, confidence: confidence, reasoning: reasoning)]
+    }
+
+    /// Primary (highest confidence) value - for backwards compatibility
+    var value: String { options.first?.value ?? "" }
+
+    /// Primary (highest confidence) confidence score - for backwards compatibility
+    var confidence: Double { options.first?.confidence ?? 0 }
+
+    /// Primary (highest confidence) reasoning - for backwards compatibility
+    var reasoning: String? { options.first?.reasoning }
+
+    /// Whether this suggestion has multiple options to choose from
+    var hasAlternatives: Bool { options.count > 1 }
 
     /// Convert to InvoiceFieldType if valid
     /// Handles aliases for backwards compatibility
@@ -385,29 +425,42 @@ actor AIAnalysisService {
 
         ## STEP 1: Identify the key information
         Look for these fields in the invoice:
-        - Invoice number: Look for "Invoice #", "Invoice No.", "Inv:", "Bill #", or similar labels
-        - Invoice date: Look for "Invoice Date", "Date:", "Issued:", or the date near the invoice number
-        - Due date: Look for "Due Date", "Payment Due", "Due:", "Pay By:"
+        - Invoice number: Look for "Invoice #", "Invoice No.", "Inv:", "Bill #", "Rechnung Nr.", "Re.Nr." or similar labels
+        - Invoice date: Look for "Invoice Date", "Date:", "Issued:", "Datum:", "Rechnungsdatum:" or the date near the invoice number
+        - Due date: Look for "Due Date", "Payment Due", "Due:", "Pay By:", "Fällig:", "Zahlbar bis:"
         - Vendor: The company SENDING the invoice (usually at top, with logo)
-        - Recipient: The company/person RECEIVING the invoice (look for "Bill To:", "Ship To:", "Customer:")
-        - Amounts: Look for "Subtotal", "Tax", "VAT", "Total", "Amount Due", "Balance Due", "Grand Total"
-        - Currency: USD ($), EUR (€), GBP (£), or stated currency
-        - PO number: Look for "PO #", "Purchase Order", "P.O.:"
+        - Recipient: The company/person RECEIVING the invoice (look for "Bill To:", "Ship To:", "Customer:", "An:", "Empfänger:", "Rechnungsempfänger:")
+        - Amounts: Look for "Subtotal", "Tax", "VAT", "Total", "Amount Due", "Balance Due", "Grand Total", "Netto", "MwSt", "Brutto", "Gesamt", "Summe", "Endbetrag"
+        - Currency: USD ($), EUR (€), GBP (£), CHF, or stated currency
+        - PO number: Look for "PO #", "Purchase Order", "P.O.:", "Bestellnummer:", "Auftragsnummer:"
 
         ## STEP 2: Format the values
         - Dates: Convert to YYYY-MM-DD format
           * "January 15, 2024" → "2024-01-15"
           * "15/01/2024" (European) → "2024-01-15"
           * "01/15/2024" (US) → "2024-01-15"
+          * "15.01.2024" (German) → "2024-01-15"
         - Numbers: Extract numeric value only, no currency symbols
           * "$1,234.56" → "1234.56"
           * "€1.234,56" (European) → "1234.56"
+          * "CHF 1'234.56" (Swiss) → "1234.56"
         - Vendor/Recipient: Use the company name only, not the full address
 
-        ## STEP 3: Output JSON format
+        ## STEP 3: Output JSON format with OPTIONS
+        For each field, return up to 3 options when there is ambiguity:
+        - If you're highly confident (>0.9), you may return just one option
+        - If there are multiple plausible values, return 2-3 options with different confidence levels
+        - Order options by confidence (highest first)
+
         {
             "suggestions": [
-                {"fieldType": "field_name", "value": "extracted value", "confidence": 0.0-1.0, "reasoning": "why"}
+                {
+                    "fieldType": "field_name",
+                    "options": [
+                        {"value": "primary value", "confidence": 0.95, "reasoning": "why this is most likely"},
+                        {"value": "alternative", "confidence": 0.7, "reasoning": "why this might be correct"}
+                    ]
+                }
             ],
             "schemaName": "Vendor Name Invoice",
             "summary": "one-line summary",
@@ -416,7 +469,7 @@ actor AIAnalysisService {
 
         Valid fieldType values: invoice_number, invoice_date, due_date, vendor, recipient, subtotal, tax, total, currency, po_number
 
-        ## EXAMPLE 1:
+        ## EXAMPLE 1 (US format):
         Input text:
         '''
         ACME CORPORATION
@@ -441,54 +494,103 @@ actor AIAnalysisService {
         Output:
         {
             "suggestions": [
-                {"fieldType": "vendor", "value": "ACME CORPORATION", "confidence": 0.95, "reasoning": "Company name at top of invoice"},
-                {"fieldType": "invoice_number", "value": "INV-2024-0042", "confidence": 0.95, "reasoning": "Labeled as Invoice #"},
-                {"fieldType": "invoice_date", "value": "2024-03-15", "confidence": 0.9, "reasoning": "Date field converted to ISO format"},
-                {"fieldType": "due_date", "value": "2024-04-14", "confidence": 0.9, "reasoning": "Due date converted to ISO format"},
-                {"fieldType": "recipient", "value": "Widget Co.", "confidence": 0.9, "reasoning": "Listed under Bill To"},
-                {"fieldType": "subtotal", "value": "800.00", "confidence": 0.9, "reasoning": "Labeled as Subtotal"},
-                {"fieldType": "tax", "value": "64.00", "confidence": 0.9, "reasoning": "Labeled as Tax (8%)"},
-                {"fieldType": "total", "value": "864.00", "confidence": 0.95, "reasoning": "Labeled as Total Due"},
-                {"fieldType": "currency", "value": "USD", "confidence": 0.9, "reasoning": "Dollar sign used"}
+                {"fieldType": "vendor", "options": [{"value": "ACME CORPORATION", "confidence": 0.95, "reasoning": "Company name at top of invoice"}]},
+                {"fieldType": "invoice_number", "options": [{"value": "INV-2024-0042", "confidence": 0.95, "reasoning": "Labeled as Invoice #"}]},
+                {"fieldType": "invoice_date", "options": [{"value": "2024-03-15", "confidence": 0.9, "reasoning": "Date field converted to ISO format"}]},
+                {"fieldType": "due_date", "options": [{"value": "2024-04-14", "confidence": 0.9, "reasoning": "Due date converted to ISO format"}]},
+                {"fieldType": "recipient", "options": [{"value": "Widget Co.", "confidence": 0.9, "reasoning": "Listed under Bill To"}]},
+                {"fieldType": "subtotal", "options": [{"value": "800.00", "confidence": 0.9, "reasoning": "Labeled as Subtotal"}]},
+                {"fieldType": "tax", "options": [{"value": "64.00", "confidence": 0.9, "reasoning": "Labeled as Tax (8%)"}]},
+                {"fieldType": "total", "options": [{"value": "864.00", "confidence": 0.95, "reasoning": "Labeled as Total Due"}]},
+                {"fieldType": "currency", "options": [{"value": "USD", "confidence": 0.9, "reasoning": "Dollar sign used"}]}
             ],
             "schemaName": "ACME Corporation Invoice",
             "summary": "Invoice for services and consulting from ACME Corporation",
             "notes": []
         }
 
-        ## EXAMPLE 2 (European format):
+        ## EXAMPLE 2 (German/DACH format with ambiguity):
         Input text:
         '''
         Müller GmbH
         Hauptstraße 1, 10115 Berlin
+        IBAN: DE89 3704 0044 0532 0130 00
+        USt-IdNr.: DE123456789
 
-        Rechnung Nr. 2024-123
-        Datum: 15.03.2024
+        RECHNUNG
+        Rechnung Nr.: RE-2024-00789
+        Rechnungsdatum: 15.03.2024
         Fällig: 30.03.2024
 
-        An: Schmidt AG
+        Rechnungsempfänger:
+        Schmidt AG
+        z.Hd. Herr Weber
+        Bahnhofstraße 42
+        80331 München
 
-        Beratung: €1.500,00
-        MwSt 19%: €285,00
-        Gesamt: €1.785,00
+        Beratungsleistungen März 2024
+        Nettobetrag: €1.500,00
+        MwSt. 19%: €285,00
+        Bruttobetrag: €1.785,00
+
+        Zahlbar per Überweisung
         '''
 
         Output:
         {
             "suggestions": [
-                {"fieldType": "vendor", "value": "Müller GmbH", "confidence": 0.95, "reasoning": "Company at top"},
-                {"fieldType": "invoice_number", "value": "2024-123", "confidence": 0.9, "reasoning": "Rechnung Nr. means Invoice No."},
-                {"fieldType": "invoice_date", "value": "2024-03-15", "confidence": 0.9, "reasoning": "European date format DD.MM.YYYY"},
-                {"fieldType": "due_date", "value": "2024-03-30", "confidence": 0.9, "reasoning": "Fällig means Due"},
-                {"fieldType": "recipient", "value": "Schmidt AG", "confidence": 0.85, "reasoning": "An: means To:"},
-                {"fieldType": "subtotal", "value": "1500.00", "confidence": 0.85, "reasoning": "Amount before tax"},
-                {"fieldType": "tax", "value": "285.00", "confidence": 0.9, "reasoning": "MwSt is German VAT"},
-                {"fieldType": "total", "value": "1785.00", "confidence": 0.95, "reasoning": "Gesamt means Total"},
-                {"fieldType": "currency", "value": "EUR", "confidence": 0.95, "reasoning": "Euro symbol used"}
+                {"fieldType": "vendor", "options": [{"value": "Müller GmbH", "confidence": 0.95, "reasoning": "Company at top with IBAN and VAT ID"}]},
+                {"fieldType": "invoice_number", "options": [{"value": "RE-2024-00789", "confidence": 0.95, "reasoning": "Rechnung Nr. is German for Invoice No."}]},
+                {"fieldType": "invoice_date", "options": [{"value": "2024-03-15", "confidence": 0.9, "reasoning": "Rechnungsdatum (invoice date) in DD.MM.YYYY format"}]},
+                {"fieldType": "due_date", "options": [{"value": "2024-03-30", "confidence": 0.9, "reasoning": "Fällig means Due"}]},
+                {"fieldType": "recipient", "options": [
+                    {"value": "Schmidt AG", "confidence": 0.9, "reasoning": "Main company under Rechnungsempfänger (invoice recipient)"},
+                    {"value": "Herr Weber", "confidence": 0.4, "reasoning": "Attention person (z.Hd.) but not the company"}
+                ]},
+                {"fieldType": "subtotal", "options": [{"value": "1500.00", "confidence": 0.9, "reasoning": "Nettobetrag (net amount) before VAT"}]},
+                {"fieldType": "tax", "options": [{"value": "285.00", "confidence": 0.95, "reasoning": "MwSt. is German VAT (Mehrwertsteuer)"}]},
+                {"fieldType": "total", "options": [{"value": "1785.00", "confidence": 0.95, "reasoning": "Bruttobetrag (gross amount) is total including VAT"}]},
+                {"fieldType": "currency", "options": [{"value": "EUR", "confidence": 0.95, "reasoning": "Euro symbol (€) used throughout"}]}
             ],
-            "schemaName": "Müller GmbH Invoice",
-            "summary": "German consulting invoice from Müller GmbH",
-            "notes": ["European number format converted (comma as decimal separator)"]
+            "schemaName": "Müller GmbH Rechnung",
+            "summary": "German consulting invoice from Müller GmbH to Schmidt AG",
+            "notes": ["European number format converted (comma as decimal separator)", "IBAN indicates German bank transfer payment"]
+        }
+
+        ## EXAMPLE 3 (Swiss format):
+        Input text:
+        '''
+        Helvetia Consulting AG
+        Bahnhofstrasse 10, 8001 Zürich
+        CHE-123.456.789 MWST
+
+        Rechnung Nr. 2024-456
+        Datum: 20.03.2024
+        Zahlbar bis: 20.04.2024
+
+        An: Alpine Solutions GmbH
+
+        IT-Beratung: CHF 2'500.00
+        MWST 8.1%: CHF 202.50
+        Total: CHF 2'702.50
+        '''
+
+        Output:
+        {
+            "suggestions": [
+                {"fieldType": "vendor", "options": [{"value": "Helvetia Consulting AG", "confidence": 0.95, "reasoning": "Company name with Swiss VAT number (CHE)"}]},
+                {"fieldType": "invoice_number", "options": [{"value": "2024-456", "confidence": 0.9, "reasoning": "Rechnung Nr."}]},
+                {"fieldType": "invoice_date", "options": [{"value": "2024-03-20", "confidence": 0.9, "reasoning": "Datum in DD.MM.YYYY format"}]},
+                {"fieldType": "due_date", "options": [{"value": "2024-04-20", "confidence": 0.9, "reasoning": "Zahlbar bis (payable until)"}]},
+                {"fieldType": "recipient", "options": [{"value": "Alpine Solutions GmbH", "confidence": 0.9, "reasoning": "Listed after An: (To:)"}]},
+                {"fieldType": "subtotal", "options": [{"value": "2500.00", "confidence": 0.85, "reasoning": "Amount before Swiss VAT (MWST)"}]},
+                {"fieldType": "tax", "options": [{"value": "202.50", "confidence": 0.95, "reasoning": "MWST is Swiss VAT at 8.1%"}]},
+                {"fieldType": "total", "options": [{"value": "2702.50", "confidence": 0.95, "reasoning": "Total amount"}]},
+                {"fieldType": "currency", "options": [{"value": "CHF", "confidence": 0.95, "reasoning": "Swiss Francs explicitly stated"}]}
+            ],
+            "schemaName": "Helvetia Consulting Rechnung",
+            "summary": "Swiss IT consulting invoice from Helvetia Consulting AG",
+            "notes": ["Swiss number format with apostrophe as thousands separator"]
         }
 
         ## NOW ANALYZE THIS INVOICE:
@@ -762,23 +864,51 @@ actor AIAnalysisService {
 
         if let suggestionsArray = json["suggestions"] as? [[String: Any]] {
             for item in suggestionsArray {
-                guard let fieldType = item["fieldType"] as? String,
-                      let value = item["value"] as? String else {
+                guard let fieldType = item["fieldType"] as? String else {
                     continue
                 }
 
-                let confidence = item["confidence"] as? Double ?? 0.5
-                let reasoning = item["reasoning"] as? String
+                // Try new format with options array first
+                if let optionsArray = item["options"] as? [[String: Any]] {
+                    var options: [AIFieldOption] = []
+                    for optionItem in optionsArray {
+                        guard let value = optionItem["value"] as? String else {
+                            continue
+                        }
+                        let confidence = optionItem["confidence"] as? Double ?? 0.5
+                        let reasoning = optionItem["reasoning"] as? String
 
-                // Post-process value based on field type
-                let normalizedValue = normalizeFieldValue(value, forFieldType: fieldType)
+                        // Post-process value based on field type
+                        let normalizedValue = normalizeFieldValue(value, forFieldType: fieldType)
 
-                suggestions.append(AIFieldSuggestion(
-                    fieldType: fieldType,
-                    value: normalizedValue,
-                    confidence: confidence,
-                    reasoning: reasoning
-                ))
+                        options.append(AIFieldOption(
+                            value: normalizedValue,
+                            confidence: confidence,
+                            reasoning: reasoning
+                        ))
+                    }
+                    if !options.isEmpty {
+                        suggestions.append(AIFieldSuggestion(
+                            fieldType: fieldType,
+                            options: options
+                        ))
+                    }
+                }
+                // Fall back to legacy single-value format for backwards compatibility
+                else if let value = item["value"] as? String {
+                    let confidence = item["confidence"] as? Double ?? 0.5
+                    let reasoning = item["reasoning"] as? String
+
+                    // Post-process value based on field type
+                    let normalizedValue = normalizeFieldValue(value, forFieldType: fieldType)
+
+                    suggestions.append(AIFieldSuggestion(
+                        fieldType: fieldType,
+                        value: normalizedValue,
+                        confidence: confidence,
+                        reasoning: reasoning
+                    ))
+                }
             }
         }
 
@@ -939,9 +1069,16 @@ extension AIAnalysisResult {
     static var preview: AIAnalysisResult {
         AIAnalysisResult(
             suggestions: [
-                AIFieldSuggestion(fieldType: "vendor", value: "Acme Corp", confidence: 0.95, reasoning: "Found at top of invoice"),
+                AIFieldSuggestion(fieldType: "vendor", options: [
+                    AIFieldOption(value: "Acme Corp", confidence: 0.95, reasoning: "Found at top of invoice"),
+                    AIFieldOption(value: "ACME Corporation", confidence: 0.7, reasoning: "Full legal name in footer")
+                ]),
                 AIFieldSuggestion(fieldType: "invoice_number", value: "INV-2024-001", confidence: 0.9, reasoning: "Standard invoice number format"),
-                AIFieldSuggestion(fieldType: "total", value: "1234.56", confidence: 0.85, reasoning: "Largest amount on invoice")
+                AIFieldSuggestion(fieldType: "total", options: [
+                    AIFieldOption(value: "1234.56", confidence: 0.85, reasoning: "Labeled 'Total Due'"),
+                    AIFieldOption(value: "1134.56", confidence: 0.6, reasoning: "Subtotal before tax"),
+                    AIFieldOption(value: "1334.56", confidence: 0.4, reasoning: "Grand total with shipping")
+                ])
             ],
             suggestedSchemaName: "Acme Corp Invoice",
             summary: "Invoice from Acme Corp for office supplies",
