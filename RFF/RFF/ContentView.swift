@@ -809,6 +809,9 @@ struct DocumentDetailView: View {
     @State private var showingPaidSheet = false
     @State private var selectedPaidDate = Date()
 
+    // Schema Editor state
+    @State private var showingSchemaEditor = false
+
     // AI Analysis state
     @State private var isAnalyzingWithAI = false
     @State private var showingAIResults = false
@@ -1055,6 +1058,14 @@ struct DocumentDetailView: View {
         .navigationTitle(document.title)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
+                if document.documentPath != nil {
+                    Button {
+                        showingSchemaEditor = true
+                    } label: {
+                        Label("Edit Schema", systemImage: "doc.text.magnifyingglass")
+                    }
+                }
+
                 if canConfirm {
                     Button {
                         showingConfirmationAlert = true
@@ -1115,6 +1126,12 @@ struct DocumentDetailView: View {
                     showingPaidSheet = false
                 }
             )
+        }
+        .sheet(isPresented: $showingSchemaEditor) {
+            if let path = document.documentPath {
+                SchemaEditorView(documentURL: URL(fileURLWithPath: path))
+                    .frame(minWidth: 1000, minHeight: 700)
+            }
         }
         .onAppear {
             loadPDF()

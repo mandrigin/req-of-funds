@@ -26,6 +26,9 @@ class SchemaEditorViewModel: ObservableObject {
     /// The document being analyzed
     @Published var documentURL: URL?
 
+    /// Initial URL to load on appear (set via initializer)
+    var initialURL: URL?
+
     /// Detected text regions from OCR
     @Published var detectedRegions: [DetectedTextRegion] = []
 
@@ -227,10 +230,17 @@ class SchemaEditorViewModel: ObservableObject {
 
 /// Main schema editor interface
 struct SchemaEditorView: View {
-    @StateObject private var viewModel = SchemaEditorViewModel()
+    @StateObject private var viewModel: SchemaEditorViewModel
     @State private var showingSaveSheet = false
     @State private var showingFilePicker = false
     @Environment(\.dismiss) private var dismiss
+
+    /// Initialize with an optional document URL to load immediately
+    init(documentURL: URL? = nil) {
+        let vm = SchemaEditorViewModel()
+        vm.initialURL = documentURL
+        _viewModel = StateObject(wrappedValue: vm)
+    }
 
     var body: some View {
         NavigationSplitView {
@@ -307,6 +317,10 @@ struct SchemaEditorView: View {
         }
         .task {
             await viewModel.loadSchemas()
+            // Load initial document if provided
+            if let url = viewModel.initialURL {
+                await viewModel.processDocument(at: url)
+            }
         }
         .overlay {
             if viewModel.isLoading {
@@ -468,7 +482,7 @@ struct DocumentWithOverlay: View {
                 ContentUnavailableView(
                     "No Document",
                     systemImage: "doc.text.magnifyingglass",
-                    description: Text("Open a document to analyze its schema")
+                    description: Text("Use the toolbar button to open a document, or open Schema Editor from a Library document's detail view")
                 )
             }
         }
