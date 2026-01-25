@@ -5,12 +5,14 @@ enum AIProvider: String, CaseIterable, Codable {
     case claudeCode = "claude_code"
     case openai = "openai"
     case anthropic = "anthropic"
+    case foundation = "foundation"
 
     var displayName: String {
         switch self {
         case .claudeCode: return "Claude Code (Local)"
         case .openai: return "OpenAI"
         case .anthropic: return "Claude (Anthropic)"
+        case .foundation: return "On-Device (Apple Intelligence)"
         }
     }
 
@@ -19,11 +21,33 @@ enum AIProvider: String, CaseIterable, Codable {
         case .claudeCode: return nil  // No API key needed
         case .openai: return "OPENAI_API_KEY"
         case .anthropic: return "ANTHROPIC_API_KEY"
+        case .foundation: return nil  // On-device, no API key needed
         }
     }
 
     var requiresAPIKey: Bool {
-        self != .claudeCode
+        switch self {
+        case .claudeCode, .foundation: return false
+        case .openai, .anthropic: return true
+        }
+    }
+
+    /// Check if this provider is available on the current system
+    var isAvailableOnSystem: Bool {
+        switch self {
+        case .claudeCode, .openai, .anthropic:
+            return true  // Always available (may need API key)
+        case .foundation:
+            if #available(macOS 26.0, *) {
+                return true
+            }
+            return false
+        }
+    }
+
+    /// Providers that should be shown in the UI (filters out unavailable system-specific providers)
+    static var availableCases: [AIProvider] {
+        allCases.filter { $0.isAvailableOnSystem }
     }
 }
 
@@ -82,6 +106,8 @@ enum AIAnalysisError: Error, LocalizedError {
     case apiKeyNotConfigured
     case claudeCodeNotAvailable
     case claudeCodeError(String)
+    case foundationModelsNotAvailable
+    case foundationModelsError(String)
     case networkError(String)
     case invalidResponse
     case rateLimited
@@ -95,6 +121,10 @@ enum AIAnalysisError: Error, LocalizedError {
             return "Claude Code CLI not found. Install Claude Code or configure an API key."
         case .claudeCodeError(let message):
             return "Claude Code error: \(message)"
+        case .foundationModelsNotAvailable:
+            return "On-Device AI requires macOS 26 or later with Apple Intelligence."
+        case .foundationModelsError(let message):
+            return "On-Device AI error: \(message)"
         case .networkError(let message):
             return "Network error: \(message)"
         case .invalidResponse:
@@ -186,7 +216,11 @@ actor AIAnalysisService {
 
     /// Auto-detect available provider based on CLI availability and API keys
     func detectAvailableProvider() -> AIProvider? {
-        // Priority: Claude Code CLI first (no API key needed!)
+        // Priority 1: Foundation Models (on-device, private, no API key!)
+        if isFoundationModelsAvailable() {
+            return .foundation
+        }
+        // Priority 2: Claude Code CLI (no API key needed!)
         if isClaudeCodeAvailable() {
             return .claudeCode
         }
@@ -209,6 +243,10 @@ actor AIAnalysisService {
         if provider == .claudeCode {
             return isClaudeCodeAvailable()
         }
+        // Foundation Models doesn't need an API key
+        if provider == .foundation {
+            return isFoundationModelsAvailable()
+        }
         // Check environment variable first
         if let envVar = provider.apiKeyEnvVar,
            let envKey = ProcessInfo.processInfo.environment[envVar],
@@ -223,9 +261,19 @@ actor AIAnalysisService {
         return false
     }
 
-    /// Check if any AI provider is available (CLI or API key)
+    /// Check if Foundation Models (Apple Intelligence) is available on this system
+    nonisolated func isFoundationModelsAvailable() -> Bool {
+        if #available(macOS 26.0, *) {
+            // On macOS 26+, Foundation Models are available
+            // TODO: Add actual availability check using FoundationModels framework
+            return true
+        }
+        return false
+    }
+
+    /// Check if any AI provider is available (CLI, on-device, or API key)
     func isAnyAPIKeyConfigured() -> Bool {
-        isClaudeCodeAvailable() || isAPIKeyConfigured(for: .openai) || isAPIKeyConfigured(for: .anthropic)
+        isClaudeCodeAvailable() || isFoundationModelsAvailable() || isAPIKeyConfigured(for: .openai) || isAPIKeyConfigured(for: .anthropic)
     }
 
     /// Get the API key for a provider (throws if not configured)
@@ -236,6 +284,13 @@ actor AIAnalysisService {
                 return ""  // No key needed
             }
             throw AIAnalysisError.claudeCodeNotAvailable
+        }
+        // Foundation Models doesn't need an API key
+        if provider == .foundation {
+            if isFoundationModelsAvailable() {
+                return ""  // No key needed - on-device
+            }
+            throw AIAnalysisError.foundationModelsNotAvailable
         }
         // Check environment variable first
         if let envVar = provider.apiKeyEnvVar,
@@ -375,6 +430,8 @@ actor AIAnalysisService {
             return try await callOpenAI(prompt: prompt, apiKey: apiKey)
         case .anthropic:
             return try await callAnthropic(prompt: prompt, apiKey: apiKey)
+        case .foundation:
+            return try await callFoundation(prompt: prompt)
         }
     }
 
@@ -420,6 +477,19 @@ actor AIAnalysisService {
                 continuation.resume(throwing: AIAnalysisError.claudeCodeError(error.localizedDescription))
             }
         }
+    }
+
+    /// Call Apple Foundation Models for on-device AI inference
+    /// Requires macOS 26.0 or later with Apple Intelligence
+    private func callFoundation(prompt: String) async throws -> String {
+        guard isFoundationModelsAvailable() else {
+            throw AIAnalysisError.foundationModelsNotAvailable
+        }
+
+        // TODO: Implement actual Foundation Models API call
+        // This will be implemented in rff-twmya: Implement Foundation Models API client
+        // For now, throw an error indicating the feature is coming soon
+        throw AIAnalysisError.foundationModelsError("Foundation Models support is coming soon. Please use another provider.")
     }
 
     private func callOpenAI(prompt: String, apiKey: String) async throws -> String {
