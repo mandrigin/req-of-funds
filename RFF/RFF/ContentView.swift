@@ -710,6 +710,9 @@ struct DocumentDetailView: View {
     @State private var aiErrorMessage: String?
     @State private var showingAIError = false
 
+    // Schema editing state
+    @State private var isEditingSchema = false
+
     private let textFinder = PDFTextFinder()
 
     /// Check if document can be confirmed (is in inbox state)
@@ -829,59 +832,79 @@ struct DocumentDetailView: View {
 
             // Review & Confirm Tab - DocuSign-style split view
             if document.documentPath != nil {
-                HSplitView {
-                    // Left: PDF Viewer with highlight controls
-                    VStack(spacing: 0) {
-                        HStack {
-                            Button("Highlight Amounts") {
-                                highlightAmounts()
-                            }
-                            Button("Highlight Dates") {
-                                highlightDates()
-                            }
-                            Button("Clear Highlights") {
-                                highlights = []
-                            }
+                Group {
+                    if isEditingSchema {
+                        // Inline schema editor mode
+                        InlineSchemaEditorView(
+                            document: document,
+                            isEditing: $isEditingSchema
+                        )
+                    } else {
+                        // Normal review mode
+                        HSplitView {
+                            // Left: PDF Viewer with highlight controls
+                            VStack(spacing: 0) {
+                                HStack {
+                                    Button("Highlight Amounts") {
+                                        highlightAmounts()
+                                    }
+                                    Button("Highlight Dates") {
+                                        highlightDates()
+                                    }
+                                    Button("Clear Highlights") {
+                                        highlights = []
+                                    }
 
-                            Divider()
-                                .frame(height: 20)
+                                    Divider()
+                                        .frame(height: 20)
 
-                            Button {
-                                performAIAnalysis()
-                            } label: {
-                                if isAnalyzingWithAI {
-                                    ProgressView()
-                                        .controlSize(.small)
-                                } else {
-                                    Label("AI Analyze", systemImage: "sparkles")
+                                    Button {
+                                        performAIAnalysis()
+                                    } label: {
+                                        if isAnalyzingWithAI {
+                                            ProgressView()
+                                                .controlSize(.small)
+                                        } else {
+                                            Label("AI Analyze", systemImage: "sparkles")
+                                        }
+                                    }
+                                    .disabled(isAnalyzingWithAI || (document.extractedText ?? "").isEmpty)
+
+                                    Button {
+                                        withAnimation {
+                                            isEditingSchema = true
+                                        }
+                                    } label: {
+                                        Label("Edit Schema", systemImage: "rectangle.and.pencil.and.ellipsis")
+                                    }
+                                    .help("Visually map document fields to schema")
+
+                                    Spacer()
+                                    Button {
+                                        withAnimation {
+                                            showConfirmationPanel.toggle()
+                                        }
+                                    } label: {
+                                        Label(
+                                            showConfirmationPanel ? "Hide Form" : "Show Form",
+                                            systemImage: showConfirmationPanel ? "sidebar.trailing" : "sidebar.leading"
+                                        )
+                                    }
                                 }
-                            }
-                            .disabled(isAnalyzingWithAI || (document.extractedText ?? "").isEmpty)
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
 
-                            Spacer()
-                            Button {
-                                withAnimation {
-                                    showConfirmationPanel.toggle()
-                                }
-                            } label: {
-                                Label(
-                                    showConfirmationPanel ? "Hide Form" : "Show Form",
-                                    systemImage: showConfirmationPanel ? "sidebar.trailing" : "sidebar.leading"
-                                )
+                                Divider()
+
+                                PDFViewer(document: pdfDocument, highlights: highlights)
+                            }
+                            .frame(minWidth: 400)
+
+                            // Right: Confirmation form panel
+                            if showConfirmationPanel {
+                                ConfirmationFormView(document: document)
                             }
                         }
-                        .padding(.horizontal)
-                        .padding(.vertical, 8)
-
-                        Divider()
-
-                        PDFViewer(document: pdfDocument, highlights: highlights)
-                    }
-                    .frame(minWidth: 400)
-
-                    // Right: Confirmation form panel
-                    if showConfirmationPanel {
-                        ConfirmationFormView(document: document)
                     }
                 }
                 .tabItem {
