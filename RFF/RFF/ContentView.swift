@@ -1285,13 +1285,6 @@ struct DocumentDetailView: View {
                                             .foregroundColor(.secondary)
                                     }
 
-                                    Button {
-                                        detectAllFields()
-                                    } label: {
-                                        Label("Re-detect", systemImage: "arrow.clockwise")
-                                    }
-                                    .disabled(isDetectingFields)
-
                                     Divider()
                                         .frame(height: 20)
 
