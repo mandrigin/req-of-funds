@@ -49,6 +49,16 @@ struct RFFDocumentData: Codable {
         lineItems.reduce(Decimal.zero) { $0 + $1.total }
     }
 
+    /// Returns true if the document is in a read-only state (approved, completed, or paid)
+    var isReadOnly: Bool {
+        switch status {
+        case "approved", "completed", "paid":
+            return true
+        default:
+            return false
+        }
+    }
+
     init() {
         self.id = UUID()
         self.title = "New RFF Document"

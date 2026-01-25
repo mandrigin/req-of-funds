@@ -113,6 +113,16 @@ final class RFFDocument {
     /// ID of the schema used for field extraction (nil = no schema assigned)
     var schemaId: UUID?
 
+    /// Returns true if the document is in a read-only state (approved, completed, or paid)
+    var isReadOnly: Bool {
+        switch status {
+        case .approved, .completed, .paid:
+            return true
+        case .pending, .underReview, .rejected:
+            return false
+        }
+    }
+
     init(
         id: UUID = UUID(),
         title: String,
