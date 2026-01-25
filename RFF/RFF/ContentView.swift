@@ -94,6 +94,9 @@ struct ContentView: View {
     @State private var isProcessingPaste = false
     @State private var isProcessingDrop = false
 
+    // Text entry state
+    @State private var showingTextEntry = false
+
     // Paste preview state
     @State private var showingPastePreview = false
     @State private var pastedImageData: Data?
@@ -292,6 +295,9 @@ struct ContentView: View {
                     Button(action: { isImportingPDF = true }) {
                         Label("Import PDF", systemImage: "doc.badge.plus")
                     }
+                    Button(action: { showingTextEntry = true }) {
+                        Label("Enter Text", systemImage: "text.badge.plus")
+                    }
                     Button(action: addDocument) {
                         Label("Add Document", systemImage: "plus")
                     }
@@ -412,6 +418,21 @@ struct ContentView: View {
                     pastedOCRResult = nil
                     pastedExtractedData = nil
                     pastedEntities = nil
+                }
+            }
+        }
+        .sheet(isPresented: $showingTextEntry) {
+            TextEntrySheet { document in
+                modelContext.insert(document)
+
+                // Schedule deadline notification
+                Task {
+                    try? await NotificationService.shared.scheduleDeadlineNotification(
+                        documentId: document.id,
+                        title: document.title,
+                        organization: document.requestingOrganization,
+                        dueDate: document.dueDate
+                    )
                 }
             }
         }
@@ -1676,6 +1697,279 @@ struct MarkAsPaidSheet: View {
             .padding()
         }
         .frame(width: 340, height: 400)
+    }
+}
+
+// MARK: - Text Entry Sheet
+
+/// Sheet for entering plain text and running AI analysis to create a document
+struct TextEntrySheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let onCreateDocument: (RFFDocument) -> Void
+
+    // Text input
+    @State private var inputText: String = ""
+
+    // Analysis state
+    @State private var isAnalyzing = false
+    @State private var analysisResult: AIAnalysisResult?
+    @State private var analysisError: String?
+    @State private var showingError = false
+
+    // Editable extracted fields
+    @State private var organization: String = ""
+    @State private var amount: Decimal = 0
+    @State private var currency: Currency = .usd
+    @State private var dueDate: Date = Date().addingTimeInterval(30 * 24 * 60 * 60)
+
+    /// Check if we have enough data to create a document
+    private var canCreateDocument: Bool {
+        !organization.isEmpty || amount > 0
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Enter Invoice Text")
+                    .font(.headline)
+                Spacer()
+                Button("Cancel") {
+                    dismiss()
+                }
+                .keyboardShortcut(.cancelAction)
+            }
+            .padding()
+
+            Divider()
+
+            // Main content
+            HSplitView {
+                // Left: Text input
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Paste or type invoice details:")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    TextEditor(text: $inputText)
+                        .font(.body.monospaced())
+                        .frame(minHeight: 200)
+                        .border(Color.secondary.opacity(0.3), width: 1)
+
+                    HStack {
+                        Button {
+                            performAnalysis()
+                        } label: {
+                            if isAnalyzing {
+                                ProgressView()
+                                    .controlSize(.small)
+                                Text("Analyzing...")
+                            } else {
+                                Label("Analyze with AI", systemImage: "sparkles")
+                            }
+                        }
+                        .disabled(inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isAnalyzing)
+
+                        Spacer()
+
+                        Text("\(inputText.count) characters")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .padding()
+                .frame(minWidth: 350)
+
+                // Right: Extracted fields form
+                Form {
+                    Section("Document Fields") {
+                        TextField("Organization", text: $organization)
+
+                        HStack {
+                            Text("Amount")
+                            Spacer()
+                            TextField("Amount", value: $amount, format: .currency(code: currency.currencyCode))
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 150)
+                        }
+
+                        Picker("Currency", selection: $currency) {
+                            ForEach(Currency.allCases) { curr in
+                                Text("\(curr.symbol) \(curr.displayName)").tag(curr)
+                            }
+                        }
+
+                        DatePicker("Due Date", selection: $dueDate, displayedComponents: [.date])
+                    }
+
+                    // Show AI suggestions if available
+                    if let result = analysisResult, !result.suggestions.isEmpty {
+                        Section("AI Suggestions") {
+                            ForEach(result.suggestions) { suggestion in
+                                Button {
+                                    applySuggestion(suggestion)
+                                } label: {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(displayName(for: suggestion.fieldType))
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                            Text(suggestion.value)
+                                                .foregroundStyle(.primary)
+                                        }
+                                        Spacer()
+                                        Text("\(Int(suggestion.confidence * 100))%")
+                                            .font(.caption)
+                                            .foregroundStyle(suggestion.confidence >= 0.7 ? .green : .orange)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+
+                        if let summary = result.summary {
+                            Section("Summary") {
+                                Text(summary)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+                .formStyle(.grouped)
+                .frame(minWidth: 300, maxWidth: 400)
+            }
+
+            Divider()
+
+            // Footer
+            HStack {
+                if let error = analysisError {
+                    Label(error, systemImage: "exclamationmark.triangle")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
+                Spacer()
+
+                Button("Create Document") {
+                    createDocument()
+                }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+                .disabled(!canCreateDocument)
+            }
+            .padding()
+        }
+        .frame(minWidth: 750, minHeight: 500)
+        .alert("Analysis Error", isPresented: $showingError) {
+            Button("OK") { }
+        } message: {
+            Text(analysisError ?? "Unknown error")
+        }
+    }
+
+    private func performAnalysis() {
+        let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+
+        isAnalyzing = true
+        analysisError = nil
+
+        Task {
+            do {
+                let result = try await AIAnalysisService.shared.analyzeDocument(text: text)
+                await MainActor.run {
+                    analysisResult = result
+                    isAnalyzing = false
+
+                    // Auto-apply high-confidence suggestions
+                    for suggestion in result.suggestions where suggestion.confidence >= 0.8 {
+                        applySuggestion(suggestion)
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    analysisError = error.localizedDescription
+                    isAnalyzing = false
+                    showingError = true
+                }
+            }
+        }
+    }
+
+    private func applySuggestion(_ suggestion: AIFieldSuggestion) {
+        switch suggestion.fieldType {
+        case "vendor":
+            organization = suggestion.value
+        case "total":
+            if let value = Decimal(string: suggestion.value) {
+                amount = value
+            }
+        case "due_date":
+            if let date = parseISODate(suggestion.value) {
+                dueDate = date
+            }
+        case "currency":
+            if let curr = Currency(rawValue: suggestion.value.uppercased()) {
+                currency = curr
+            }
+        default:
+            break
+        }
+    }
+
+    private func parseISODate(_ string: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        return formatter.date(from: string)
+    }
+
+    private func displayName(for fieldType: String) -> String {
+        switch fieldType {
+        case "invoice_number": return "Invoice Number"
+        case "invoice_date": return "Invoice Date"
+        case "due_date": return "Due Date"
+        case "vendor": return "Vendor"
+        case "customer_name": return "Customer"
+        case "subtotal": return "Subtotal"
+        case "tax": return "Tax"
+        case "total": return "Total"
+        case "currency": return "Currency"
+        case "po_number": return "PO Number"
+        case "payment_terms": return "Payment Terms"
+        default: return fieldType.replacingOccurrences(of: "_", with: " ").capitalized
+        }
+    }
+
+    private func createDocument() {
+        let title = generateTitle()
+        let document = RFFDocument(
+            title: title,
+            requestingOrganization: organization.isEmpty ? "Unknown" : organization,
+            amount: amount,
+            currency: currency,
+            dueDate: dueDate,
+            extractedText: inputText.isEmpty ? nil : inputText
+        )
+
+        onCreateDocument(document)
+        dismiss()
+    }
+
+    private func generateTitle() -> String {
+        if !organization.isEmpty && amount > 0 {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.currencyCode = currency.currencyCode
+            let amountStr = formatter.string(from: amount as NSDecimalNumber) ?? "\(amount)"
+            return "\(organization) - \(amountStr)"
+        } else if !organization.isEmpty {
+            return "RFF - \(organization)"
+        } else {
+            return "RFF - Text Entry"
+        }
     }
 }
 
