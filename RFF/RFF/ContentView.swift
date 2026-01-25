@@ -1414,12 +1414,20 @@ struct DocumentDetailView: View {
             loadSchemaName()
             loadAvailableSchemas()
         }
+        .onChange(of: document.id) { _, _ in
+            loadPDF()
+            loadSchemaName()
+            loadAvailableSchemas()
+        }
     }
 
     private func loadPDF() {
         guard let path = document.documentPath else { return }
         let url = URL(fileURLWithPath: path)
         pdfDocument = PDFDocument(url: url)
+
+        // Clear any stale highlight selection from previous document
+        selectedHighlight = nil
 
         // Auto-detect fields when PDF loads
         detectAllFields()
