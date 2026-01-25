@@ -1,5 +1,9 @@
 import Foundation
 
+#if canImport(FoundationModels)
+import FoundationModels
+#endif
+
 /// AI provider options
 enum AIProvider: String, CaseIterable, Codable {
     case claudeCode = "claude_code"
@@ -476,11 +480,51 @@ actor AIAnalysisService {
             throw AIAnalysisError.foundationModelsNotAvailable
         }
 
-        // TODO: Implement Foundation Models API call (rff-twmya)
-        // This will use Apple's FoundationModels framework when available
-        // For now, throw an error indicating implementation pending
-        throw AIAnalysisError.foundationModelsError("Foundation Models integration pending implementation")
+        #if canImport(FoundationModels)
+        if #available(macOS 26, *) {
+            return try await callFoundationModelsImpl(prompt: prompt)
+        }
+        #endif
+
+        throw AIAnalysisError.foundationModelsNotAvailable
     }
+
+    #if canImport(FoundationModels)
+    @available(macOS 26, *)
+    private func callFoundationModelsImpl(prompt: String) async throws -> String {
+        // Import handled via conditional compilation
+        // FoundationModels provides SystemLanguageModel and LanguageModelSession
+        let model = SystemLanguageModel.default
+
+        // Check model availability
+        switch model.availability {
+        case .available:
+            break
+        case .unavailable(let reason):
+            let reasonDescription: String
+            switch reason {
+            case .appleIntelligenceNotEnabled:
+                reasonDescription = "Apple Intelligence is not enabled. Enable it in System Settings > Apple Intelligence & Siri."
+            case .deviceNotEligible:
+                reasonDescription = "This device does not support Apple Intelligence."
+            case .modelNotReady:
+                reasonDescription = "The language model is still downloading. Please try again later."
+            @unknown default:
+                reasonDescription = "The language model is not available."
+            }
+            throw AIAnalysisError.foundationModelsError(reasonDescription)
+        }
+
+        // Create session and generate response
+        let session = LanguageModelSession()
+        do {
+            let response = try await session.respond(to: prompt)
+            return response.content
+        } catch {
+            throw AIAnalysisError.foundationModelsError(error.localizedDescription)
+        }
+    }
+    #endif
 
     private func callOpenAI(prompt: String, apiKey: String) async throws -> String {
         let url = URL(string: "https://api.openai.com/v1/chat/completions")!
