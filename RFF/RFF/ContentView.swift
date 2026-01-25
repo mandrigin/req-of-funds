@@ -1954,8 +1954,8 @@ struct LibraryAIAnalysisResultSheet: View {
         switch suggestion.fieldType {
         case "vendor":
             document.requestingOrganization = suggestion.value
-        case "total":
-            if let amount = Decimal(string: suggestion.value) {
+        case "total", "subtotal":
+            if let amount = parseAmount(suggestion.value) {
                 document.amount = amount
             }
         case "due_date":
@@ -2014,6 +2014,19 @@ struct LibraryAIAnalysisResultSheet: View {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withFullDate]
         return formatter.date(from: string)
+    }
+
+    /// Parse a currency amount string to Decimal, handling commas and currency symbols
+    private func parseAmount(_ text: String) -> Decimal? {
+        let cleaned = text
+            .replacingOccurrences(of: "$", with: "")
+            .replacingOccurrences(of: "€", with: "")
+            .replacingOccurrences(of: "£", with: "")
+            .replacingOccurrences(of: "CHF", with: "")
+            .replacingOccurrences(of: ",", with: "")
+            .replacingOccurrences(of: " ", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return Decimal(string: cleaned)
     }
 }
 
