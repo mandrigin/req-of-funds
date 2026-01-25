@@ -186,6 +186,7 @@ struct AISettingsView: View {
     @State private var openAIKey = ""
     @State private var anthropicKey = ""
     @State private var isClaudeCodeAvailable = false
+    @State private var isFoundationModelsAvailable = false
     @State private var isOpenAIKeyConfigured = false
     @State private var isAnthropicKeyConfigured = false
     @State private var showingOpenAIKey = false
@@ -205,6 +206,10 @@ struct AISettingsView: View {
                                 Text("(Not installed)")
                                     .foregroundStyle(.secondary)
                             }
+                            if provider == .foundation && !isFoundationModelsAvailable {
+                                Text("(macOS 26+)")
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         .tag(provider)
                     }
@@ -214,6 +219,13 @@ struct AISettingsView: View {
                     // Don't allow selecting Claude Code if not available
                     if newValue == .claudeCode && !isClaudeCodeAvailable {
                         // Revert to previous or default
+                        Task {
+                            selectedProvider = await AIAnalysisService.shared.detectAvailableProvider() ?? .anthropic
+                        }
+                        return
+                    }
+                    // Don't allow selecting Foundation Models if not available
+                    if newValue == .foundation && !isFoundationModelsAvailable {
                         Task {
                             selectedProvider = await AIAnalysisService.shared.detectAvailableProvider() ?? .anthropic
                         }
@@ -234,6 +246,16 @@ struct AISettingsView: View {
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
+                } else if selectedProvider == .foundation {
+                    if isFoundationModelsAvailable {
+                        Label("Using on-device AI - no API key needed, fully private!", systemImage: "checkmark.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                    } else {
+                        Label("Requires macOS 26 or later", systemImage: "xmark.circle")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
                 } else if let envVar = selectedProvider.apiKeyEnvVar, hasEnvKey(for: selectedProvider) {
                     Label("Using \(envVar) environment variable", systemImage: "terminal")
                         .font(.caption)
@@ -241,8 +263,27 @@ struct AISettingsView: View {
                 }
             }
 
+            // On-Device AI section (macOS 26+)
+            if isFoundationModelsAvailable {
+                Section("On-Device AI (Recommended)") {
+                    Label("Apple Foundation Models available", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                    Text("Runs entirely on your Mac. No API key required, fully private - your data never leaves your device.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                Section("On-Device AI") {
+                    Label("Requires macOS 26+", systemImage: "desktopcomputer")
+                        .foregroundStyle(.secondary)
+                    Text("On-device AI analysis will be available when you upgrade to macOS 26 or later.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             if isClaudeCodeAvailable {
-                Section("Claude Code (Recommended)") {
+                Section("Claude Code") {
                     Label("Claude Code CLI detected", systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
                     Text("Uses your existing Claude Code authentication. No API key required.")
@@ -293,12 +334,12 @@ struct AISettingsView: View {
             }
 
             Section("API Keys (Alternative)") {
-                if !isClaudeCodeAvailable {
+                if !isFoundationModelsAvailable && !isClaudeCodeAvailable {
                     Link("Get an Anthropic API key", destination: URL(string: "https://console.anthropic.com/settings/keys")!)
                     Link("Get an OpenAI API key", destination: URL(string: "https://platform.openai.com/api-keys")!)
                 }
 
-                Text("Claude Code (local) is recommended. API keys are only needed if Claude Code is not installed. Anthropic uses Claude Sonnet, OpenAI uses GPT-4o-mini.")
+                Text("On-device AI (macOS 26+) or Claude Code are recommended. API keys are only needed if neither is available. Anthropic uses Claude Sonnet, OpenAI uses GPT-4o-mini.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -323,6 +364,7 @@ struct AISettingsView: View {
 
     private func loadSettings() async {
         isClaudeCodeAvailable = await AIAnalysisService.shared.isClaudeCodeAvailable()
+        isFoundationModelsAvailable = await AIAnalysisService.shared.isFoundationModelsAvailable()
         selectedProvider = await AIAnalysisService.shared.getSelectedProvider()
         isOpenAIKeyConfigured = await AIAnalysisService.shared.isAPIKeyConfigured(for: .openai)
         isAnthropicKeyConfigured = await AIAnalysisService.shared.isAPIKeyConfigured(for: .anthropic)

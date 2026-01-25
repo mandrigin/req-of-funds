@@ -323,6 +323,20 @@ struct ContentView: View {
                     }
                     .disabled(docsWithText.isEmpty || anyAnalyzing)
 
+                    // AI Analyze (Local) - on-device analysis (macOS 26+)
+                    if AIAnalysisService.shared.isFoundationModelsAvailable() {
+                        Button {
+                            performBatchAIAnalysis(documentIds: ids, provider: .foundation)
+                        } label: {
+                            if ids.count == 1 {
+                                Label("AI Analyze (Local)", systemImage: "desktopcomputer")
+                            } else {
+                                Label("AI Analyze (Local) (\(docsWithText.count))", systemImage: "desktopcomputer")
+                            }
+                        }
+                        .disabled(docsWithText.isEmpty || anyAnalyzing)
+                    }
+
                     Divider()
 
                     Button(role: .destructive) {
@@ -731,7 +745,7 @@ struct ContentView: View {
 
     // MARK: - Batch AI Analysis
 
-    private func performBatchAIAnalysis(documentIds: Set<RFFDocument.ID>) {
+    private func performBatchAIAnalysis(documentIds: Set<RFFDocument.ID>, provider: AIProvider? = nil) {
         // Get documents with extracted text
         let docsToAnalyze = documents.filter { doc in
             documentIds.contains(doc.id) && !(doc.extractedText ?? "").isEmpty
@@ -746,7 +760,7 @@ struct ContentView: View {
         }
 
         Task {
-            await AIAnalysisProgressManager.shared.startBatchAnalysis(documents: docData)
+            await AIAnalysisProgressManager.shared.startBatchAnalysis(documents: docData, provider: provider)
         }
     }
 

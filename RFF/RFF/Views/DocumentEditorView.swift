@@ -61,6 +61,21 @@ struct DocumentEditorView: View {
                     }
                 }
                 .disabled(isAnalyzingWithAI || (document.data.extractedText ?? "").isEmpty)
+
+                // AI Analyze (Local) button - only shown on macOS 26+
+                if AIAnalysisService.shared.isFoundationModelsAvailable() {
+                    Button {
+                        performAIAnalysis(provider: .foundation)
+                    } label: {
+                        if isAnalyzingWithAI {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else {
+                            Label("AI Analyze (Local)", systemImage: "desktopcomputer")
+                        }
+                    }
+                    .disabled(isAnalyzingWithAI || (document.data.extractedText ?? "").isEmpty)
+                }
             }
         }
         .sheet(isPresented: $showingAddLineItem) {
@@ -106,7 +121,7 @@ struct DocumentEditorView: View {
         selectedLineItems.removeAll()
     }
 
-    private func performAIAnalysis() {
+    private func performAIAnalysis(provider: AIProvider? = nil) {
         guard let extractedText = document.data.extractedText, !extractedText.isEmpty else {
             errorMessage = "No extracted text available. Import a PDF first."
             return
@@ -116,7 +131,12 @@ struct DocumentEditorView: View {
 
         Task {
             do {
-                let result = try await AIAnalysisService.shared.analyzeDocument(text: extractedText)
+                let result: AIAnalysisResult
+                if let provider = provider {
+                    result = try await AIAnalysisService.shared.analyzeDocument(text: extractedText, using: provider)
+                } else {
+                    result = try await AIAnalysisService.shared.analyzeDocument(text: extractedText)
+                }
                 await MainActor.run {
                     aiAnalysisResult = result
                     showingAIResults = true
