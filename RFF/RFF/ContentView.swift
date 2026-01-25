@@ -508,6 +508,8 @@ struct ContentView: View {
             return .blue
         case .gbp:
             return .purple
+        case .chf:
+            return .red
         }
     }
 

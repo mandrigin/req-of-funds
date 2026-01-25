@@ -126,6 +126,20 @@ actor AmountDateExtractionService {
             }
         }
 
+        // CHF patterns
+        let chfPatterns = [
+            #"CHF\s*[\d',]+\.?\d*"#,               // CHF 1'234.56 or CHF 1,234.56
+            #"[\d',]+\.?\d*\s*CHF"#,               // 1'234.56 CHF
+            #"Fr\.\s*[\d',]+\.?\d*"#,              // Fr. 1'234.56
+            #"[\d',]+\.?\d*\s*Fr\."#,              // 1'234.56 Fr.
+            #"[\d',]+\.?\d*\s*francs?"#            // 1'234.56 francs
+        ]
+        for pattern in chfPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .chf))
+            }
+        }
+
         return patterns
     }()
 
