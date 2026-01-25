@@ -270,6 +270,11 @@ struct ConfirmationFormView: View {
     private func confirmDocument() {
         isConfirming = true
 
+        // Record corrections for learning
+        Task {
+            await recordCorrections()
+        }
+
         // Update document status to underReview
         document.status = .underReview
         document.updatedAt = Date()
@@ -282,6 +287,65 @@ struct ConfirmationFormView: View {
         }
 
         isConfirming = false
+    }
+
+    private func recordCorrections() async {
+        let correctionService = CorrectionHistoryService.shared
+
+        // Record organization correction if edited
+        if organizationSource == .manual && editingOrganization != originalOrganization {
+            let correction = FieldCorrection(
+                schemaId: nil,
+                fieldType: .vendor,
+                originalValue: originalOrganization,
+                correctedValue: editingOrganization,
+                originalConfidence: 0.5,
+                wasCompleteReplacement: originalOrganization.isEmpty,
+                documentId: document.id
+            )
+            try? await correctionService.recordCorrection(correction)
+        } else {
+            await correctionService.recordConfirmation(schemaId: nil, fieldType: .vendor)
+        }
+
+        // Record amount correction if edited
+        if amountSource == .manual && editingAmount != originalAmount {
+            let correction = FieldCorrection(
+                schemaId: nil,
+                fieldType: .total,
+                originalValue: "\(originalAmount)",
+                correctedValue: "\(editingAmount)",
+                originalConfidence: 0.5,
+                wasCompleteReplacement: originalAmount == 0,
+                documentId: document.id
+            )
+            try? await correctionService.recordCorrection(correction)
+        } else {
+            await correctionService.recordConfirmation(schemaId: nil, fieldType: .total)
+        }
+
+        // Record due date correction if edited
+        let calendar = Calendar.current
+        if dueDateSource == .manual && !calendar.isDate(editingDueDate, inSameDayAs: originalDueDate) {
+            let formatter = ISO8601DateFormatter()
+            let correction = FieldCorrection(
+                schemaId: nil,
+                fieldType: .dueDate,
+                originalValue: formatter.string(from: originalDueDate),
+                correctedValue: formatter.string(from: editingDueDate),
+                originalConfidence: 0.5,
+                wasCompleteReplacement: false,
+                documentId: document.id
+            )
+            try? await correctionService.recordCorrection(correction)
+        } else {
+            await correctionService.recordConfirmation(schemaId: nil, fieldType: .dueDate)
+        }
+
+        // Track extractions for accuracy statistics
+        correctionService.recordExtraction(fieldType: .vendor)
+        correctionService.recordExtraction(fieldType: .total)
+        correctionService.recordExtraction(fieldType: .dueDate)
     }
 }
 
