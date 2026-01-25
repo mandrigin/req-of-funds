@@ -56,9 +56,16 @@ struct PDFViewer: NSViewRepresentable {
         }
 
         context.coordinator.highlights = highlights
+
+        // Clear and reset provider to force PDFKit to recreate overlay views
+        // PDFKit caches overlays and won't call the delegate again otherwise
+        pdfView.pageOverlayViewProvider = nil
         if !highlights.isEmpty {
             pdfView.pageOverlayViewProvider = context.coordinator
         }
+
+        // Force layout refresh to ensure overlays are redrawn
+        pdfView.layoutDocumentView()
     }
 
     func makeCoordinator() -> Coordinator {
@@ -120,6 +127,13 @@ private class HighlightOverlayView: NSView {
     /// Convert bounds from PDF page coordinates to view coordinates
     private func convert(_ rect: CGRect, from page: PDFPage) -> CGRect {
         let pageBounds = page.bounds(for: .mediaBox)
+
+        // Guard against division by zero
+        guard pageBounds.width > 0, pageBounds.height > 0,
+              bounds.width > 0, bounds.height > 0 else {
+            return .zero
+        }
+
         let scaleX = bounds.width / pageBounds.width
         let scaleY = bounds.height / pageBounds.height
 
