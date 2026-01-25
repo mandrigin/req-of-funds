@@ -58,11 +58,7 @@ actor CalendarService {
 
     /// Check current authorization status
     var authorizationStatus: EKAuthorizationStatus {
-        if #available(macOS 14.0, *) {
-            return EKEventStore.authorizationStatus(for: .event)
-        } else {
-            return EKEventStore.authorizationStatus(for: .event)
-        }
+        EKEventStore.authorizationStatus(for: .event)
     }
 
     /// Check if we have calendar access
