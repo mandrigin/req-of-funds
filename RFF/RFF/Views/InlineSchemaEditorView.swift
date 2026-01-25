@@ -263,6 +263,7 @@ struct InlineSchemaToolbar: View {
                     viewModel.autoMapFields()
                 }
             }
+            .help("Select a schema to apply or create a new one")
 
             Divider()
                 .frame(height: 20)
@@ -334,6 +335,7 @@ struct InlineSchemaToolbar: View {
                 Label("Done", systemImage: "checkmark")
             }
             .buttonStyle(.borderedProminent)
+            .help("Finish editing and close the schema editor")
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
