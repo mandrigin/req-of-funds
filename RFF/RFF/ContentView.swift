@@ -84,7 +84,15 @@ struct ContentView: View {
     @State private var isProcessingPaste = false
     @State private var isProcessingDrop = false
 
+    // Paste preview state
+    @State private var showingPastePreview = false
+    @State private var pastedImageData: Data?
+    @State private var pastedOCRResult: OCRPageResult?
+    @State private var pastedExtractedData: ExtractedData?
+    @State private var pastedEntities: ExtractedEntities?
+
     private let pdfService = PDFService()
+    private let amountDateService = AmountDateExtractionService()
     private let ocrService = DocumentOCRService()
     private let entityService = EntityExtractionService()
 
@@ -298,6 +306,48 @@ struct ContentView: View {
             if let window = NSApp.windows.first(where: { $0.title == "RFF Library" }) {
                 window.makeKeyAndOrderFront(nil)
                 NSApp.activate(ignoringOtherApps: true)
+            }
+        }
+        .sheet(isPresented: $showingPastePreview) {
+            if let imageData = pastedImageData,
+               let ocrResult = pastedOCRResult,
+               let extractedData = pastedExtractedData,
+               let entities = pastedEntities {
+                PastePreviewSheet(
+                    imageData: imageData,
+                    ocrResult: ocrResult,
+                    extractedData: extractedData,
+                    entities: entities
+                ) { confirmedEntities in
+                    // Create document with confirmed data
+                    withAnimation {
+                        let newDocument = RFFDocument(
+                            title: generateTitle(from: confirmedEntities),
+                            requestingOrganization: confirmedEntities.organizationName ?? "Unknown",
+                            amount: confirmedEntities.amount ?? Decimal(0),
+                            currency: confirmedEntities.currency ?? .usd,
+                            dueDate: confirmedEntities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
+                            extractedText: ocrResult.fullText
+                        )
+                        modelContext.insert(newDocument)
+
+                        // Schedule deadline notification
+                        Task {
+                            try? await NotificationService.shared.scheduleDeadlineNotification(
+                                documentId: newDocument.id,
+                                title: newDocument.title,
+                                organization: newDocument.requestingOrganization,
+                                dueDate: newDocument.dueDate
+                            )
+                        }
+                    }
+
+                    // Clear paste state
+                    pastedImageData = nil
+                    pastedOCRResult = nil
+                    pastedExtractedData = nil
+                    pastedEntities = nil
+                }
             }
         }
     }
@@ -558,30 +608,19 @@ struct ContentView: View {
             // Extract entities from OCR text
             let entities = try await entityService.extractEntities(from: ocrResult.fullText)
 
-            // Create document with extracted data
-            withAnimation {
-                let newDocument = RFFDocument(
-                    title: generateTitle(from: entities),
-                    requestingOrganization: entities.organizationName ?? "Unknown",
-                    amount: entities.amount ?? Decimal(0),
-                    currency: entities.currency ?? .usd,
-                    dueDate: entities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
-                    extractedText: ocrResult.fullText
-                )
-                modelContext.insert(newDocument)
+            // Extract amounts and dates with bounding boxes for highlighting
+            let extractedData = await amountDateService.extract(from: ocrResult)
 
-                // Schedule deadline notification
-                Task {
-                    try? await NotificationService.shared.scheduleDeadlineNotification(
-                        documentId: newDocument.id,
-                        title: newDocument.title,
-                        organization: newDocument.requestingOrganization,
-                        dueDate: newDocument.dueDate
-                    )
-                }
-            }
+            // Store data for preview sheet
+            pastedImageData = data
+            pastedOCRResult = ocrResult
+            pastedExtractedData = extractedData
+            pastedEntities = entities
 
             isProcessingPaste = false
+
+            // Show preview sheet
+            showingPastePreview = true
 
         } catch {
             isProcessingPaste = false
@@ -895,6 +934,207 @@ struct DocumentDetailView: View {
                 label: match.text
             )
         }
+    }
+}
+
+// MARK: - Paste Preview Sheet
+
+/// Preview sheet for pasted screenshots showing image with OCR highlights and editable fields
+struct PastePreviewSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let imageData: Data
+    let ocrResult: OCRPageResult
+    let extractedData: ExtractedData
+    let entities: ExtractedEntities
+    let onConfirm: (ExtractedEntities) -> Void
+
+    // Editable fields
+    @State private var organization: String
+    @State private var amount: Decimal
+    @State private var currency: Currency
+    @State private var dueDate: Date
+
+    init(
+        imageData: Data,
+        ocrResult: OCRPageResult,
+        extractedData: ExtractedData,
+        entities: ExtractedEntities,
+        onConfirm: @escaping (ExtractedEntities) -> Void
+    ) {
+        self.imageData = imageData
+        self.ocrResult = ocrResult
+        self.extractedData = extractedData
+        self.entities = entities
+        self.onConfirm = onConfirm
+
+        // Initialize editable fields from extracted entities
+        _organization = State(initialValue: entities.organizationName ?? "")
+        _amount = State(initialValue: entities.amount ?? Decimal(0))
+        _currency = State(initialValue: entities.currency ?? .usd)
+        _dueDate = State(initialValue: entities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60))
+    }
+
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Screenshot Preview")
+                    .font(.headline)
+                Spacer()
+                Button("Cancel") {
+                    dismiss()
+                }
+                .keyboardShortcut(.cancelAction)
+            }
+            .padding()
+
+            Divider()
+
+            // Main content: split view
+            HSplitView {
+                // Left: Image preview with highlights
+                VStack(spacing: 0) {
+                    HStack {
+                        Text("Detected Data")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+
+                        // Legend
+                        HStack(spacing: 12) {
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(Color.green.opacity(0.5))
+                                    .frame(width: 10, height: 10)
+                                Text("Amounts")
+                                    .font(.caption)
+                            }
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(Color.blue.opacity(0.5))
+                                    .frame(width: 10, height: 10)
+                                Text("Dates")
+                                    .font(.caption)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+
+                    DocumentPreviewView(
+                        imageData: imageData,
+                        highlights: DocumentPreviewView.highlights(from: extractedData)
+                    )
+                }
+                .frame(minWidth: 400)
+
+                // Right: Editable form
+                Form {
+                    Section("Extracted Information") {
+                        TextField("Organization", text: $organization)
+
+                        HStack {
+                            Text("Amount")
+                            Spacer()
+                            TextField("Amount", value: $amount, format: .currency(code: currency.currencyCode))
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 150)
+                        }
+
+                        Picker("Currency", selection: $currency) {
+                            ForEach(Currency.allCases) { curr in
+                                Text("\(curr.symbol) \(curr.displayName)").tag(curr)
+                            }
+                        }
+
+                        DatePicker("Due Date", selection: $dueDate, displayedComponents: [.date])
+                    }
+
+                    // Show detected amounts for reference
+                    if !extractedData.amounts.isEmpty {
+                        Section("Detected Amounts") {
+                            ForEach(extractedData.amounts) { extractedAmount in
+                                Button {
+                                    amount = extractedAmount.value
+                                    currency = extractedAmount.currency
+                                } label: {
+                                    HStack {
+                                        Text(extractedAmount.rawText)
+                                            .foregroundStyle(.primary)
+                                        Spacer()
+                                        Text(extractedAmount.value, format: .currency(code: extractedAmount.currency.currencyCode))
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+
+                    // Show detected dates for reference
+                    if !extractedData.dates.isEmpty {
+                        Section("Detected Dates") {
+                            ForEach(extractedData.dates) { extractedDate in
+                                Button {
+                                    dueDate = extractedDate.date
+                                } label: {
+                                    HStack {
+                                        Text(extractedDate.rawText)
+                                            .foregroundStyle(.primary)
+                                        Spacer()
+                                        Text(extractedDate.date, format: .dateTime.month().day().year())
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+
+                    // Show OCR text preview
+                    Section("Extracted Text") {
+                        ScrollView {
+                            Text(ocrResult.fullText)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .textSelection(.enabled)
+                        }
+                        .frame(maxHeight: 150)
+                    }
+                }
+                .formStyle(.grouped)
+                .frame(minWidth: 300, maxWidth: 400)
+            }
+
+            Divider()
+
+            // Footer with actions
+            HStack {
+                Spacer()
+                Button("Create Document") {
+                    // Build confirmed entities with all required fields
+                    let confirmed = ExtractedEntities(
+                        organizationName: organization.isEmpty ? nil : organization,
+                        dueDate: dueDate,
+                        amount: amount,
+                        currency: currency,
+                        allOrganizations: entities.allOrganizations,
+                        allDates: entities.allDates,
+                        allAmounts: entities.allAmounts,
+                        confidence: entities.confidence
+                    )
+                    onConfirm(confirmed)
+                    dismiss()
+                }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+                .disabled(organization.isEmpty && amount == 0)
+            }
+            .padding()
+        }
+        .frame(minWidth: 800, minHeight: 600)
     }
 }
 
