@@ -210,11 +210,10 @@ struct ContentView: View {
         isProcessingDrop = true
 
         provider.loadFileRepresentation(forTypeIdentifier: UTType.pdf.identifier) { url, error in
-            defer { DispatchQueue.main.async { isProcessingDrop = false } }
-
             guard let url = url else {
-                if let error = error {
-                    DispatchQueue.main.async {
+                DispatchQueue.main.async {
+                    isProcessingDrop = false
+                    if let error = error {
                         importError = error.localizedDescription
                         showingImportError = true
                     }
@@ -231,12 +230,14 @@ struct ContentView: View {
                 try FileManager.default.copyItem(at: url, to: tempCopy)
             } catch {
                 DispatchQueue.main.async {
+                    isProcessingDrop = false
                     importError = "Failed to access dropped file: \(error.localizedDescription)"
                     showingImportError = true
                 }
                 return
             }
 
+            // Note: isProcessingDrop is reset in processDroppedPDF when complete
             Task {
                 await processDroppedPDF(at: tempCopy)
             }
