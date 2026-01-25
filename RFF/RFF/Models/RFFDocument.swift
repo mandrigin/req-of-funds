@@ -53,6 +53,20 @@ final class RFFDocument {
     /// Last modification timestamp
     var updatedAt: Date
 
+    // MARK: - Confirmed Values (set when document is approved)
+
+    /// Confirmed organization name (locked after approval)
+    var confirmedOrganization: String?
+
+    /// Confirmed amount (locked after approval)
+    var confirmedAmount: Decimal?
+
+    /// Confirmed due date (locked after approval)
+    var confirmedDueDate: Date?
+
+    /// Timestamp when document was confirmed/approved
+    var confirmedAt: Date?
+
     init(
         id: UUID = UUID(),
         title: String,
