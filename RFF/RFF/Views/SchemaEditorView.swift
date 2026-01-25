@@ -826,7 +826,7 @@ func colorForFieldType(_ fieldType: InvoiceFieldType) -> NSColor {
         return .systemBlue
     case .vendor, .vendorAddress:
         return .systemOrange
-    case .customerName, .customerAddress:
+    case .recipient, .customerName, .customerAddress:
         return .systemTeal
     case .subtotal, .tax, .total, .currency:
         return .systemGreen

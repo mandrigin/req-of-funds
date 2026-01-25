@@ -26,20 +26,20 @@ enum CurrencyFilter: Hashable {
     }
 }
 
-/// Grouping options for document list
-enum DocumentGrouping: String, CaseIterable {
-    case none = "None"
-    case byRecipient = "Recipient"
-    case byMonth = "Month"
+/// Recipient filter for document list
+enum RecipientFilter: Hashable {
+    case all
+    case specific(String)
+    case unassigned
 
-    var icon: String {
+    var displayName: String {
         switch self {
-        case .none:
-            return "list.bullet"
-        case .byRecipient:
-            return "building.2"
-        case .byMonth:
-            return "calendar"
+        case .all:
+            return "All Recipients"
+        case .specific(let recipient):
+            return recipient
+        case .unassigned:
+            return "No Recipient"
         }
     }
 }
@@ -67,7 +67,7 @@ struct ContentView: View {
 
     @State private var selectedFilter: DocumentFilter = .inbox
     @State private var selectedCurrencyFilter: CurrencyFilter = .all
-    @State private var selectedGrouping: DocumentGrouping = .none
+    @State private var selectedRecipientFilter: RecipientFilter = .all
 
     /// Documents to display based on current filters
     private var documents: [RFFDocument] {
@@ -82,11 +82,22 @@ struct ContentView: View {
         }
 
         // Apply currency filter
+        let currencyFiltered: [RFFDocument]
         switch selectedCurrencyFilter {
         case .all:
-            return statusFiltered
+            currencyFiltered = statusFiltered
         case .specific(let currency):
-            return statusFiltered.filter { $0.currency == currency }
+            currencyFiltered = statusFiltered.filter { $0.currency == currency }
+        }
+
+        // Apply recipient filter
+        switch selectedRecipientFilter {
+        case .all:
+            return currencyFiltered
+        case .specific(let recipient):
+            return currencyFiltered.filter { $0.recipient == recipient }
+        case .unassigned:
+            return currencyFiltered.filter { $0.recipient == nil || $0.recipient?.isEmpty == true }
         }
     }
 
@@ -105,29 +116,34 @@ struct ContentView: View {
         return Currency.allCases.filter { currencies.contains($0) }
     }
 
-    /// Documents grouped by recipient (organization)
-    private var documentsByRecipient: [(key: String, documents: [RFFDocument])] {
-        let grouped = Dictionary(grouping: documents) { $0.requestingOrganization }
-        return grouped.map { (key: $0.key, documents: $0.value) }
-            .sorted { $0.key.localizedCaseInsensitiveCompare($1.key) == .orderedAscending }
+    /// Available recipients in the current document set (for filter menu)
+    private var availableRecipients: [String] {
+        let statusFiltered: [RFFDocument]
+        switch selectedFilter {
+        case .inbox:
+            statusFiltered = inboxDocuments
+        case .confirmed:
+            statusFiltered = confirmedDocuments
+        case .paid:
+            statusFiltered = paidDocuments
+        }
+        let recipients = Set(statusFiltered.compactMap { $0.recipient }.filter { !$0.isEmpty })
+        return recipients.sorted()
     }
 
-    /// Documents grouped by month (based on due date)
-    private var documentsByMonth: [(key: String, date: Date, documents: [RFFDocument])] {
-        let calendar = Calendar.current
-        let grouped = Dictionary(grouping: documents) { doc -> DateComponents in
-            calendar.dateComponents([.year, .month], from: doc.dueDate)
+    /// Whether there are documents without recipients in the current filter
+    private var hasUnassignedRecipients: Bool {
+        let statusFiltered: [RFFDocument]
+        switch selectedFilter {
+        case .inbox:
+            statusFiltered = inboxDocuments
+        case .confirmed:
+            statusFiltered = confirmedDocuments
+        case .paid:
+            statusFiltered = paidDocuments
         }
-        return grouped.map { components, docs -> (key: String, date: Date, documents: [RFFDocument]) in
-            let date = calendar.date(from: components) ?? Date()
-            let formatter = DateFormatter()
-            formatter.dateFormat = "MMMM yyyy"
-            let key = formatter.string(from: date)
-            return (key: key, date: date, documents: docs)
-        }
-        .sorted { $0.date > $1.date } // Most recent first
+        return statusFiltered.contains { $0.recipient == nil || $0.recipient?.isEmpty == true }
     }
-
     @State private var isImportingPDF = false
     @State private var importError: String?
     @State private var showingImportError = false
@@ -242,24 +258,47 @@ struct ContentView: View {
                         Label(currencyFilterLabel, systemImage: "dollarsign.circle")
                     }
 
-                    // Grouping menu
+                    // Recipient filter menu
                     Menu {
-                        ForEach(DocumentGrouping.allCases, id: \.self) { grouping in
+                        Button {
+                            selectedRecipientFilter = .all
+                        } label: {
+                            if case .all = selectedRecipientFilter {
+                                Label("All Recipients", systemImage: "checkmark")
+                            } else {
+                                Text("All Recipients")
+                            }
+                        }
+
+                        if hasUnassignedRecipients {
                             Button {
-                                selectedGrouping = grouping
+                                selectedRecipientFilter = .unassigned
                             } label: {
-                                if selectedGrouping == grouping {
-                                    Label(grouping.rawValue, systemImage: "checkmark")
+                                if case .unassigned = selectedRecipientFilter {
+                                    Label("No Recipient", systemImage: "checkmark")
                                 } else {
-                                    Text(grouping.rawValue)
+                                    Text("No Recipient")
+                                }
+                            }
+                        }
+
+                        if !availableRecipients.isEmpty {
+                            Divider()
+
+                            ForEach(availableRecipients, id: \.self) { recipient in
+                                Button {
+                                    selectedRecipientFilter = .specific(recipient)
+                                } label: {
+                                    if case .specific(let selected) = selectedRecipientFilter, selected == recipient {
+                                        Label(recipient, systemImage: "checkmark")
+                                    } else {
+                                        Text(recipient)
+                                    }
                                 }
                             }
                         }
                     } label: {
-                        Label(
-                            selectedGrouping == .none ? "Group" : selectedGrouping.rawValue,
-                            systemImage: selectedGrouping.icon
-                        )
+                        Label(recipientFilterLabel, systemImage: "person.crop.circle")
                     }
 
                     Spacer()
@@ -267,146 +306,23 @@ struct ContentView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 8)
 
-                // Document list - grouped or flat table
-                if selectedGrouping == .none {
-                    // Flat table view
-                    documentTable
-                } else {
-                    // Grouped list view
-                    groupedDocumentList
-                }
-
-                // Totals bar at bottom
-                if !documents.isEmpty {
-                    Divider()
-                    HStack {
-                        Text(totalsDisplayText)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text("\(documentsForTotals.count) of \(documents.count) documents")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    .background(.bar)
-                }
-            }
-            .navigationTitle("Library")
-        } detail: {
-            if let document = selectedDocument {
-                DocumentDetailView(document: document)
-            } else {
-                ContentUnavailableView(
-                    "No Document Selected",
-                    systemImage: "doc.text",
-                    description: Text("Select a document from the library to view details")
-                )
-            }
-        }
-        .fileImporter(
-            isPresented: $isImportingPDF,
-            allowedContentTypes: [.pdf],
-            allowsMultipleSelection: false
-        ) { result in
-            handlePDFImport(result)
-        }
-        .alert("Import Error", isPresented: $showingImportError) {
-            Button("OK") { }
-        } message: {
-            Text(importError ?? "Unknown error")
-        }
-        .onPasteCommand(of: [.png, .jpeg, .tiff]) { providers in
-            handleImagePaste(providers: providers)
-        }
-        .overlay {
-            if isProcessingPaste {
-                ZStack {
-                    Color.black.opacity(0.3)
-                    VStack(spacing: 12) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                        Text("Processing pasted image...")
-                            .font(.headline)
-                    }
-                    .padding(24)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-                }
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .openLibrary)) { _ in
-            // Bring the library window to front when notification is received
-            if let window = NSApp.windows.first(where: { $0.title == "RFF Library" }) {
-                window.makeKeyAndOrderFront(nil)
-                NSApp.activate(ignoringOtherApps: true)
-            }
-        }
-        .sheet(isPresented: $showingPastePreview) {
-            if let imageData = pastedImageData,
-               let ocrResult = pastedOCRResult,
-               let extractedData = pastedExtractedData,
-               let entities = pastedEntities {
-                PastePreviewSheet(
-                    imageData: imageData,
-                    ocrResult: ocrResult,
-                    extractedData: extractedData,
-                    entities: entities
-                ) { confirmedEntities in
-                    // Create document with confirmed data
-                    let newDocument = RFFDocument(
-                        title: confirmedEntities.organizationName ?? "Pasted Document",
-                        requestingOrganization: confirmedEntities.organizationName ?? "Unknown",
-                        amount: confirmedEntities.amount ?? Decimal.zero,
-                        currency: confirmedEntities.currency ?? .usd,
-                        dueDate: confirmedEntities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
-                        extractedText: ocrResult.fullText
-                    )
-                    modelContext.insert(newDocument)
-
-                    // Schedule notification
-                    Task {
-                        try? await NotificationService.shared.scheduleDeadlineNotification(
-                            documentId: newDocument.id,
-                            title: newDocument.title,
-                            organization: newDocument.requestingOrganization,
-                            dueDate: newDocument.dueDate
-                        )
-                    }
-
-                    // Clear paste state
-                    pastedImageData = nil
-                    pastedOCRResult = nil
-                    pastedExtractedData = nil
-                    pastedEntities = nil
-                }
-            }
-        }
-        .sheet(isPresented: $showingTextEntry) {
-            TextEntrySheet { document in
-                modelContext.insert(document)
-
-                // Schedule deadline notification
-                Task {
-                    try? await NotificationService.shared.scheduleDeadlineNotification(
-                        documentId: document.id,
-                        title: document.title,
-                        organization: document.requestingOrganization,
-                        dueDate: document.dueDate
-                    )
-                }
-            }
-        }
-    }
-
-    /// Flat table view for documents (no grouping)
-    @ViewBuilder
-    private var documentTable: some View {
-        Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
+                // Table view with columns
+                Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
                 TableColumn("Organization", value: \.requestingOrganization) { document in
                     Text(document.requestingOrganization)
                 }
                 .width(min: 120, ideal: 180)
+
+                TableColumn("Recipient") { document in
+                    if let recipient = document.recipient, !recipient.isEmpty {
+                        Text(recipient)
+                            .foregroundStyle(.primary)
+                    } else {
+                        Text("—")
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .width(min: 80, ideal: 120)
 
                 TableColumn("Amount") { document in
                     Text(document.amount, format: .currency(code: document.currency.currencyCode))
@@ -546,123 +462,126 @@ struct ContentView: View {
                     }
                 }
             }
-    }
 
-    /// Grouped document list view (by recipient or month)
-    @ViewBuilder
-    private var groupedDocumentList: some View {
-        List(selection: $selectedDocuments) {
-            switch selectedGrouping {
-            case .none:
-                // Should not happen, but handle it
-                EmptyView()
-
-            case .byRecipient:
-                ForEach(documentsByRecipient, id: \.key) { group in
-                    Section {
-                        ForEach(group.documents) { document in
-                            DocumentRowView(document: document)
-                                .tag(document.id)
-                        }
-                    } header: {
-                        HStack {
-                            Image(systemName: "building.2")
-                            Text(group.key)
-                                .font(.headline)
-                            Spacer()
-                            Text("\(group.documents.count)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                // Totals bar at bottom
+                if !documents.isEmpty {
+                    Divider()
+                    HStack {
+                        Text(totalsDisplayText)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text("\(documentsForTotals.count) of \(documents.count) documents")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
                     }
-                }
-
-            case .byMonth:
-                ForEach(documentsByMonth, id: \.key) { group in
-                    Section {
-                        ForEach(group.documents) { document in
-                            DocumentRowView(document: document)
-                                .tag(document.id)
-                        }
-                    } header: {
-                        HStack {
-                            Image(systemName: "calendar")
-                            Text(group.key)
-                                .font(.headline)
-                            Spacer()
-                            Text("\(group.documents.count)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    .background(.bar)
                 }
             }
-        }
-        .listStyle(.sidebar)
-        .onChange(of: selectedDocuments) { _, newSelection in
-            if let first = newSelection.first {
-                selectedDocument = documents.first { $0.id == first }
+        } detail: {
+            if let document = selectedDocument {
+                DocumentDetailView(document: document)
             } else {
-                selectedDocument = nil
+                ContentUnavailableView(
+                    "No Document Selected",
+                    systemImage: "doc.text",
+                    description: Text("Select a document from the library to view details")
+                )
             }
         }
-        .onDrop(of: [.pdf, .image], isTargeted: nil) { providers in
-            handleFileDrop(providers: providers)
-            return true
+        .fileImporter(
+            isPresented: $isImportingPDF,
+            allowedContentTypes: [.pdf],
+            allowsMultipleSelection: false
+        ) { result in
+            handlePDFImport(result)
+        }
+        .alert("Import Error", isPresented: $showingImportError) {
+            Button("OK") { }
+        } message: {
+            Text(importError ?? "Unknown error")
+        }
+        .onPasteCommand(of: [.png, .jpeg, .tiff]) { providers in
+            handleImagePaste(providers: providers)
         }
         .overlay {
-            if isProcessingDrop {
+            if isProcessingPaste {
                 ZStack {
                     Color.black.opacity(0.3)
                     VStack(spacing: 12) {
                         ProgressView()
                             .scaleEffect(1.5)
-                        if dropProcessingTotal > 1 {
-                            Text("Processing \(dropProcessingCount) of \(dropProcessingTotal) files...")
-                                .font(.headline)
-                        } else {
-                            Text("Processing invoice...")
-                                .font(.headline)
-                        }
+                        Text("Processing pasted image...")
+                            .font(.headline)
                     }
                     .padding(24)
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
-            } else if documents.isEmpty {
-                ContentUnavailableView {
-                    Label(
-                        emptyStateTitle,
-                        systemImage: emptyStateIcon
-                    )
-                } description: {
-                    Text(emptyStateDescription)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .openLibrary)) { _ in
+            // Bring the library window to front when notification is received
+            if let window = NSApp.windows.first(where: { $0.title == "RFF Library" }) {
+                window.makeKeyAndOrderFront(nil)
+                NSApp.activate(ignoringOtherApps: true)
+            }
+        }
+        .sheet(isPresented: $showingPastePreview) {
+            if let imageData = pastedImageData,
+               let ocrResult = pastedOCRResult,
+               let extractedData = pastedExtractedData,
+               let entities = pastedEntities {
+                PastePreviewSheet(
+                    imageData: imageData,
+                    ocrResult: ocrResult,
+                    extractedData: extractedData,
+                    entities: entities
+                ) { confirmedEntities in
+                    // Create document with confirmed data
+                    withAnimation {
+                        let newDocument = RFFDocument(
+                            title: generateTitle(from: confirmedEntities),
+                            requestingOrganization: confirmedEntities.organizationName ?? "Unknown",
+                            amount: confirmedEntities.amount ?? Decimal(0),
+                            currency: confirmedEntities.currency ?? .usd,
+                            dueDate: confirmedEntities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
+                            extractedText: ocrResult.fullText
+                        )
+                        modelContext.insert(newDocument)
+
+                        // Schedule deadline notification
+                        Task {
+                            try? await NotificationService.shared.scheduleDeadlineNotification(
+                                documentId: newDocument.id,
+                                title: newDocument.title,
+                                organization: newDocument.requestingOrganization,
+                                dueDate: newDocument.dueDate
+                            )
+                        }
+                    }
+
+                    // Clear paste state
+                    pastedImageData = nil
+                    pastedOCRResult = nil
+                    pastedExtractedData = nil
+                    pastedEntities = nil
                 }
             }
         }
-        .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
-                Button(action: { isImportingPDF = true }) {
-                    Label("Import PDF", systemImage: "doc.badge.plus")
-                }
-                .help("Import an invoice or document from a PDF file")
-                Button(action: { showingTextEntry = true }) {
-                    Label("Enter Text", systemImage: "text.badge.plus")
-                }
-                .help("Manually enter document details as text")
-                Button(action: addDocument) {
-                    Label("Add Document", systemImage: "plus")
-                }
-                .help("Create a new blank document")
-            }
+        .sheet(isPresented: $showingTextEntry) {
+            TextEntrySheet { document in
+                modelContext.insert(document)
 
-            ToolbarItemGroup(placement: .secondaryAction) {
-                if !selectedDocuments.isEmpty {
-                    Button(role: .destructive) {
-                        deleteDocuments(ids: selectedDocuments)
-                    } label: {
-                        Label("Delete Selected", systemImage: "trash")
-                    }
-                    .help("Delete the selected documents")
+                // Schedule deadline notification
+                Task {
+                    try? await NotificationService.shared.scheduleDeadlineNotification(
+                        documentId: document.id,
+                        title: document.title,
+                        organization: document.requestingOrganization,
+                        dueDate: document.dueDate
+                    )
                 }
             }
         }
@@ -873,6 +792,21 @@ struct ContentView: View {
             return "All"
         case .specific(let currency):
             return currency.symbol
+        }
+    }
+
+    private var recipientFilterLabel: String {
+        switch selectedRecipientFilter {
+        case .all:
+            return "All"
+        case .specific(let recipient):
+            // Truncate long recipient names for the label
+            if recipient.count > 15 {
+                return String(recipient.prefix(12)) + "..."
+            }
+            return recipient
+        case .unassigned:
+            return "None"
         }
     }
 
@@ -1136,37 +1070,6 @@ struct StatusBadge: View {
     }
 }
 
-// MARK: - Document Row View (for grouped lists)
-
-struct DocumentRowView: View {
-    let document: RFFDocument
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(document.requestingOrganization)
-                    .font(.headline)
-                HStack(spacing: 8) {
-                    Text(document.amount, format: .currency(code: document.currency.currencyCode))
-                        .font(.subheadline)
-                        .monospacedDigit()
-                    Text(document.dueDate, format: .dateTime.month().day().year())
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    if document.dueDate < Date() && document.status != .completed && document.status != .paid {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.red)
-                            .font(.caption)
-                    }
-                }
-            }
-            Spacer()
-            StatusBadge(status: document.status)
-        }
-        .padding(.vertical, 4)
-    }
-}
-
 struct DocumentDetailView: View {
     @Bindable var document: RFFDocument
     @Environment(\.modelContext) private var modelContext
@@ -1288,6 +1191,7 @@ struct DocumentDetailView: View {
                 Section("Document Info") {
                     LabeledContent("Title", value: document.title)
                     LabeledContent("Organization", value: document.requestingOrganization)
+                    LabeledContent("Recipient", value: document.recipient ?? "—")
                     LabeledContent("Amount", value: document.amount, format: .currency(code: document.currency.currencyCode))
                     LabeledContent("Currency", value: "\(document.currency.symbol) \(document.currency.displayName)")
                     LabeledContent("Due Date", value: document.dueDate, format: .dateTime)
@@ -1639,20 +1543,12 @@ struct DocumentDetailView: View {
             loadSchemaName()
             loadAvailableSchemas()
         }
-        .onChange(of: document.id) { _, _ in
-            loadPDF()
-            loadSchemaName()
-            loadAvailableSchemas()
-        }
     }
 
     private func loadPDF() {
         guard let path = document.documentPath else { return }
         let url = URL(fileURLWithPath: path)
         pdfDocument = PDFDocument(url: url)
-
-        // Clear any stale highlight selection from previous document
-        selectedHighlight = nil
 
         // Auto-detect fields when PDF loads
         detectAllFields()
@@ -2303,6 +2199,8 @@ struct LibraryAIAnalysisResultSheet: View {
         switch suggestion.fieldType {
         case "vendor":
             document.requestingOrganization = suggestion.value
+        case "recipient":
+            document.recipient = suggestion.value
         case "total", "subtotal":
             if let amount = parseAmount(suggestion.value) {
                 document.amount = amount
@@ -2416,6 +2314,7 @@ struct LibraryAISuggestionRow: View {
         case "invoice_date": return "Invoice Date"
         case "due_date": return "Due Date"
         case "vendor": return "Vendor"
+        case "recipient": return "Recipient"
         case "customer_name": return "Customer"
         case "subtotal": return "Subtotal"
         case "tax": return "Tax"
@@ -2981,6 +2880,7 @@ struct TextEntrySheet: View {
         case "invoice_date": return "Invoice Date"
         case "due_date": return "Due Date"
         case "vendor": return "Vendor"
+        case "recipient": return "Recipient"
         case "customer_name": return "Customer"
         case "subtotal": return "Subtotal"
         case "tax": return "Tax"
