@@ -19,12 +19,17 @@ struct SettingsView: View {
                     Label("OCR", systemImage: "doc.text.viewfinder")
                 }
 
+            AISettingsView()
+                .tabItem {
+                    Label("AI", systemImage: "sparkles")
+                }
+
             AdvancedSettingsView()
                 .tabItem {
                     Label("Advanced", systemImage: "gearshape.2")
                 }
         }
-        .frame(width: 500, height: 400)
+        .frame(width: 500, height: 450)
     }
 }
 
@@ -166,6 +171,139 @@ struct OCRSettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
+    }
+}
+
+// MARK: - AI Settings
+
+struct AISettingsView: View {
+    @State private var apiKey = ""
+    @State private var isAPIKeyConfigured = false
+    @State private var showingAPIKey = false
+    @State private var isSaving = false
+    @State private var errorMessage: String?
+    @State private var successMessage: String?
+
+    var body: some View {
+        Form {
+            Section("OpenAI API") {
+                HStack {
+                    if showingAPIKey {
+                        TextField("API Key", text: $apiKey)
+                            .textFieldStyle(.roundedBorder)
+                    } else {
+                        SecureField("API Key", text: $apiKey)
+                            .textFieldStyle(.roundedBorder)
+                    }
+
+                    Button {
+                        showingAPIKey.toggle()
+                    } label: {
+                        Image(systemName: showingAPIKey ? "eye.slash" : "eye")
+                    }
+                    .buttonStyle(.borderless)
+                }
+
+                HStack {
+                    if isAPIKeyConfigured {
+                        Label("API key configured", systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                    } else {
+                        Label("API key not set", systemImage: "xmark.circle")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    if isSaving {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Button("Save") {
+                            saveAPIKey()
+                        }
+                        .disabled(apiKey.isEmpty)
+
+                        if isAPIKeyConfigured {
+                            Button("Remove", role: .destructive) {
+                                removeAPIKey()
+                            }
+                        }
+                    }
+                }
+
+                if let error = errorMessage {
+                    Text(error)
+                        .foregroundStyle(.red)
+                        .font(.caption)
+                }
+
+                if let success = successMessage {
+                    Text(success)
+                        .foregroundStyle(.green)
+                        .font(.caption)
+                }
+            }
+
+            Section("Privacy") {
+                Text("Your API key is stored securely in the macOS Keychain.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Text("Document text is only sent to OpenAI when you explicitly tap the 'AI Analyze' button. No automatic data transmission occurs.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("About") {
+                Link("Get an OpenAI API key", destination: URL(string: "https://platform.openai.com/api-keys")!)
+
+                Text("Uses GPT-4o-mini model for cost-effective analysis.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .padding()
+        .task {
+            checkAPIKeyStatus()
+        }
+    }
+
+    private func checkAPIKeyStatus() {
+        Task {
+            isAPIKeyConfigured = await AIAnalysisService.shared.isAPIKeyConfigured()
+        }
+    }
+
+    private func saveAPIKey() {
+        isSaving = true
+        errorMessage = nil
+        successMessage = nil
+
+        Task {
+            do {
+                try await AIAnalysisService.shared.saveAPIKey(apiKey)
+                isAPIKeyConfigured = true
+                apiKey = ""
+                successMessage = "API key saved successfully"
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isSaving = false
+        }
+    }
+
+    private func removeAPIKey() {
+        Task {
+            do {
+                try await AIAnalysisService.shared.deleteAPIKey()
+                isAPIKeyConfigured = false
+                successMessage = "API key removed"
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
     }
 }
 

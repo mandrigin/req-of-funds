@@ -30,6 +30,14 @@
 		A1000001234567890000021 /* TrainingData.json in Resources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000023 /* TrainingData.json */; };
 		A1000001234567890000022 /* AmountDateExtractionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000024 /* AmountDateExtractionService.swift */; };
 		A1000001234567890000023 /* ConfirmationFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000025 /* ConfirmationFormView.swift */; };
+		A1000001234567890000024 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000026 /* KeychainManager.swift */; };
+		A1000001234567890000025 /* DocumentPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000027 /* DocumentPreviewView.swift */; };
+		A1000001234567890000026 /* InvoiceSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000028 /* InvoiceSchema.swift */; };
+		A1000001234567890000027 /* SchemaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000029 /* SchemaStore.swift */; };
+		A1000001234567890000028 /* AIAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000030 /* AIAnalysisService.swift */; };
+		A1000001234567890000029 /* CorrectionHistoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000031 /* CorrectionHistoryService.swift */; };
+		A1000001234567890000030 /* FieldClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000032 /* FieldClassifier.swift */; };
+		A1000001234567890000031 /* SchemaEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000033 /* SchemaEditorView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +65,14 @@
 		A1000002234567890000023 /* TrainingData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = TrainingData.json; sourceTree = "<group>"; };
 		A1000002234567890000024 /* AmountDateExtractionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountDateExtractionService.swift; sourceTree = "<group>"; };
 		A1000002234567890000025 /* ConfirmationFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmationFormView.swift; sourceTree = "<group>"; };
+		A1000002234567890000026 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
+		A1000002234567890000027 /* DocumentPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPreviewView.swift; sourceTree = "<group>"; };
+		A1000002234567890000028 /* InvoiceSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceSchema.swift; sourceTree = "<group>"; };
+		A1000002234567890000029 /* SchemaStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaStore.swift; sourceTree = "<group>"; };
+		A1000002234567890000030 /* AIAnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAnalysisService.swift; sourceTree = "<group>"; };
+		A1000002234567890000031 /* CorrectionHistoryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CorrectionHistoryService.swift; sourceTree = "<group>"; };
+		A1000002234567890000032 /* FieldClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldClassifier.swift; sourceTree = "<group>"; };
+		A1000002234567890000033 /* SchemaEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaEditorView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +113,7 @@
 		A1000004234567890000003 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				A1000002234567890000028 /* InvoiceSchema.swift */,
 				A1000002234567890000004 /* LineItem.swift */,
 				A1000002234567890000005 /* RFFDocument.swift */,
 				A1000002234567890000011 /* RFFFileDocument.swift */,
@@ -109,13 +126,17 @@
 		A1000004234567890000004 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A1000002234567890000030 /* AIAnalysisService.swift */,
 				A1000002234567890000024 /* AmountDateExtractionService.swift */,
 				A1000002234567890000013 /* CalendarService.swift */,
+				A1000002234567890000031 /* CorrectionHistoryService.swift */,
 				A1000002234567890000007 /* DocumentOCRService.swift */,
 				A1000002234567890000014 /* EntityExtractionService.swift */,
+				A1000002234567890000026 /* KeychainManager.swift */,
 				A1000002234567890000015 /* NotificationService.swift */,
 				A1000002234567890000016 /* PDFService.swift */,
 				A1000002234567890000017 /* PDFTextFinder.swift */,
+				A1000002234567890000029 /* SchemaStore.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -133,7 +154,9 @@
 			children = (
 				A1000002234567890000025 /* ConfirmationFormView.swift */,
 				A1000002234567890000018 /* DocumentEditorView.swift */,
+				A1000002234567890000027 /* DocumentPreviewView.swift */,
 				A1000002234567890000019 /* PDFViewer.swift */,
+				A1000002234567890000033 /* SchemaEditorView.swift */,
 				A1000002234567890000020 /* SettingsView.swift */,
 			);
 			path = Views;

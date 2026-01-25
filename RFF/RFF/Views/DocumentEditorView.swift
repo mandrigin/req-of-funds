@@ -9,6 +9,9 @@ struct DocumentEditorView: View {
     @State private var isProcessingDrop = false
     @State private var showingAddLineItem = false
     @State private var errorMessage: String?
+    @State private var isAnalyzingWithAI = false
+    @State private var showingAIResults = false
+    @State private var aiAnalysisResult: AIAnalysisResult?
 
     var body: some View {
         NavigationSplitView {
@@ -48,19 +51,29 @@ struct DocumentEditorView: View {
                 }
 
                 Button {
-                    // TODO: Implement AI analysis - send document to LLM for:
-                    // - Extracting structured data from unstructured text
-                    // - Categorizing line items automatically
-                    // - Detecting anomalies or errors
-                    // - Suggesting missing information
-                    print("AI Analyze: TODO - implement LLM-based document analysis")
+                    performAIAnalysis()
                 } label: {
-                    Label("AI Analyze", systemImage: "sparkles")
+                    if isAnalyzingWithAI {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Label("AI Analyze", systemImage: "sparkles")
+                    }
                 }
+                .disabled(isAnalyzingWithAI || (document.data.extractedText ?? "").isEmpty)
             }
         }
         .sheet(isPresented: $showingAddLineItem) {
             AddLineItemSheet(lineItems: $document.data.lineItems, currency: document.data.currency)
+        }
+        .sheet(isPresented: $showingAIResults) {
+            if let result = aiAnalysisResult {
+                AIAnalysisResultSheet(
+                    result: result,
+                    document: $document.data,
+                    onDismiss: { showingAIResults = false }
+                )
+            }
         }
         .fileImporter(
             isPresented: $isImporting,
@@ -91,6 +104,31 @@ struct DocumentEditorView: View {
     private func deleteSelectedItems() {
         document.data.lineItems.removeAll { selectedLineItems.contains($0.id) }
         selectedLineItems.removeAll()
+    }
+
+    private func performAIAnalysis() {
+        guard let extractedText = document.data.extractedText, !extractedText.isEmpty else {
+            errorMessage = "No extracted text available. Import a PDF first."
+            return
+        }
+
+        isAnalyzingWithAI = true
+
+        Task {
+            do {
+                let result = try await AIAnalysisService.shared.analyzeDocument(text: extractedText)
+                await MainActor.run {
+                    aiAnalysisResult = result
+                    showingAIResults = true
+                    isAnalyzingWithAI = false
+                }
+            } catch {
+                await MainActor.run {
+                    errorMessage = error.localizedDescription
+                    isAnalyzingWithAI = false
+                }
+            }
+        }
     }
 
     private func handleFileImport(_ result: Result<[URL], Error>) {
@@ -430,6 +468,225 @@ struct ProcessingOverlay: View {
             }
             .padding(32)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        }
+    }
+}
+
+// MARK: - AI Analysis Result Sheet
+
+struct AIAnalysisResultSheet: View {
+    let result: AIAnalysisResult
+    @Binding var document: RFFDocumentData
+    let onDismiss: () -> Void
+
+    @State private var selectedSuggestions: Set<UUID> = []
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                VStack(alignment: .leading) {
+                    Text("AI Analysis Results")
+                        .font(.headline)
+                    if let summary = result.summary {
+                        Text(summary)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Spacer()
+
+                Button("Done") {
+                    onDismiss()
+                }
+                .keyboardShortcut(.cancelAction)
+            }
+            .padding()
+
+            Divider()
+
+            // Suggestions list
+            List(selection: $selectedSuggestions) {
+                Section("Extracted Fields (\(result.suggestions.count))") {
+                    ForEach(result.suggestions) { suggestion in
+                        AISuggestionRow(
+                            suggestion: suggestion,
+                            isSelected: selectedSuggestions.contains(suggestion.id)
+                        )
+                        .tag(suggestion.id)
+                    }
+                }
+
+                if !result.notes.isEmpty {
+                    Section("Notes") {
+                        ForEach(result.notes, id: \.self) { note in
+                            Label(note, systemImage: "info.circle")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                if let schemaName = result.suggestedSchemaName {
+                    Section("Suggested Schema") {
+                        Label(schemaName, systemImage: "doc.text")
+                    }
+                }
+            }
+            .listStyle(.inset)
+
+            Divider()
+
+            // Action bar
+            HStack {
+                Text("\(selectedSuggestions.count) selected")
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Button("Apply Selected") {
+                    applySelectedSuggestions()
+                }
+                .disabled(selectedSuggestions.isEmpty)
+                .keyboardShortcut(.defaultAction)
+            }
+            .padding()
+        }
+        .frame(width: 500, height: 500)
+        .onAppear {
+            // Pre-select high confidence suggestions
+            selectedSuggestions = Set(
+                result.suggestions
+                    .filter { $0.confidence >= 0.7 }
+                    .map { $0.id }
+            )
+        }
+    }
+
+    private func applySelectedSuggestions() {
+        let selectedItems = result.suggestions.filter { selectedSuggestions.contains($0.id) }
+
+        for suggestion in selectedItems {
+            applyFieldSuggestion(suggestion)
+        }
+
+        onDismiss()
+    }
+
+    private func applyFieldSuggestion(_ suggestion: AIFieldSuggestion) {
+        switch suggestion.fieldType {
+        case "vendor":
+            if document.requestingOrganization.isEmpty {
+                document.requestingOrganization = suggestion.value
+            }
+        case "total":
+            if document.amount == .zero, let amount = Decimal(string: suggestion.value) {
+                document.amount = amount
+            }
+        case "invoice_date":
+            // Parse ISO date and apply if dueDate is default
+            if let date = parseISODate(suggestion.value) {
+                // Could store this separately if we add an invoice date field
+            }
+        case "due_date":
+            if let date = parseISODate(suggestion.value) {
+                document.dueDate = date
+            }
+        case "currency":
+            if let currency = Currency(rawValue: suggestion.value.uppercased()) {
+                document.currency = currency
+            }
+        default:
+            break
+        }
+    }
+
+    private func parseISODate(_ string: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        return formatter.date(from: string)
+    }
+}
+
+struct AISuggestionRow: View {
+    let suggestion: AIFieldSuggestion
+    let isSelected: Bool
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(displayName(for: suggestion.fieldType))
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+
+                    Spacer()
+
+                    ConfidenceBadge(confidence: suggestion.confidence)
+                }
+
+                Text(suggestion.value)
+                    .font(.body)
+                    .foregroundStyle(isSelected ? .primary : .secondary)
+
+                if let reasoning = suggestion.reasoning {
+                    Text(reasoning)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func displayName(for fieldType: String) -> String {
+        switch fieldType {
+        case "invoice_number": return "Invoice Number"
+        case "invoice_date": return "Invoice Date"
+        case "due_date": return "Due Date"
+        case "vendor": return "Vendor"
+        case "customer_name": return "Customer"
+        case "subtotal": return "Subtotal"
+        case "tax": return "Tax"
+        case "total": return "Total"
+        case "currency": return "Currency"
+        case "po_number": return "PO Number"
+        default: return fieldType.replacingOccurrences(of: "_", with: " ").capitalized
+        }
+    }
+}
+
+struct ConfidenceBadge: View {
+    let confidence: Double
+
+    var body: some View {
+        Text("\(Int(confidence * 100))%")
+            .font(.caption)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(backgroundColor)
+            .foregroundColor(foregroundColor)
+            .cornerRadius(4)
+    }
+
+    private var backgroundColor: Color {
+        if confidence >= 0.8 {
+            return .green.opacity(0.2)
+        } else if confidence >= 0.5 {
+            return .yellow.opacity(0.2)
+        } else {
+            return .red.opacity(0.2)
+        }
+    }
+
+    private var foregroundColor: Color {
+        if confidence >= 0.8 {
+            return .green
+        } else if confidence >= 0.5 {
+            return .orange
+        } else {
+            return .red
         }
     }
 }
