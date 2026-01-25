@@ -4,9 +4,39 @@ import PDFKit
 import AppKit
 import UniformTypeIdentifiers
 
+/// Filter for document list: Inbox (pending/underReview) vs Confirmed (approved/completed)
+enum DocumentFilter: String, CaseIterable {
+    case inbox = "Inbox"
+    case confirmed = "Confirmed"
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \RFFDocument.dueDate) private var documents: [RFFDocument]
+
+    // All documents (for filtering)
+    @Query(sort: \RFFDocument.dueDate) private var allDocuments: [RFFDocument]
+
+    // Inbox: pending and underReview documents
+    private var inboxDocuments: [RFFDocument] {
+        allDocuments.filter { $0.status == .pending || $0.status == .underReview }
+    }
+
+    // Confirmed: approved and completed documents
+    private var confirmedDocuments: [RFFDocument] {
+        allDocuments.filter { $0.status == .approved || $0.status == .completed }
+    }
+
+    @State private var selectedFilter: DocumentFilter = .inbox
+
+    /// Documents to display based on current filter
+    private var documents: [RFFDocument] {
+        switch selectedFilter {
+        case .inbox:
+            return inboxDocuments
+        case .confirmed:
+            return confirmedDocuments
+        }
+    }
     @State private var isImportingPDF = false
     @State private var importError: String?
     @State private var showingImportError = false
@@ -77,6 +107,17 @@ struct ContentView: View {
                         .padding(24)
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                     }
+                } else if documents.isEmpty {
+                    ContentUnavailableView {
+                        Label(
+                            selectedFilter == .inbox ? "No Pending Documents" : "No Confirmed Documents",
+                            systemImage: selectedFilter == .inbox ? "tray" : "checkmark.circle"
+                        )
+                    } description: {
+                        Text(selectedFilter == .inbox
+                            ? "Documents pending review will appear here."
+                            : "Approved and completed documents will appear here.")
+                    }
                 }
             }
             .onChange(of: selectedDocuments) { _, newSelection in
@@ -85,6 +126,11 @@ struct ContentView: View {
                 } else {
                     selectedDocument = nil
                 }
+            }
+            .onChange(of: selectedFilter) { _, _ in
+                // Clear selection when switching filters
+                selectedDocuments.removeAll()
+                selectedDocument = nil
             }
             .contextMenu(forSelectionType: RFFDocument.ID.self) { ids in
                 if !ids.isEmpty {
@@ -101,6 +147,16 @@ struct ContentView: View {
                 }
             }
             .toolbar {
+                ToolbarItemGroup(placement: .navigation) {
+                    Picker("Filter", selection: $selectedFilter) {
+                        ForEach(DocumentFilter.allCases, id: \.self) { filter in
+                            Text(filter.rawValue).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 180)
+                }
+
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button(action: { isImportingPDF = true }) {
                         Label("Import PDF", systemImage: "doc.badge.plus")
