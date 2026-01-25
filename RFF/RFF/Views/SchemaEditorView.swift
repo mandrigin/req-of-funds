@@ -84,10 +84,12 @@ class SchemaEditorViewModel: ObservableObject {
             let result = try await ocrService.processDocument(at: url)
 
             // Convert observations to detected regions
+            // Use page.pageIndex directly instead of enumerated() index to ensure correct
+            // page mapping even if pages array order doesn't match pageIndex order
             var regions: [DetectedTextRegion] = []
-            for (pageIndex, page) in result.pages.enumerated() {
+            for page in result.pages {
                 for observation in page.observations {
-                    regions.append(DetectedTextRegion(from: observation, pageIndex: pageIndex))
+                    regions.append(DetectedTextRegion(from: observation, pageIndex: page.pageIndex))
                 }
             }
             detectedRegions = regions

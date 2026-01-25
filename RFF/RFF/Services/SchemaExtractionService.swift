@@ -138,15 +138,15 @@ actor SchemaExtractionService {
             throw SchemaExtractionError.ocrFailed(error)
         }
 
-        // Convert OCR observations to text observations
-        var allObservations: [TextObservation] = []
-        for (pageIndex, page) in ocrResult.pages.enumerated() {
+        // Convert OCR observations to text observations, tracking their page
+        // We store (observation, pageIndex) tuples to preserve page information
+        var observationsWithPage: [(observation: TextObservation, pageIndex: Int)] = []
+        for page in ocrResult.pages {
             for observation in page.observations {
-                var obs = observation
-                // Keep track of page for multi-page documents
-                allObservations.append(obs)
+                observationsWithPage.append((observation, page.pageIndex))
             }
         }
+        let allObservations = observationsWithPage.map(\.observation)
 
         // Classify observations using the schema
         let classificationResults = await fieldClassifier.classifyWithSchema(allObservations, schema: schema)
@@ -165,22 +165,13 @@ actor SchemaExtractionService {
         for (fieldType, results) in fieldGroups {
             // Take the highest confidence result for each field type
             if let best = results.max(by: { $0.confidence < $1.confidence }) {
-                // Find the page index for this observation
-                let pageIndex = allObservations.firstIndex { obs in
-                    let box = NormalizedRegion(cgRect: obs.boundingBox)
+                // Find the page index by matching the observation's bounding box
+                // This uses the preserved page information from observationsWithPage
+                let pageIndex = observationsWithPage.first { item in
+                    let box = NormalizedRegion(cgRect: item.observation.boundingBox)
                     return abs(box.x - best.boundingBox.x) < 0.001 &&
                            abs(box.y - best.boundingBox.y) < 0.001
-                }.flatMap { idx -> Int? in
-                    // Calculate which page this observation is on
-                    var count = 0
-                    for (pageIdx, page) in ocrResult.pages.enumerated() {
-                        count += page.observations.count
-                        if idx < count {
-                            return pageIdx
-                        }
-                    }
-                    return 0
-                } ?? 0
+                }?.pageIndex ?? 0
 
                 extractedFields.append(ExtractedFieldValue(
                     fieldType: fieldType,
