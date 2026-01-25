@@ -112,6 +112,9 @@ struct ConfirmationFormView: View {
         .onAppear {
             initializeFields()
         }
+        .onChange(of: document.id) { _, _ in
+            initializeFields()
+        }
         .alert("Confirm Document", isPresented: $showingConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Confirm") {
