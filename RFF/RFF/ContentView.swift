@@ -150,6 +150,50 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             VStack(spacing: 0) {
+                // Filter tabs at top of library
+                HStack {
+                    Picker("Filter", selection: $selectedFilter) {
+                        ForEach(DocumentFilter.allCases, id: \.self) { filter in
+                            Text(filter.rawValue).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 270)
+
+                    // Currency filter menu
+                    Menu {
+                        Button {
+                            selectedCurrencyFilter = .all
+                        } label: {
+                            if case .all = selectedCurrencyFilter {
+                                Label("All Currencies", systemImage: "checkmark")
+                            } else {
+                                Text("All Currencies")
+                            }
+                        }
+
+                        Divider()
+
+                        ForEach(Currency.allCases) { currency in
+                            Button {
+                                selectedCurrencyFilter = .specific(currency)
+                            } label: {
+                                if case .specific(let selected) = selectedCurrencyFilter, selected == currency {
+                                    Label("\(currency.symbol) \(currency.displayName)", systemImage: "checkmark")
+                                } else {
+                                    Text("\(currency.symbol) \(currency.displayName)")
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(currencyFilterLabel, systemImage: "dollarsign.circle")
+                    }
+
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+
                 // Table view with columns
                 Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
                 TableColumn("Title", value: \.title) { document in
@@ -252,45 +296,6 @@ struct ContentView: View {
                 }
             }
             .toolbar {
-                ToolbarItemGroup(placement: .navigation) {
-                    Picker("Filter", selection: $selectedFilter) {
-                        ForEach(DocumentFilter.allCases, id: \.self) { filter in
-                            Text(filter.rawValue).tag(filter)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 270)
-
-                    // Currency filter menu
-                    Menu {
-                        Button {
-                            selectedCurrencyFilter = .all
-                        } label: {
-                            if case .all = selectedCurrencyFilter {
-                                Label("All Currencies", systemImage: "checkmark")
-                            } else {
-                                Text("All Currencies")
-                            }
-                        }
-
-                        Divider()
-
-                        ForEach(Currency.allCases) { currency in
-                            Button {
-                                selectedCurrencyFilter = .specific(currency)
-                            } label: {
-                                if case .specific(let selected) = selectedCurrencyFilter, selected == currency {
-                                    Label("\(currency.symbol) \(currency.displayName)", systemImage: "checkmark")
-                                } else {
-                                    Text("\(currency.symbol) \(currency.displayName)")
-                                }
-                            }
-                        }
-                    } label: {
-                        Label(currencyFilterLabel, systemImage: "dollarsign.circle")
-                    }
-                }
-
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button(action: { isImportingPDF = true }) {
                         Label("Import PDF", systemImage: "doc.badge.plus")
