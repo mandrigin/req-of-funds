@@ -39,6 +39,7 @@
 		A1000001234567890000030 /* FieldClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000032 /* FieldClassifier.swift */; };
 		A1000001234567890000031 /* SchemaEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000033 /* SchemaEditorView.swift */; };
 		9988A733A775D52B5FD710A6 /* InlineSchemaEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1B8A62045FD1D2DCCE9B69 /* InlineSchemaEditorView.swift */; };
+		A1000001234567890000032 /* SchemaExtractionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000034 /* SchemaExtractionService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +76,7 @@
 		A1000002234567890000032 /* FieldClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldClassifier.swift; sourceTree = "<group>"; };
 		A1000002234567890000033 /* SchemaEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaEditorView.swift; sourceTree = "<group>"; };
 		DD1B8A62045FD1D2DCCE9B69 /* InlineSchemaEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineSchemaEditorView.swift; sourceTree = "<group>"; };
+		A1000002234567890000034 /* SchemaExtractionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaExtractionService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +140,7 @@
 				A1000002234567890000015 /* NotificationService.swift */,
 				A1000002234567890000016 /* PDFService.swift */,
 				A1000002234567890000017 /* PDFTextFinder.swift */,
+				A1000002234567890000034 /* SchemaExtractionService.swift */,
 				A1000002234567890000029 /* SchemaStore.swift */,
 			);
 			path = Services;
@@ -283,6 +286,7 @@
 				A1000001234567890000030 /* FieldClassifier.swift in Sources */,
 				A1000001234567890000031 /* SchemaEditorView.swift in Sources */,
 				9988A733A775D52B5FD710A6 /* InlineSchemaEditorView.swift in Sources */,
+				A1000001234567890000032 /* SchemaExtractionService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

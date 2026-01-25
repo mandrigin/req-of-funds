@@ -8,12 +8,21 @@ struct InlineSchemaEditorView: View {
     @StateObject private var viewModel = SchemaEditorViewModel()
     @Binding var isEditing: Bool
 
-    /// Callback when schema is saved
-    var onSchemaSaved: ((InvoiceSchema) -> Void)?
+    /// Callback when schema is saved and extraction requested
+    var onSchemaSavedAndExtract: ((InvoiceSchema) -> Void)?
 
     @State private var showingSaveSheet = false
     @State private var showingFieldPicker = false
     @State private var selectedRegionForPicker: DetectedTextRegion?
+
+    // Extraction state
+    @State private var isExtractingWithSchema = false
+    @State private var extractionResult: SchemaExtractionResultWithValues?
+    @State private var showingExtractionResult = false
+    @State private var extractionError: String?
+    @State private var showingExtractionError = false
+
+    private let schemaExtractionService = SchemaExtractionService.shared
 
     var body: some View {
         HSplitView {
@@ -22,9 +31,13 @@ struct InlineSchemaEditorView: View {
                 // Toolbar
                 InlineSchemaToolbar(
                     viewModel: viewModel,
+                    document: document,
                     isEditing: $isEditing,
+                    isExtractingWithSchema: isExtractingWithSchema,
                     onAutoMap: { viewModel.autoMapFields() },
-                    onSave: { showingSaveSheet = true }
+                    onSave: { showingSaveSheet = true },
+                    onSaveAndExtract: { saveAndExtract() },
+                    onExtractNow: { extractWithCurrentSchema() }
                 )
 
                 Divider()
@@ -56,7 +69,21 @@ struct InlineSchemaEditorView: View {
             await loadDocument()
         }
         .sheet(isPresented: $showingSaveSheet) {
-            SaveSchemaSheet(viewModel: viewModel)
+            SaveSchemaSheetWithExtract(
+                viewModel: viewModel,
+                onSaved: { schema in
+                    // Update document's schema
+                    document.schemaId = schema.id
+                    document.updatedAt = Date()
+                },
+                onSavedAndExtract: { schema in
+                    document.schemaId = schema.id
+                    document.updatedAt = Date()
+                    Task {
+                        await extractWithSchema(schema)
+                    }
+                }
+            )
         }
         .sheet(isPresented: $showingFieldPicker) {
             if let region = selectedRegionForPicker {
@@ -74,14 +101,35 @@ struct InlineSchemaEditorView: View {
                 )
             }
         }
+        .sheet(isPresented: $showingExtractionResult) {
+            if let result = extractionResult {
+                InlineExtractionResultSheet(
+                    result: result,
+                    document: document,
+                    onApply: { result in
+                        Task {
+                            await schemaExtractionService.applyToDocument(result, document: document)
+                            showingExtractionResult = false
+                            isEditing = false  // Exit editor after applying
+                        }
+                    },
+                    onDismiss: { showingExtractionResult = false }
+                )
+            }
+        }
+        .alert("Extraction Error", isPresented: $showingExtractionError) {
+            Button("OK") { }
+        } message: {
+            Text(extractionError ?? "Unknown error")
+        }
         .overlay {
-            if viewModel.isLoading {
+            if viewModel.isLoading || isExtractingWithSchema {
                 ZStack {
                     Color.black.opacity(0.3)
                     VStack(spacing: 12) {
                         ProgressView()
                             .scaleEffect(1.5)
-                        Text("Analyzing document...")
+                        Text(isExtractingWithSchema ? "Extracting fields..." : "Analyzing document...")
                             .font(.headline)
                     }
                     .padding(24)
@@ -96,6 +144,13 @@ struct InlineSchemaEditorView: View {
         let url = URL(fileURLWithPath: path)
 
         await viewModel.loadSchemas()
+
+        // If document has an assigned schema, select it
+        if let schemaId = document.schemaId {
+            let schema = await SchemaStore.shared.schema(id: schemaId)
+            viewModel.selectedSchema = schema
+        }
+
         await viewModel.processDocument(at: url)
     }
 
@@ -107,15 +162,89 @@ struct InlineSchemaEditorView: View {
         selectedRegionForPicker = region
         showingFieldPicker = true
     }
+
+    /// Save schema and immediately run extraction
+    private func saveAndExtract() {
+        Task {
+            do {
+                let schema = try await viewModel.saveAsNewSchema()
+                document.schemaId = schema.id
+                document.updatedAt = Date()
+                await extractWithSchema(schema)
+            } catch {
+                extractionError = error.localizedDescription
+                showingExtractionError = true
+            }
+        }
+    }
+
+    /// Extract using the currently selected schema
+    private func extractWithCurrentSchema() {
+        guard let schema = viewModel.selectedSchema else {
+            extractionError = "No schema selected"
+            showingExtractionError = true
+            return
+        }
+
+        // Update document's schema
+        document.schemaId = schema.id
+        document.updatedAt = Date()
+
+        Task {
+            await extractWithSchema(schema)
+        }
+    }
+
+    /// Run extraction with a specific schema
+    private func extractWithSchema(_ schema: InvoiceSchema) async {
+        guard let path = document.documentPath else {
+            await MainActor.run {
+                extractionError = "Document has no associated file"
+                showingExtractionError = true
+            }
+            return
+        }
+
+        await MainActor.run {
+            isExtractingWithSchema = true
+        }
+
+        do {
+            let result = try await schemaExtractionService.extractWithSchema(
+                schema,
+                documentURL: URL(fileURLWithPath: path)
+            )
+            await MainActor.run {
+                extractionResult = result
+                showingExtractionResult = true
+                isExtractingWithSchema = false
+            }
+        } catch {
+            await MainActor.run {
+                extractionError = error.localizedDescription
+                showingExtractionError = true
+                isExtractingWithSchema = false
+            }
+        }
+    }
 }
 
 // MARK: - Inline Schema Toolbar
 
 struct InlineSchemaToolbar: View {
     @ObservedObject var viewModel: SchemaEditorViewModel
+    let document: RFFDocument
     @Binding var isEditing: Bool
+    let isExtractingWithSchema: Bool
     let onAutoMap: () -> Void
     let onSave: () -> Void
+    let onSaveAndExtract: () -> Void
+    let onExtractNow: () -> Void
+
+    /// Whether we have an existing schema selected (vs creating new)
+    private var hasExistingSchema: Bool {
+        viewModel.selectedSchema != nil
+    }
 
     var body: some View {
         HStack {
@@ -145,13 +274,45 @@ struct InlineSchemaToolbar: View {
             }
             .help("Automatically map detected text to fields")
 
-            Button {
-                onSave()
-            } label: {
-                Label("Save Schema", systemImage: "square.and.arrow.down")
+            // Save/Extract buttons
+            if hasExistingSchema {
+                // Using existing schema - can extract directly
+                Button {
+                    onExtractNow()
+                } label: {
+                    if isExtractingWithSchema {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Label("Re-analyze", systemImage: "arrow.clockwise")
+                    }
+                }
+                .disabled(isExtractingWithSchema)
+                .help("Extract fields using this schema")
+            } else {
+                // Creating new schema - save first
+                Button {
+                    onSave()
+                } label: {
+                    Label("Save Schema", systemImage: "square.and.arrow.down")
+                }
+                .disabled(viewModel.fieldMappings.isEmpty)
+                .help("Save current mappings as a schema")
+
+                Button {
+                    onSaveAndExtract()
+                } label: {
+                    if isExtractingWithSchema {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Label("Save & Extract", systemImage: "arrow.clockwise")
+                    }
+                }
+                .disabled(viewModel.fieldMappings.isEmpty || isExtractingWithSchema)
+                .buttonStyle(.borderedProminent)
+                .help("Save schema and extract field values")
             }
-            .disabled(viewModel.fieldMappings.isEmpty)
-            .help("Save current mappings as a schema")
 
             Spacer()
 
@@ -781,6 +942,235 @@ struct FieldTypePickerSheet: View {
             .padding(.bottom)
         }
         .frame(width: 350, height: 450)
+    }
+}
+
+// MARK: - Save Schema Sheet with Extract Option
+
+/// Sheet for saving schema with option to immediately extract
+struct SaveSchemaSheetWithExtract: View {
+    @ObservedObject var viewModel: SchemaEditorViewModel
+    @Environment(\.dismiss) private var dismiss
+    let onSaved: (InvoiceSchema) -> Void
+    let onSavedAndExtract: (InvoiceSchema) -> Void
+
+    @State private var isSaving = false
+    @State private var errorMessage: String?
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Save Schema")
+                .font(.headline)
+
+            Form {
+                TextField("Schema Name", text: $viewModel.newSchemaName)
+
+                Section("Mapped Fields (\(viewModel.fieldMappings.count))") {
+                    ForEach(Array(viewModel.fieldMappings.keys), id: \.self) { fieldType in
+                        if let mapping = viewModel.fieldMappings[fieldType] {
+                            HStack {
+                                Circle()
+                                    .fill(Color(nsColor: colorForFieldType(fieldType)))
+                                    .frame(width: 8, height: 8)
+                                Text(fieldType.displayName)
+                                Spacer()
+                                Text(mapping.text)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                            .font(.caption)
+                        }
+                    }
+                }
+            }
+
+            if let error = errorMessage {
+                Text(error)
+                    .foregroundStyle(.red)
+                    .font(.caption)
+            }
+
+            HStack {
+                Button("Cancel") {
+                    dismiss()
+                }
+                .keyboardShortcut(.cancelAction)
+
+                Spacer()
+
+                Button("Save") {
+                    saveSchema(andExtract: false)
+                }
+                .disabled(viewModel.newSchemaName.isEmpty || isSaving)
+
+                Button("Save & Extract") {
+                    saveSchema(andExtract: true)
+                }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+                .disabled(viewModel.newSchemaName.isEmpty || isSaving)
+            }
+        }
+        .padding()
+        .frame(width: 400, height: 400)
+    }
+
+    private func saveSchema(andExtract: Bool) {
+        isSaving = true
+        errorMessage = nil
+
+        Task {
+            do {
+                let schema = try await viewModel.saveAsNewSchema()
+                await MainActor.run {
+                    if andExtract {
+                        onSavedAndExtract(schema)
+                    } else {
+                        onSaved(schema)
+                    }
+                    dismiss()
+                }
+            } catch {
+                await MainActor.run {
+                    errorMessage = error.localizedDescription
+                }
+            }
+            await MainActor.run {
+                isSaving = false
+            }
+        }
+    }
+}
+
+// MARK: - Inline Extraction Result Sheet
+
+/// Sheet showing extraction results in inline editor context
+struct InlineExtractionResultSheet: View {
+    let result: SchemaExtractionResultWithValues
+    let document: RFFDocument
+    let onApply: (SchemaExtractionResultWithValues) -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                VStack(alignment: .leading) {
+                    Text("Extraction Complete")
+                        .font(.headline)
+                    Text("Schema: \(result.schemaName)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                InlineConfidenceBadge(confidence: result.overallConfidence)
+            }
+            .padding()
+
+            Divider()
+
+            // Extracted fields list
+            List {
+                Section("Extracted Fields (\(result.extractedFields.count))") {
+                    ForEach(result.extractedFields) { field in
+                        HStack {
+                            Circle()
+                                .fill(Color(nsColor: colorForFieldType(field.fieldType)))
+                                .frame(width: 10, height: 10)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(field.fieldType.displayName)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                Text(field.value)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(2)
+                            }
+
+                            Spacer()
+
+                            Text("\(Int(field.confidence * 100))%")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(confidenceColor(field.confidence).opacity(0.2), in: Capsule())
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+
+                if !result.warnings.isEmpty {
+                    Section("Warnings") {
+                        ForEach(result.warnings, id: \.self) { warning in
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundStyle(.orange)
+                                Text(warning)
+                                    .font(.caption)
+                            }
+                        }
+                    }
+                }
+            }
+            .listStyle(.plain)
+
+            Divider()
+
+            // Footer with actions
+            HStack {
+                Text("Apply these values to update the document?")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Cancel") {
+                    onDismiss()
+                }
+                .keyboardShortcut(.cancelAction)
+                Button("Apply Values") {
+                    onApply(result)
+                }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+            }
+            .padding()
+        }
+        .frame(width: 450, height: 500)
+    }
+
+    private func confidenceColor(_ confidence: Double) -> Color {
+        if confidence >= 0.8 {
+            return .green
+        } else if confidence >= 0.5 {
+            return .orange
+        } else {
+            return .red
+        }
+    }
+}
+
+/// Confidence badge for inline editor
+struct InlineConfidenceBadge: View {
+    let confidence: Double
+
+    var body: some View {
+        Text("\(Int(confidence * 100))% confidence")
+            .font(.caption)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(confidenceColor.opacity(0.2), in: Capsule())
+            .foregroundStyle(confidenceColor)
+    }
+
+    private var confidenceColor: Color {
+        if confidence >= 0.8 {
+            return .green
+        } else if confidence >= 0.5 {
+            return .orange
+        } else {
+            return .red
+        }
     }
 }
 

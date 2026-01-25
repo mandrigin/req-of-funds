@@ -846,7 +846,18 @@ struct DocumentDetailView: View {
     // Schema editing state
     @State private var isEditingSchema = false
 
+    // Schema extraction state
+    @State private var isExtractingWithSchema = false
+    @State private var schemaExtractionResult: SchemaExtractionResultWithValues?
+    @State private var showingSchemaExtractionResults = false
+    @State private var schemaExtractionError: String?
+    @State private var showingSchemaExtractionError = false
+    @State private var showingSchemaSelector = false
+    @State private var availableSchemas: [InvoiceSchema] = []
+    @State private var documentSchemaName: String?
+
     private let textFinder = PDFTextFinder()
+    private let schemaExtractionService = SchemaExtractionService.shared
 
     /// Check if document can be confirmed (is in inbox state)
     private var canConfirm: Bool {
@@ -931,6 +942,38 @@ struct DocumentDetailView: View {
                     LabeledContent("Due Date", value: document.dueDate, format: .dateTime)
                     LabeledContent("Status") {
                         StatusBadge(status: document.status)
+                    }
+                }
+
+                // Schema section
+                Section("Extraction Schema") {
+                    if let schemaName = documentSchemaName {
+                        LabeledContent("Schema", value: schemaName)
+                    } else {
+                        Text("No schema assigned")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    HStack {
+                        Button {
+                            showingSchemaSelector = true
+                        } label: {
+                            Label(document.schemaId == nil ? "Assign Schema" : "Change Schema", systemImage: "doc.text.magnifyingglass")
+                        }
+
+                        if document.schemaId != nil && document.documentPath != nil {
+                            Button {
+                                performSchemaExtraction()
+                            } label: {
+                                if isExtractingWithSchema {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                } else {
+                                    Label("Re-analyze", systemImage: "arrow.clockwise")
+                                }
+                            }
+                            .disabled(isExtractingWithSchema)
+                        }
                     }
                 }
 
@@ -1219,8 +1262,43 @@ struct DocumentDetailView: View {
                     .frame(minWidth: 1000, minHeight: 700)
             }
         }
+        .sheet(isPresented: $showingSchemaExtractionResults) {
+            if let result = schemaExtractionResult {
+                SchemaExtractionResultSheet(
+                    result: result,
+                    document: document,
+                    onApply: { result in
+                        Task {
+                            await schemaExtractionService.applyToDocument(result, document: document)
+                            showingSchemaExtractionResults = false
+                        }
+                    },
+                    onDismiss: { showingSchemaExtractionResults = false }
+                )
+            }
+        }
+        .sheet(isPresented: $showingSchemaSelector) {
+            SchemaSelectorSheet(
+                selectedSchemaId: document.schemaId,
+                availableSchemas: availableSchemas,
+                onSelect: { schemaId in
+                    document.schemaId = schemaId
+                    document.updatedAt = Date()
+                    loadSchemaName()
+                    showingSchemaSelector = false
+                },
+                onCancel: { showingSchemaSelector = false }
+            )
+        }
+        .alert("Schema Extraction Error", isPresented: $showingSchemaExtractionError) {
+            Button("OK") { }
+        } message: {
+            Text(schemaExtractionError ?? "Unknown error")
+        }
         .onAppear {
             loadPDF()
+            loadSchemaName()
+            loadAvailableSchemas()
         }
     }
 
@@ -1397,6 +1475,69 @@ struct DocumentDetailView: View {
                     aiErrorMessage = error.localizedDescription
                     showingAIError = true
                     isAnalyzingWithAI = false
+                }
+            }
+        }
+    }
+
+    /// Load the name of the document's assigned schema
+    private func loadSchemaName() {
+        guard let schemaId = document.schemaId else {
+            documentSchemaName = nil
+            return
+        }
+
+        Task {
+            let store = SchemaStore.shared
+            try? await store.loadSchemas()
+            let schema = await store.schema(id: schemaId)
+            await MainActor.run {
+                documentSchemaName = schema?.name
+            }
+        }
+    }
+
+    /// Load available schemas for the selector
+    private func loadAvailableSchemas() {
+        Task {
+            let store = SchemaStore.shared
+            try? await store.loadSchemas()
+            let schemas = await store.allSchemas()
+            await MainActor.run {
+                availableSchemas = schemas
+            }
+        }
+    }
+
+    /// Perform schema-based extraction on the document
+    private func performSchemaExtraction() {
+        guard document.schemaId != nil else {
+            schemaExtractionError = "No schema assigned to this document"
+            showingSchemaExtractionError = true
+            return
+        }
+
+        guard document.documentPath != nil else {
+            schemaExtractionError = "Document has no associated file"
+            showingSchemaExtractionError = true
+            return
+        }
+
+        isExtractingWithSchema = true
+
+        Task {
+            do {
+                let result = try await schemaExtractionService.extractWithDocumentSchema(document)
+                await MainActor.run {
+                    schemaExtractionResult = result
+                    showingSchemaExtractionResults = true
+                    isExtractingWithSchema = false
+                }
+            } catch {
+                await MainActor.run {
+                    schemaExtractionError = error.localizedDescription
+                    showingSchemaExtractionError = true
+                    isExtractingWithSchema = false
                 }
             }
         }
@@ -1993,6 +2134,236 @@ struct MarkAsPaidSheet: View {
             .padding()
         }
         .frame(width: 340, height: 400)
+    }
+}
+
+// MARK: - Schema Extraction Result Sheet
+
+/// Sheet showing schema extraction results with option to apply to document
+struct SchemaExtractionResultSheet: View {
+    let result: SchemaExtractionResultWithValues
+    let document: RFFDocument
+    let onApply: (SchemaExtractionResultWithValues) -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                VStack(alignment: .leading) {
+                    Text("Extraction Results")
+                        .font(.headline)
+                    Text("Schema: \(result.schemaName)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                ConfidenceBadge(confidence: result.overallConfidence)
+            }
+            .padding()
+
+            Divider()
+
+            // Extracted fields list
+            List {
+                Section("Extracted Fields (\(result.extractedFields.count))") {
+                    ForEach(result.extractedFields) { field in
+                        HStack {
+                            Circle()
+                                .fill(Color(nsColor: colorForFieldType(field.fieldType)))
+                                .frame(width: 10, height: 10)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(field.fieldType.displayName)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                Text(field.value)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(2)
+                            }
+
+                            Spacer()
+
+                            Text("\(Int(field.confidence * 100))%")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(confidenceColor(field.confidence).opacity(0.2), in: Capsule())
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+
+                if !result.warnings.isEmpty {
+                    Section("Warnings") {
+                        ForEach(result.warnings, id: \.self) { warning in
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundStyle(.orange)
+                                Text(warning)
+                                    .font(.caption)
+                            }
+                        }
+                    }
+                }
+            }
+            .listStyle(.plain)
+
+            Divider()
+
+            // Footer with actions
+            HStack {
+                Text("Apply these values to update the document?")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Cancel") {
+                    onDismiss()
+                }
+                .keyboardShortcut(.cancelAction)
+                Button("Apply Values") {
+                    onApply(result)
+                }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+            }
+            .padding()
+        }
+        .frame(width: 450, height: 500)
+    }
+
+    private func confidenceColor(_ confidence: Double) -> Color {
+        if confidence >= 0.8 {
+            return .green
+        } else if confidence >= 0.5 {
+            return .orange
+        } else {
+            return .red
+        }
+    }
+}
+
+// MARK: - Schema Selector Sheet
+
+/// Sheet for selecting a schema to assign to a document
+struct SchemaSelectorSheet: View {
+    let selectedSchemaId: UUID?
+    let availableSchemas: [InvoiceSchema]
+    let onSelect: (UUID) -> Void
+    let onCancel: () -> Void
+
+    @State private var searchText = ""
+
+    private var filteredSchemas: [InvoiceSchema] {
+        if searchText.isEmpty {
+            return availableSchemas
+        }
+        let lowered = searchText.lowercased()
+        return availableSchemas.filter {
+            $0.name.lowercased().contains(lowered) ||
+            ($0.vendorIdentifier?.lowercased().contains(lowered) ?? false)
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Select Schema")
+                    .font(.headline)
+                Spacer()
+                Button("Cancel") {
+                    onCancel()
+                }
+                .keyboardShortcut(.cancelAction)
+            }
+            .padding()
+
+            Divider()
+
+            // Search field
+            TextField("Search schemas...", text: $searchText)
+                .textFieldStyle(.roundedBorder)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+
+            // Schema list
+            List {
+                ForEach(filteredSchemas) { schema in
+                    SchemaRow(
+                        schema: schema,
+                        isSelected: schema.id == selectedSchemaId,
+                        onSelect: { onSelect(schema.id) }
+                    )
+                }
+            }
+            .listStyle(.plain)
+
+            if filteredSchemas.isEmpty {
+                ContentUnavailableView(
+                    "No Schemas",
+                    systemImage: "doc.text.magnifyingglass",
+                    description: Text(searchText.isEmpty ? "Create a schema from the Schema Editor" : "No schemas match your search")
+                )
+            }
+        }
+        .frame(width: 400, height: 450)
+    }
+}
+
+/// Row showing a single schema in the selector
+struct SchemaRow: View {
+    let schema: InvoiceSchema
+    let isSelected: Bool
+    let onSelect: () -> Void
+
+    var body: some View {
+        Button(action: onSelect) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(schema.name)
+                            .fontWeight(isSelected ? .bold : .regular)
+                        if schema.isBuiltIn {
+                            Text("Built-in")
+                                .font(.caption2)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(.blue.opacity(0.2), in: Capsule())
+                                .foregroundStyle(.blue)
+                        }
+                    }
+
+                    HStack {
+                        if let vendor = schema.vendorIdentifier {
+                            Text("Vendor: \(vendor)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Text("\(schema.fieldMappings.count) fields")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                        if schema.usageCount > 0 {
+                            Text("\(schema.usageCount) uses")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                }
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.blue)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.vertical, 4)
     }
 }
 

@@ -107,6 +107,9 @@ final class RFFDocument {
     /// Date when the document was marked as paid
     var paidDate: Date?
 
+    /// ID of the schema used for field extraction (nil = no schema assigned)
+    var schemaId: UUID?
+
     init(
         id: UUID = UUID(),
         title: String,
