@@ -209,7 +209,7 @@ actor EntityExtractionService {
 
     // MARK: - Date Extraction
 
-    /// Extract dates using NSDataDetector
+    /// Extract dates using NSDataDetector with smart European date format handling
     private func extractDates(from text: String) -> [Date] {
         guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue) else {
             return []
@@ -223,13 +223,25 @@ actor EntityExtractionService {
         let calendar = Calendar.current
 
         for match in matches {
-            if let date = match.date {
-                // Filter out dates that are too far in the past (>5 years)
-                // or unreasonably far in the future (>10 years)
-                let yearDifference = calendar.dateComponents([.year], from: now, to: date).year ?? 0
-                if yearDifference >= -5 && yearDifference <= 10 {
-                    dates.append(date)
-                }
+            guard let matchRange = Range(match.range, in: text) else { continue }
+            let rawText = String(text[matchRange])
+
+            // For dot-separated dates, use smart parsing to handle European format
+            // NSDataDetector may incorrectly parse DD.MM.YYYY as MM.DD.YYYY
+            let parsedDate: Date?
+            if rawText.contains(".") {
+                parsedDate = DateParsingUtility.parseDotSeparatedDate(rawText)
+            } else {
+                parsedDate = match.date
+            }
+
+            guard let date = parsedDate else { continue }
+
+            // Filter out dates that are too far in the past (>5 years)
+            // or unreasonably far in the future (>10 years)
+            let yearDifference = calendar.dateComponents([.year], from: now, to: date).year ?? 0
+            if yearDifference >= -5 && yearDifference <= 10 {
+                dates.append(date)
             }
         }
 
