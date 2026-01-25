@@ -2,21 +2,28 @@ import Foundation
 
 /// AI provider options
 enum AIProvider: String, CaseIterable, Codable {
+    case claudeCode = "claude_code"
     case openai = "openai"
     case anthropic = "anthropic"
 
     var displayName: String {
         switch self {
+        case .claudeCode: return "Claude Code (Local)"
         case .openai: return "OpenAI"
         case .anthropic: return "Claude (Anthropic)"
         }
     }
 
-    var apiKeyEnvVar: String {
+    var apiKeyEnvVar: String? {
         switch self {
+        case .claudeCode: return nil  // No API key needed
         case .openai: return "OPENAI_API_KEY"
         case .anthropic: return "ANTHROPIC_API_KEY"
         }
+    }
+
+    var requiresAPIKey: Bool {
+        self != .claudeCode
     }
 }
 
@@ -60,6 +67,8 @@ struct AIAnalysisResult: Sendable {
 /// Errors during AI analysis
 enum AIAnalysisError: Error, LocalizedError {
     case apiKeyNotConfigured
+    case claudeCodeNotAvailable
+    case claudeCodeError(String)
     case networkError(String)
     case invalidResponse
     case rateLimited
@@ -69,6 +78,10 @@ enum AIAnalysisError: Error, LocalizedError {
         switch self {
         case .apiKeyNotConfigured:
             return "API key not configured. Add it in Settings > AI."
+        case .claudeCodeNotAvailable:
+            return "Claude Code CLI not found. Install Claude Code or configure an API key."
+        case .claudeCodeError(let message):
+            return "Claude Code error: \(message)"
         case .networkError(let message):
             return "Network error: \(message)"
         case .invalidResponse:
@@ -102,15 +115,67 @@ actor AIAnalysisService {
         self.session = URLSession(configuration: config)
     }
 
+    // MARK: - Claude Code CLI Detection
+
+    /// Check if Claude Code CLI is available in PATH
+    nonisolated func isClaudeCodeAvailable() -> Bool {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
+        process.arguments = ["claude"]
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = pipe
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+            return process.terminationStatus == 0
+        } catch {
+            return false
+        }
+    }
+
+    /// Get the path to the Claude CLI
+    nonisolated func getClaudeCodePath() -> String? {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
+        process.arguments = ["claude"]
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+
+            if process.terminationStatus == 0 {
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                if let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                   !path.isEmpty {
+                    return path
+                }
+            }
+        } catch {
+            // Fall through to return nil
+        }
+        return nil
+    }
+
     // MARK: - Provider Management
 
     /// Get the currently selected provider
     func getSelectedProvider() -> AIProvider {
         if let rawValue = defaults.string(forKey: Self.selectedProviderDefaultsKey),
            let provider = AIProvider(rawValue: rawValue) {
+            // Validate that Claude Code is still available if selected
+            if provider == .claudeCode && !isClaudeCodeAvailable() {
+                return detectAvailableProvider() ?? .anthropic
+            }
             return provider
         }
-        // Auto-detect based on available API keys
+        // Auto-detect based on available providers
         return detectAvailableProvider() ?? .anthropic
     }
 
@@ -119,12 +184,17 @@ actor AIAnalysisService {
         defaults.set(provider.rawValue, forKey: Self.selectedProviderDefaultsKey)
     }
 
-    /// Auto-detect available provider based on env vars and stored keys
+    /// Auto-detect available provider based on CLI availability and API keys
     func detectAvailableProvider() -> AIProvider? {
-        // Priority: Anthropic first (as specified in requirements)
+        // Priority: Claude Code CLI first (no API key needed!)
+        if isClaudeCodeAvailable() {
+            return .claudeCode
+        }
+        // Then Anthropic API
         if isAPIKeyConfigured(for: .anthropic) {
             return .anthropic
         }
+        // Then OpenAI API
         if isAPIKeyConfigured(for: .openai) {
             return .openai
         }
@@ -135,8 +205,13 @@ actor AIAnalysisService {
 
     /// Check if API key is configured for a specific provider
     func isAPIKeyConfigured(for provider: AIProvider) -> Bool {
+        // Claude Code doesn't need an API key
+        if provider == .claudeCode {
+            return isClaudeCodeAvailable()
+        }
         // Check environment variable first
-        if let envKey = ProcessInfo.processInfo.environment[provider.apiKeyEnvVar],
+        if let envVar = provider.apiKeyEnvVar,
+           let envKey = ProcessInfo.processInfo.environment[envVar],
            !envKey.isEmpty {
             return true
         }
@@ -148,15 +223,23 @@ actor AIAnalysisService {
         return false
     }
 
-    /// Check if any API key is configured
+    /// Check if any AI provider is available (CLI or API key)
     func isAnyAPIKeyConfigured() -> Bool {
-        isAPIKeyConfigured(for: .openai) || isAPIKeyConfigured(for: .anthropic)
+        isClaudeCodeAvailable() || isAPIKeyConfigured(for: .openai) || isAPIKeyConfigured(for: .anthropic)
     }
 
     /// Get the API key for a provider (throws if not configured)
     func getAPIKey(for provider: AIProvider) throws -> String {
+        // Claude Code doesn't need an API key
+        if provider == .claudeCode {
+            if isClaudeCodeAvailable() {
+                return ""  // No key needed
+            }
+            throw AIAnalysisError.claudeCodeNotAvailable
+        }
         // Check environment variable first
-        if let envKey = ProcessInfo.processInfo.environment[provider.apiKeyEnvVar],
+        if let envVar = provider.apiKeyEnvVar,
+           let envKey = ProcessInfo.processInfo.environment[envVar],
            !envKey.isEmpty {
             return envKey
         }
@@ -286,10 +369,56 @@ actor AIAnalysisService {
 
     private func callAI(prompt: String, apiKey: String, provider: AIProvider) async throws -> String {
         switch provider {
+        case .claudeCode:
+            return try await callClaudeCode(prompt: prompt)
         case .openai:
             return try await callOpenAI(prompt: prompt, apiKey: apiKey)
         case .anthropic:
             return try await callAnthropic(prompt: prompt, apiKey: apiKey)
+        }
+    }
+
+    private func callClaudeCode(prompt: String) async throws -> String {
+        guard let claudePath = getClaudeCodePath() else {
+            throw AIAnalysisError.claudeCodeNotAvailable
+        }
+
+        return try await withCheckedThrowingContinuation { continuation in
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: claudePath)
+            // Use --print mode for non-interactive single-shot prompts
+            // --output-format text ensures we get plain text response
+            process.arguments = ["--print", "--output-format", "text", prompt]
+
+            let outputPipe = Pipe()
+            let errorPipe = Pipe()
+            process.standardOutput = outputPipe
+            process.standardError = errorPipe
+
+            do {
+                try process.run()
+
+                // Run in background to avoid blocking
+                DispatchQueue.global(qos: .userInitiated).async {
+                    process.waitUntilExit()
+
+                    let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+                    let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+
+                    if process.terminationStatus == 0 {
+                        if let output = String(data: outputData, encoding: .utf8) {
+                            continuation.resume(returning: output.trimmingCharacters(in: .whitespacesAndNewlines))
+                        } else {
+                            continuation.resume(throwing: AIAnalysisError.invalidResponse)
+                        }
+                    } else {
+                        let errorMessage = String(data: errorData, encoding: .utf8) ?? "Unknown error"
+                        continuation.resume(throwing: AIAnalysisError.claudeCodeError(errorMessage.trimmingCharacters(in: .whitespacesAndNewlines)))
+                    }
+                }
+            } catch {
+                continuation.resume(throwing: AIAnalysisError.claudeCodeError(error.localizedDescription))
+            }
         }
     }
 

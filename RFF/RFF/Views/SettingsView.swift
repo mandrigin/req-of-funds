@@ -182,9 +182,10 @@ struct OCRSettingsView: View {
 // MARK: - AI Settings
 
 struct AISettingsView: View {
-    @State private var selectedProvider: AIProvider = .anthropic
+    @State private var selectedProvider: AIProvider = .claudeCode
     @State private var openAIKey = ""
     @State private var anthropicKey = ""
+    @State private var isClaudeCodeAvailable = false
     @State private var isOpenAIKeyConfigured = false
     @State private var isAnthropicKeyConfigured = false
     @State private var showingOpenAIKey = false
@@ -198,20 +199,64 @@ struct AISettingsView: View {
             Section("AI Provider") {
                 Picker("Provider", selection: $selectedProvider) {
                     ForEach(AIProvider.allCases, id: \.self) { provider in
-                        Text(provider.displayName).tag(provider)
+                        HStack {
+                            Text(provider.displayName)
+                            if provider == .claudeCode && !isClaudeCodeAvailable {
+                                Text("(Not installed)")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .tag(provider)
                     }
                 }
                 .pickerStyle(.segmented)
                 .onChange(of: selectedProvider) { _, newValue in
+                    // Don't allow selecting Claude Code if not available
+                    if newValue == .claudeCode && !isClaudeCodeAvailable {
+                        // Revert to previous or default
+                        Task {
+                            selectedProvider = await AIAnalysisService.shared.detectAvailableProvider() ?? .anthropic
+                        }
+                        return
+                    }
                     Task {
                         await AIAnalysisService.shared.setSelectedProvider(newValue)
                     }
                 }
 
-                if hasEnvKey(for: selectedProvider) {
-                    Label("Using \(selectedProvider.apiKeyEnvVar) environment variable", systemImage: "terminal")
+                if selectedProvider == .claudeCode {
+                    if isClaudeCodeAvailable {
+                        Label("Using local Claude Code CLI - no API key needed!", systemImage: "checkmark.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                    } else {
+                        Label("Claude Code not installed", systemImage: "xmark.circle")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+                } else if let envVar = selectedProvider.apiKeyEnvVar, hasEnvKey(for: selectedProvider) {
+                    Label("Using \(envVar) environment variable", systemImage: "terminal")
                         .font(.caption)
                         .foregroundStyle(.blue)
+                }
+            }
+
+            if isClaudeCodeAvailable {
+                Section("Claude Code (Recommended)") {
+                    Label("Claude Code CLI detected", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                    Text("Uses your existing Claude Code authentication. No API key required.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                Section("Claude Code") {
+                    Label("Not installed", systemImage: "xmark.circle")
+                        .foregroundStyle(.secondary)
+                    Text("Install Claude Code to use AI without an API key.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Link("Install Claude Code", destination: URL(string: "https://claude.ai/download")!)
                 }
             }
 
@@ -247,11 +292,13 @@ struct AISettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Section("Links") {
-                Link("Get an Anthropic API key", destination: URL(string: "https://console.anthropic.com/settings/keys")!)
-                Link("Get an OpenAI API key", destination: URL(string: "https://platform.openai.com/api-keys")!)
+            Section("API Keys (Alternative)") {
+                if !isClaudeCodeAvailable {
+                    Link("Get an Anthropic API key", destination: URL(string: "https://console.anthropic.com/settings/keys")!)
+                    Link("Get an OpenAI API key", destination: URL(string: "https://platform.openai.com/api-keys")!)
+                }
 
-                Text("Anthropic uses Claude Sonnet, OpenAI uses GPT-4o-mini.")
+                Text("Claude Code (local) is recommended. API keys are only needed if Claude Code is not installed. Anthropic uses Claude Sonnet, OpenAI uses GPT-4o-mini.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -264,7 +311,10 @@ struct AISettingsView: View {
     }
 
     private func hasEnvKey(for provider: AIProvider) -> Bool {
-        if let envKey = ProcessInfo.processInfo.environment[provider.apiKeyEnvVar],
+        guard let envVar = provider.apiKeyEnvVar else {
+            return false  // Claude Code doesn't use env var
+        }
+        if let envKey = ProcessInfo.processInfo.environment[envVar],
            !envKey.isEmpty {
             return true
         }
@@ -272,6 +322,7 @@ struct AISettingsView: View {
     }
 
     private func loadSettings() async {
+        isClaudeCodeAvailable = await AIAnalysisService.shared.isClaudeCodeAvailable()
         selectedProvider = await AIAnalysisService.shared.getSelectedProvider()
         isOpenAIKeyConfigured = await AIAnalysisService.shared.isAPIKeyConfigured(for: .openai)
         isAnthropicKeyConfigured = await AIAnalysisService.shared.isAPIKeyConfigured(for: .anthropic)
