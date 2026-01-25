@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import PDFKit
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -11,8 +12,11 @@ struct ContentView: View {
     @State private var selectedDocuments: Set<RFFDocument.ID> = []
     @State private var selectedDocument: RFFDocument?
     @State private var sortOrder = [KeyPathComparator(\RFFDocument.dueDate)]
+    @State private var isProcessingDrop = false
 
     private let pdfService = PDFService()
+    private let ocrService = DocumentOCRService()
+    private let entityService = EntityExtractionService()
 
     var body: some View {
         NavigationSplitView {
@@ -53,6 +57,25 @@ struct ContentView: View {
             }
             .onChange(of: sortOrder) { _, newOrder in
                 // Sorting is handled by the Table
+            }
+            .onDrop(of: [.pdf], isTargeted: nil) { providers in
+                handlePDFDrop(providers: providers)
+                return true
+            }
+            .overlay {
+                if isProcessingDrop {
+                    ZStack {
+                        Color.black.opacity(0.3)
+                        VStack(spacing: 12) {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                            Text("Processing invoice...")
+                                .font(.headline)
+                        }
+                        .padding(24)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    }
+                }
             }
             .onChange(of: selectedDocuments) { _, newSelection in
                 if let first = newSelection.first {
@@ -131,30 +154,130 @@ struct ContentView: View {
                 showingImportError = true
                 return
             }
-            defer { url.stopAccessingSecurityScopedResource() }
+
+            isProcessingDrop = true
+
+            // Copy to persistent location while we have access
+            let tempCopy = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathExtension("pdf")
 
             do {
-                let extractionResult = try pdfService.extractContent(from: url)
-
-                withAnimation {
-                    let newDocument = RFFDocument(
-                        title: extractionResult.title ?? url.deletingPathExtension().lastPathComponent,
-                        requestingOrganization: extractionResult.author ?? "Unknown",
-                        amount: Decimal(0),
-                        dueDate: Date().addingTimeInterval(30 * 24 * 60 * 60),
-                        extractedText: extractionResult.text,
-                        documentPath: url.path
-                    )
-                    modelContext.insert(newDocument)
-                }
+                try FileManager.default.copyItem(at: url, to: tempCopy)
             } catch {
-                importError = error.localizedDescription
+                url.stopAccessingSecurityScopedResource()
+                importError = "Failed to access file: \(error.localizedDescription)"
                 showingImportError = true
+                isProcessingDrop = false
+                return
+            }
+
+            url.stopAccessingSecurityScopedResource()
+
+            Task {
+                await processDroppedPDF(at: tempCopy)
             }
 
         case .failure(let error):
             importError = error.localizedDescription
             showingImportError = true
+        }
+    }
+
+    private func handlePDFDrop(providers: [NSItemProvider]) {
+        guard let provider = providers.first else { return }
+
+        isProcessingDrop = true
+
+        provider.loadFileRepresentation(forTypeIdentifier: UTType.pdf.identifier) { url, error in
+            defer { DispatchQueue.main.async { isProcessingDrop = false } }
+
+            guard let url = url else {
+                if let error = error {
+                    DispatchQueue.main.async {
+                        importError = error.localizedDescription
+                        showingImportError = true
+                    }
+                }
+                return
+            }
+
+            // Copy to a persistent location since the provided URL is temporary
+            let tempCopy = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathExtension("pdf")
+
+            do {
+                try FileManager.default.copyItem(at: url, to: tempCopy)
+            } catch {
+                DispatchQueue.main.async {
+                    importError = "Failed to access dropped file: \(error.localizedDescription)"
+                    showingImportError = true
+                }
+                return
+            }
+
+            Task {
+                await processDroppedPDF(at: tempCopy)
+            }
+        }
+    }
+
+    private func processDroppedPDF(at url: URL) async {
+        do {
+            // Step 1: Run OCR on the PDF
+            let ocrResult = try await ocrService.processDocument(at: url)
+
+            // Step 2: Extract entities (org, amount, due date)
+            let entities = try await entityService.extractEntities(from: ocrResult)
+
+            // Step 3: Create RFFDocument with extracted data
+            await MainActor.run {
+                withAnimation {
+                    let newDocument = RFFDocument(
+                        title: generateTitle(from: entities, url: url),
+                        requestingOrganization: entities.organizationName ?? "Unknown Organization",
+                        amount: entities.amount ?? Decimal(0),
+                        dueDate: entities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
+                        extractedText: ocrResult.fullText,
+                        documentPath: url.path
+                    )
+                    modelContext.insert(newDocument)
+
+                    // Schedule deadline notification
+                    Task {
+                        try? await NotificationService.shared.scheduleDeadlineNotification(
+                            documentId: newDocument.id,
+                            title: newDocument.title,
+                            organization: newDocument.requestingOrganization,
+                            dueDate: newDocument.dueDate
+                        )
+                    }
+                }
+                isProcessingDrop = false
+            }
+        } catch {
+            await MainActor.run {
+                importError = "Failed to process invoice: \(error.localizedDescription)"
+                showingImportError = true
+                isProcessingDrop = false
+            }
+        }
+    }
+
+    private func generateTitle(from entities: ExtractedEntities, url: URL) -> String {
+        let baseName = url.deletingPathExtension().lastPathComponent
+
+        if let org = entities.organizationName, let amount = entities.amount {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.currencyCode = "USD"
+            let amountStr = formatter.string(from: amount as NSDecimalNumber) ?? "\(amount)"
+            return "\(org) - \(amountStr)"
+        } else if let org = entities.organizationName {
+            return "RFF - \(org)"
+        } else {
+            return baseName
         }
     }
 
