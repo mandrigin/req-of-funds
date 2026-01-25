@@ -134,6 +134,7 @@ struct ContentView: View {
     @State private var sortOrder = [KeyPathComparator(\RFFDocument.dueDate)]
     @State private var isProcessingPaste = false
     @State private var isProcessingDrop = false
+    @State private var pendingDropCount = 0
 
     // Column visibility configuration
     @StateObject private var columnConfiguration = LibraryColumnConfiguration.shared
@@ -603,40 +604,55 @@ struct ContentView: View {
     }
 
     private func handlePDFDrop(providers: [NSItemProvider]) {
-        guard let provider = providers.first else { return }
+        guard !providers.isEmpty else { return }
 
         isProcessingDrop = true
+        pendingDropCount = providers.count
 
-        provider.loadFileRepresentation(forTypeIdentifier: UTType.pdf.identifier) { url, error in
-            defer { DispatchQueue.main.async { isProcessingDrop = false } }
+        for provider in providers {
+            provider.loadFileRepresentation(forTypeIdentifier: UTType.pdf.identifier) { url, error in
+                guard let url = url else {
+                    if let error = error {
+                        DispatchQueue.main.async {
+                            importError = error.localizedDescription
+                            showingImportError = true
+                            pendingDropCount -= 1
+                            if pendingDropCount == 0 {
+                                isProcessingDrop = false
+                            }
+                        }
+                    }
+                    return
+                }
 
-            guard let url = url else {
-                if let error = error {
+                // Copy to a persistent location since the provided URL is temporary
+                let tempCopy = FileManager.default.temporaryDirectory
+                    .appendingPathComponent(UUID().uuidString)
+                    .appendingPathExtension("pdf")
+
+                do {
+                    try FileManager.default.copyItem(at: url, to: tempCopy)
+                } catch {
                     DispatchQueue.main.async {
-                        importError = error.localizedDescription
+                        importError = "Failed to access dropped file: \(error.localizedDescription)"
                         showingImportError = true
+                        pendingDropCount -= 1
+                        if pendingDropCount == 0 {
+                            isProcessingDrop = false
+                        }
+                    }
+                    return
+                }
+
+                Task {
+                    await processDroppedPDF(at: tempCopy)
+                    await MainActor.run {
+                        pendingDropCount -= 1
+                        if pendingDropCount == 0 {
+                            isProcessingDrop = false
+                        }
                     }
                 }
-                return
-            }
-
-            // Copy to a persistent location since the provided URL is temporary
-            let tempCopy = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension("pdf")
-
-            do {
-                try FileManager.default.copyItem(at: url, to: tempCopy)
-            } catch {
-                DispatchQueue.main.async {
-                    importError = "Failed to access dropped file: \(error.localizedDescription)"
-                    showingImportError = true
-                }
-                return
-            }
-
-            Task {
-                await processDroppedPDF(at: tempCopy)
             }
         }
     }
@@ -673,13 +689,11 @@ struct ContentView: View {
                         )
                     }
                 }
-                isProcessingDrop = false
             }
         } catch {
             await MainActor.run {
                 importError = "Failed to process invoice: \(error.localizedDescription)"
                 showingImportError = true
-                isProcessingDrop = false
             }
         }
     }
