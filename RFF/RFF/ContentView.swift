@@ -196,16 +196,16 @@ struct ContentView: View {
             VStack(spacing: 0) {
                 // Table view with columns
                 Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
-                TableColumn("Organization", value: \.requestingOrganization) { document in
-                    Text(document.requestingOrganization)
-                }
-                .width(min: 120, ideal: 180)
-
                 TableColumn("Recipient") { document in
                     Text(document.recipient ?? "—")
                         .foregroundStyle(document.recipient == nil ? .secondary : .primary)
                 }
                 .width(min: 100, ideal: 150)
+
+                TableColumn("From", value: \.requestingOrganization) { document in
+                    Text(document.requestingOrganization)
+                }
+                .width(min: 120, ideal: 180)
 
                 TableColumn("Amount") { document in
                     Text(document.amount, format: .currency(code: document.currency.currencyCode))
