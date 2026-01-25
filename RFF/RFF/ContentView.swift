@@ -96,10 +96,49 @@ struct ContentView: View {
     private let ocrService = DocumentOCRService()
     private let entityService = EntityExtractionService()
 
+    /// Documents to use for totals calculation (selected or all in current view)
+    private var documentsForTotals: [RFFDocument] {
+        if selectedDocuments.isEmpty {
+            return documents
+        } else {
+            return documents.filter { selectedDocuments.contains($0.id) }
+        }
+    }
+
+    /// Totals grouped by currency for the current selection/view
+    private var totalsByCurrency: [(currency: Currency, total: Decimal)] {
+        let grouped = Dictionary(grouping: documentsForTotals) { $0.currency }
+        return Currency.allCases.compactMap { currency in
+            guard let docs = grouped[currency], !docs.isEmpty else { return nil }
+            let total = docs.reduce(Decimal(0)) { $0 + $1.amount }
+            return (currency: currency, total: total)
+        }
+    }
+
+    /// Formatted totals string for display
+    private var totalsDisplayText: String {
+        if totalsByCurrency.isEmpty {
+            return "No documents"
+        }
+
+        let parts = totalsByCurrency.map { item in
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.currencyCode = item.currency.currencyCode
+            formatter.maximumFractionDigits = 2
+            let formatted = formatter.string(from: item.total as NSDecimalNumber) ?? "\(item.total)"
+            return formatted
+        }
+
+        let prefix = selectedDocuments.isEmpty ? "Total" : "Selected"
+        return "\(prefix): \(parts.joined(separator: ", "))"
+    }
+
     var body: some View {
         NavigationSplitView {
-            // Table view with columns
-            Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
+            VStack(spacing: 0) {
+                // Table view with columns
+                Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
                 TableColumn("Title", value: \.title) { document in
                     Text(document.title)
                         .fontWeight(.medium)
@@ -258,6 +297,24 @@ struct ContentView: View {
                             Label("Delete Selected", systemImage: "trash")
                         }
                     }
+                }
+            }
+
+                // Totals bar at bottom
+                if !documents.isEmpty {
+                    Divider()
+                    HStack {
+                        Text(totalsDisplayText)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text("\(documentsForTotals.count) of \(documents.count) documents")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    .background(.bar)
                 }
             }
         } detail: {
