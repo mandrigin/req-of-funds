@@ -326,6 +326,20 @@ struct ContentView: View {
                     }
                     .disabled(docsWithText.isEmpty || anyAnalyzing)
 
+                    // On-Device AI Analyze - only shown on macOS 26+
+                    if AIAnalysisService.shared.isFoundationModelsAvailable() {
+                        Button {
+                            performBatchAIAnalysis(documentIds: ids, provider: .foundation)
+                        } label: {
+                            if ids.count == 1 {
+                                Label("On-Device AI Analyze", systemImage: "desktopcomputer")
+                            } else {
+                                Label("On-Device AI Analyze (\(docsWithText.count))", systemImage: "desktopcomputer")
+                            }
+                        }
+                        .disabled(docsWithText.isEmpty || anyAnalyzing)
+                    }
+
                     Divider()
 
                     Button(role: .destructive) {
@@ -413,6 +427,47 @@ struct ContentView: View {
                 }
 
                 ToolbarItemGroup(placement: .primaryAction) {
+                    // AI Analysis buttons - only shown when documents are selected
+                    if !selectedDocuments.isEmpty {
+                        let selectedDocs = documents.filter { selectedDocuments.contains($0.id) }
+                        let docsWithText = selectedDocs.filter { !($0.extractedText ?? "").isEmpty }
+                        let anyAnalyzing = selectedDocs.contains { AIAnalysisProgressManager.shared.isAnalyzing(documentId: $0.id) }
+
+                        // Cloud AI Analyze button
+                        Button {
+                            performBatchAIAnalysis(documentIds: selectedDocuments)
+                        } label: {
+                            if anyAnalyzing {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else if selectedDocuments.count == 1 {
+                                Label("AI Analyze", systemImage: "sparkles")
+                            } else {
+                                Label("AI Analyze (\(docsWithText.count))", systemImage: "sparkles")
+                            }
+                        }
+                        .disabled(docsWithText.isEmpty || anyAnalyzing)
+                        .help("Analyze with cloud AI")
+
+                        // On-Device AI Analyze button - only shown on macOS 26+
+                        if AIAnalysisService.shared.isFoundationModelsAvailable() {
+                            Button {
+                                performBatchAIAnalysis(documentIds: selectedDocuments, provider: .foundation)
+                            } label: {
+                                if anyAnalyzing {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                } else if selectedDocuments.count == 1 {
+                                    Label("On-Device AI", systemImage: "desktopcomputer")
+                                } else {
+                                    Label("On-Device AI (\(docsWithText.count))", systemImage: "desktopcomputer")
+                                }
+                            }
+                            .disabled(docsWithText.isEmpty || anyAnalyzing)
+                            .help("Analyze with on-device AI (no data sent to cloud)")
+                        }
+                    }
+
                     Button(action: { isImportingPDF = true }) {
                         Label("Import PDF", systemImage: "doc.badge.plus")
                     }
@@ -817,7 +872,7 @@ struct ContentView: View {
 
     // MARK: - Batch AI Analysis
 
-    private func performBatchAIAnalysis(documentIds: Set<RFFDocument.ID>) {
+    private func performBatchAIAnalysis(documentIds: Set<RFFDocument.ID>, provider: AIProvider? = nil) {
         // Get documents with extracted text
         let docsToAnalyze = documents.filter { doc in
             documentIds.contains(doc.id) && !(doc.extractedText ?? "").isEmpty
@@ -832,7 +887,7 @@ struct ContentView: View {
         }
 
         Task {
-            await AIAnalysisProgressManager.shared.startBatchAnalysis(documents: docData)
+            await AIAnalysisProgressManager.shared.startBatchAnalysis(documents: docData, provider: provider)
         }
     }
 
