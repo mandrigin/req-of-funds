@@ -18,7 +18,6 @@ struct RFFApp: App {
         do {
             return try ModelContainer(
                 for: schema,
-                migrationPlan: RFFMigrationPlan.self,
                 configurations: [modelConfiguration]
             )
         } catch {
