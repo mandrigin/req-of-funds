@@ -117,48 +117,35 @@ actor AIAnalysisService {
 
     // MARK: - Claude Code CLI Detection
 
-    /// Check if Claude Code CLI is available in PATH
-    nonisolated func isClaudeCodeAvailable() -> Bool {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
-        process.arguments = ["claude"]
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = pipe
-
-        do {
-            try process.run()
-            process.waitUntilExit()
-            return process.terminationStatus == 0
-        } catch {
-            return false
+    /// Common paths where Claude Code CLI might be installed
+    /// Note: Sandboxed apps can't use 'which' command, so we check paths directly
+    private static let claudeCodePaths: [String] = {
+        var paths = [
+            "/usr/local/bin/claude",
+            "/opt/homebrew/bin/claude",  // Homebrew on Apple Silicon
+            "/usr/bin/claude"
+        ]
+        // Add user-local paths (expand ~ to actual home directory)
+        if let home = ProcessInfo.processInfo.environment["HOME"] {
+            paths.insert("\(home)/.local/bin/claude", at: 0)  // npm global install location
         }
+        return paths
+    }()
+
+    /// Check if Claude Code CLI is available by checking common installation paths
+    /// Note: Can't use 'which' command in sandboxed macOS apps
+    nonisolated func isClaudeCodeAvailable() -> Bool {
+        return getClaudeCodePath() != nil
     }
 
-    /// Get the path to the Claude CLI
+    /// Get the path to the Claude CLI by checking common installation paths
+    /// Note: Can't use 'which' command in sandboxed macOS apps
     nonisolated func getClaudeCodePath() -> String? {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
-        process.arguments = ["claude"]
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = FileHandle.nullDevice
-
-        do {
-            try process.run()
-            process.waitUntilExit()
-
-            if process.terminationStatus == 0 {
-                let data = pipe.fileHandleForReading.readDataToEndOfFile()
-                if let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                   !path.isEmpty {
-                    return path
-                }
+        let fileManager = FileManager.default
+        for path in Self.claudeCodePaths {
+            if fileManager.isExecutableFile(atPath: path) {
+                return path
             }
-        } catch {
-            // Fall through to return nil
         }
         return nil
     }
