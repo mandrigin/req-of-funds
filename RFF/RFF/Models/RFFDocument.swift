@@ -34,6 +34,12 @@ final class RFFDocument {
     /// Text extracted from the document via OCR
     var extractedText: String?
 
+    /// ML-classified document category
+    var documentCategory: String?
+
+    /// Confidence score of the ML classification (0.0 to 1.0)
+    var classificationConfidence: Double?
+
     /// Path to the source document file
     var documentPath: String?
 
