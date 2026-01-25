@@ -381,39 +381,120 @@ actor AIAnalysisService {
 
     private func buildAnalysisPrompt(for text: String) -> String {
         """
-        You are an invoice data extraction assistant. Analyze the following invoice text and extract structured data.
+        You are an invoice data extraction assistant. Extract structured data from the invoice text below.
 
-        Return a JSON object with the following structure:
+        ## STEP 1: Identify the key information
+        Look for these fields in the invoice:
+        - Invoice number: Look for "Invoice #", "Invoice No.", "Inv:", "Bill #", or similar labels
+        - Invoice date: Look for "Invoice Date", "Date:", "Issued:", or the date near the invoice number
+        - Due date: Look for "Due Date", "Payment Due", "Due:", "Pay By:"
+        - Vendor: The company SENDING the invoice (usually at top, with logo)
+        - Recipient: The company/person RECEIVING the invoice (look for "Bill To:", "Ship To:", "Customer:")
+        - Amounts: Look for "Subtotal", "Tax", "VAT", "Total", "Amount Due", "Balance Due", "Grand Total"
+        - Currency: USD ($), EUR (€), GBP (£), or stated currency
+        - PO number: Look for "PO #", "Purchase Order", "P.O.:"
+
+        ## STEP 2: Format the values
+        - Dates: Convert to YYYY-MM-DD format
+          * "January 15, 2024" → "2024-01-15"
+          * "15/01/2024" (European) → "2024-01-15"
+          * "01/15/2024" (US) → "2024-01-15"
+        - Numbers: Extract numeric value only, no currency symbols
+          * "$1,234.56" → "1234.56"
+          * "€1.234,56" (European) → "1234.56"
+        - Vendor/Recipient: Use the company name only, not the full address
+
+        ## STEP 3: Output JSON format
         {
             "suggestions": [
-                {
-                    "fieldType": "invoice_number|invoice_date|due_date|vendor|recipient|subtotal|tax|total|currency|po_number",
-                    "value": "extracted value",
-                    "confidence": 0.0-1.0,
-                    "reasoning": "brief explanation"
-                }
+                {"fieldType": "field_name", "value": "extracted value", "confidence": 0.0-1.0, "reasoning": "why"}
             ],
-            "schemaName": "suggested name for this invoice format (e.g., 'Amazon Business', 'Staples Invoice')",
-            "summary": "one-line summary of the invoice",
-            "notes": ["any warnings or observations about data quality"]
+            "schemaName": "Vendor Name Invoice",
+            "summary": "one-line summary",
+            "notes": ["warnings if any"]
         }
 
-        Focus on extracting:
-        - Invoice number (invoice_number)
-        - Invoice date (invoice_date) - format as ISO 8601 (YYYY-MM-DD)
-        - Due date (due_date) - format as ISO 8601 (YYYY-MM-DD)
-        - Vendor/seller name (vendor)
-        - Recipient/buyer name (recipient)
-        - Subtotal before tax (subtotal) - numeric value only
-        - Tax amount (tax) - numeric value only
-        - Total amount (total) - numeric value only. Look for synonyms: "Balance Due", "Amount Due", "Grand Total", "Total Due" all refer to the total
-        - Currency (currency) - USD, EUR, GBP, etc.
-        - PO number if present (po_number)
+        Valid fieldType values: invoice_number, invoice_date, due_date, vendor, recipient, subtotal, tax, total, currency, po_number
 
-        Invoice text:
+        ## EXAMPLE 1:
+        Input text:
+        '''
+        ACME CORPORATION
+        123 Business St, New York, NY 10001
+
+        INVOICE
+        Invoice #: INV-2024-0042
+        Date: March 15, 2024
+        Due: April 14, 2024
+
+        Bill To:
+        Widget Co.
+        456 Client Ave
+
+        Services rendered............$500.00
+        Consulting hours.............$300.00
+        Subtotal: $800.00
+        Tax (8%): $64.00
+        Total Due: $864.00
+        '''
+
+        Output:
+        {
+            "suggestions": [
+                {"fieldType": "vendor", "value": "ACME CORPORATION", "confidence": 0.95, "reasoning": "Company name at top of invoice"},
+                {"fieldType": "invoice_number", "value": "INV-2024-0042", "confidence": 0.95, "reasoning": "Labeled as Invoice #"},
+                {"fieldType": "invoice_date", "value": "2024-03-15", "confidence": 0.9, "reasoning": "Date field converted to ISO format"},
+                {"fieldType": "due_date", "value": "2024-04-14", "confidence": 0.9, "reasoning": "Due date converted to ISO format"},
+                {"fieldType": "recipient", "value": "Widget Co.", "confidence": 0.9, "reasoning": "Listed under Bill To"},
+                {"fieldType": "subtotal", "value": "800.00", "confidence": 0.9, "reasoning": "Labeled as Subtotal"},
+                {"fieldType": "tax", "value": "64.00", "confidence": 0.9, "reasoning": "Labeled as Tax (8%)"},
+                {"fieldType": "total", "value": "864.00", "confidence": 0.95, "reasoning": "Labeled as Total Due"},
+                {"fieldType": "currency", "value": "USD", "confidence": 0.9, "reasoning": "Dollar sign used"}
+            ],
+            "schemaName": "ACME Corporation Invoice",
+            "summary": "Invoice for services and consulting from ACME Corporation",
+            "notes": []
+        }
+
+        ## EXAMPLE 2 (European format):
+        Input text:
+        '''
+        Müller GmbH
+        Hauptstraße 1, 10115 Berlin
+
+        Rechnung Nr. 2024-123
+        Datum: 15.03.2024
+        Fällig: 30.03.2024
+
+        An: Schmidt AG
+
+        Beratung: €1.500,00
+        MwSt 19%: €285,00
+        Gesamt: €1.785,00
+        '''
+
+        Output:
+        {
+            "suggestions": [
+                {"fieldType": "vendor", "value": "Müller GmbH", "confidence": 0.95, "reasoning": "Company at top"},
+                {"fieldType": "invoice_number", "value": "2024-123", "confidence": 0.9, "reasoning": "Rechnung Nr. means Invoice No."},
+                {"fieldType": "invoice_date", "value": "2024-03-15", "confidence": 0.9, "reasoning": "European date format DD.MM.YYYY"},
+                {"fieldType": "due_date", "value": "2024-03-30", "confidence": 0.9, "reasoning": "Fällig means Due"},
+                {"fieldType": "recipient", "value": "Schmidt AG", "confidence": 0.85, "reasoning": "An: means To:"},
+                {"fieldType": "subtotal", "value": "1500.00", "confidence": 0.85, "reasoning": "Amount before tax"},
+                {"fieldType": "tax", "value": "285.00", "confidence": 0.9, "reasoning": "MwSt is German VAT"},
+                {"fieldType": "total", "value": "1785.00", "confidence": 0.95, "reasoning": "Gesamt means Total"},
+                {"fieldType": "currency", "value": "EUR", "confidence": 0.95, "reasoning": "Euro symbol used"}
+            ],
+            "schemaName": "Müller GmbH Invoice",
+            "summary": "German consulting invoice from Müller GmbH",
+            "notes": ["European number format converted (comma as decimal separator)"]
+        }
+
+        ## NOW ANALYZE THIS INVOICE:
         \(text.prefix(4000))
 
-        Respond with only the JSON object, no markdown code blocks.
+        Respond with only the JSON object. No markdown code blocks.
         """
     }
 
@@ -689,9 +770,12 @@ actor AIAnalysisService {
                 let confidence = item["confidence"] as? Double ?? 0.5
                 let reasoning = item["reasoning"] as? String
 
+                // Post-process value based on field type
+                let normalizedValue = normalizeFieldValue(value, forFieldType: fieldType)
+
                 suggestions.append(AIFieldSuggestion(
                     fieldType: fieldType,
-                    value: value,
+                    value: normalizedValue,
                     confidence: confidence,
                     reasoning: reasoning
                 ))
@@ -708,6 +792,144 @@ actor AIAnalysisService {
             summary: summary,
             notes: notes
         )
+    }
+
+    /// Normalize a field value based on its type
+    /// Handles common variations in AI output (currency symbols, date formats, number formats)
+    private func normalizeFieldValue(_ value: String, forFieldType fieldType: String) -> String {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        switch fieldType {
+        case "subtotal", "tax", "total":
+            return normalizeNumericValue(trimmed)
+        case "invoice_date", "due_date":
+            return normalizeDateValue(trimmed)
+        case "currency":
+            return normalizeCurrency(trimmed)
+        default:
+            return trimmed
+        }
+    }
+
+    /// Normalize numeric values: remove currency symbols, handle European decimals
+    private func normalizeNumericValue(_ value: String) -> String {
+        var cleaned = value
+
+        // Remove common currency symbols and prefixes
+        let currencyPatterns = ["$", "€", "£", "¥", "USD", "EUR", "GBP", "CHF"]
+        for pattern in currencyPatterns {
+            cleaned = cleaned.replacingOccurrences(of: pattern, with: "")
+        }
+
+        // Remove thousands separators and whitespace
+        cleaned = cleaned.replacingOccurrences(of: " ", with: "")
+
+        // Handle European format: 1.234,56 → 1234.56
+        // Check if comma appears after period (European format)
+        if let commaIndex = cleaned.lastIndex(of: ","),
+           let periodIndex = cleaned.lastIndex(of: "."),
+           commaIndex > periodIndex {
+            // European format: periods are thousands, comma is decimal
+            cleaned = cleaned.replacingOccurrences(of: ".", with: "")
+            cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
+        } else if cleaned.contains(",") && !cleaned.contains(".") {
+            // Comma-only format: might be decimal separator (e.g., "1234,56")
+            // Check if comma is followed by exactly 2 digits at end
+            if let commaIndex = cleaned.lastIndex(of: ",") {
+                let afterComma = cleaned[cleaned.index(after: commaIndex)...]
+                if afterComma.count <= 2 && afterComma.allSatisfy({ $0.isNumber }) {
+                    cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
+                } else {
+                    // Comma is thousands separator
+                    cleaned = cleaned.replacingOccurrences(of: ",", with: "")
+                }
+            }
+        } else {
+            // US format or already clean: just remove commas (thousands separator)
+            cleaned = cleaned.replacingOccurrences(of: ",", with: "")
+        }
+
+        // Remove any remaining non-numeric characters except decimal point
+        cleaned = String(cleaned.filter { $0.isNumber || $0 == "." || $0 == "-" })
+
+        return cleaned
+    }
+
+    /// Normalize date values to ISO 8601 (YYYY-MM-DD)
+    private func normalizeDateValue(_ value: String) -> String {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // If already in ISO format, return as-is
+        if trimmed.range(of: "^\\d{4}-\\d{2}-\\d{2}$", options: .regularExpression) != nil {
+            return trimmed
+        }
+
+        // Try various date formats
+        let dateFormats = [
+            "MMMM d, yyyy",      // January 15, 2024
+            "MMMM dd, yyyy",     // January 15, 2024
+            "MMM d, yyyy",       // Jan 15, 2024
+            "MMM dd, yyyy",      // Jan 15, 2024
+            "d MMMM yyyy",       // 15 January 2024
+            "dd MMMM yyyy",      // 15 January 2024
+            "d MMM yyyy",        // 15 Jan 2024
+            "dd MMM yyyy",       // 15 Jan 2024
+            "dd/MM/yyyy",        // 15/01/2024 (European)
+            "d/M/yyyy",          // 5/1/2024 (European)
+            "MM/dd/yyyy",        // 01/15/2024 (US)
+            "M/d/yyyy",          // 1/15/2024 (US)
+            "dd.MM.yyyy",        // 15.01.2024 (German)
+            "d.M.yyyy",          // 5.1.2024 (German)
+            "yyyy/MM/dd",        // 2024/01/15
+            "dd-MM-yyyy",        // 15-01-2024
+            "MM-dd-yyyy",        // 01-15-2024
+        ]
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+
+        let isoFormatter = DateFormatter()
+        isoFormatter.dateFormat = "yyyy-MM-dd"
+        isoFormatter.locale = Locale(identifier: "en_US_POSIX")
+
+        for format in dateFormats {
+            dateFormatter.dateFormat = format
+            if let date = dateFormatter.date(from: trimmed) {
+                return isoFormatter.string(from: date)
+            }
+        }
+
+        // If no format matched, return original (AI might have already formatted it)
+        return trimmed
+    }
+
+    /// Normalize currency codes
+    private func normalizeCurrency(_ value: String) -> String {
+        let upper = value.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Map symbols and common variations to standard codes
+        let currencyMap: [String: String] = [
+            "$": "USD",
+            "US$": "USD",
+            "US DOLLAR": "USD",
+            "US DOLLARS": "USD",
+            "DOLLAR": "USD",
+            "DOLLARS": "USD",
+            "€": "EUR",
+            "EURO": "EUR",
+            "EUROS": "EUR",
+            "£": "GBP",
+            "POUND": "GBP",
+            "POUNDS": "GBP",
+            "BRITISH POUND": "GBP",
+            "¥": "JPY",
+            "YEN": "JPY",
+            "CHF": "CHF",
+            "SWISS FRANC": "CHF",
+            "FRANC": "CHF",
+        ]
+
+        return currencyMap[upper] ?? upper
     }
 }
 
