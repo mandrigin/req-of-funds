@@ -93,6 +93,8 @@ struct ContentView: View {
     @State private var sortOrder = [KeyPathComparator(\RFFDocument.dueDate)]
     @State private var isProcessingPaste = false
     @State private var isProcessingDrop = false
+    @State private var dropProcessingCount = 0
+    @State private var dropProcessingTotal = 0
 
     // Text entry state
     @State private var showingTextEntry = false
@@ -235,8 +237,8 @@ struct ContentView: View {
             .onChange(of: sortOrder) { _, newOrder in
                 // Sorting is handled by the Table
             }
-            .onDrop(of: [.pdf], isTargeted: nil) { providers in
-                handlePDFDrop(providers: providers)
+            .onDrop(of: [.pdf, .image], isTargeted: nil) { providers in
+                handleFileDrop(providers: providers)
                 return true
             }
             .overlay {
@@ -246,8 +248,13 @@ struct ContentView: View {
                         VStack(spacing: 12) {
                             ProgressView()
                                 .scaleEffect(1.5)
-                            Text("Processing invoice...")
-                                .font(.headline)
+                            if dropProcessingTotal > 1 {
+                                Text("Processing \(dropProcessingCount) of \(dropProcessingTotal) files...")
+                                    .font(.headline)
+                            } else {
+                                Text("Processing invoice...")
+                                    .font(.headline)
+                            }
                         }
                         .padding(24)
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
@@ -473,7 +480,10 @@ struct ContentView: View {
             url.stopAccessingSecurityScopedResource()
 
             Task {
-                await processDroppedPDF(at: tempCopy)
+                await processDroppedFile(at: tempCopy)
+                await MainActor.run {
+                    isProcessingDrop = false
+                }
             }
 
         case .failure(let error):
@@ -482,48 +492,92 @@ struct ContentView: View {
         }
     }
 
-    private func handlePDFDrop(providers: [NSItemProvider]) {
-        guard let provider = providers.first else { return }
+    private func handleFileDrop(providers: [NSItemProvider]) {
+        guard !providers.isEmpty else { return }
 
         isProcessingDrop = true
+        dropProcessingTotal = providers.count
+        dropProcessingCount = 1
 
-        provider.loadFileRepresentation(forTypeIdentifier: UTType.pdf.identifier) { url, error in
-            defer { DispatchQueue.main.async { isProcessingDrop = false } }
+        Task {
+            var errors: [String] = []
 
-            guard let url = url else {
-                if let error = error {
-                    DispatchQueue.main.async {
-                        importError = error.localizedDescription
-                        showingImportError = true
-                    }
+            for (index, provider) in providers.enumerated() {
+                await MainActor.run {
+                    dropProcessingCount = index + 1
                 }
-                return
+
+                do {
+                    let tempCopy = try await loadDroppedFile(from: provider)
+                    await processDroppedFile(at: tempCopy)
+                } catch {
+                    errors.append(error.localizedDescription)
+                }
             }
 
-            // Copy to a persistent location since the provided URL is temporary
-            let tempCopy = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension("pdf")
+            await MainActor.run {
+                isProcessingDrop = false
+                dropProcessingCount = 0
+                dropProcessingTotal = 0
 
-            do {
-                try FileManager.default.copyItem(at: url, to: tempCopy)
-            } catch {
-                DispatchQueue.main.async {
-                    importError = "Failed to access dropped file: \(error.localizedDescription)"
+                if !errors.isEmpty {
+                    importError = errors.count == 1
+                        ? errors[0]
+                        : "Failed to import \(errors.count) files"
                     showingImportError = true
                 }
-                return
-            }
-
-            Task {
-                await processDroppedPDF(at: tempCopy)
             }
         }
     }
 
-    private func processDroppedPDF(at url: URL) async {
+    private func loadDroppedFile(from provider: NSItemProvider) async throws -> URL {
+        // Try PDF first, then images
+        let supportedTypes: [(UTType, String)] = [
+            (.pdf, "pdf"),
+            (.png, "png"),
+            (.jpeg, "jpg"),
+            (.heic, "heic"),
+            (.tiff, "tiff"),
+            (.bmp, "bmp"),
+            (.gif, "gif")
+        ]
+
+        for (utType, ext) in supportedTypes {
+            if provider.hasItemConformingToTypeIdentifier(utType.identifier) {
+                return try await withCheckedThrowingContinuation { continuation in
+                    provider.loadFileRepresentation(forTypeIdentifier: utType.identifier) { url, error in
+                        if let error = error {
+                            continuation.resume(throwing: error)
+                            return
+                        }
+
+                        guard let url = url else {
+                            continuation.resume(throwing: TransferError.invalidData)
+                            return
+                        }
+
+                        // Copy to a persistent location since the provided URL is temporary
+                        let tempCopy = FileManager.default.temporaryDirectory
+                            .appendingPathComponent(UUID().uuidString)
+                            .appendingPathExtension(ext)
+
+                        do {
+                            try FileManager.default.copyItem(at: url, to: tempCopy)
+                            continuation.resume(returning: tempCopy)
+                        } catch {
+                            continuation.resume(throwing: error)
+                        }
+                    }
+                }
+            }
+        }
+
+        throw TransferError.invalidData
+    }
+
+    private func processDroppedFile(at url: URL) async {
         do {
-            // Step 1: Run OCR on the PDF
+            // Step 1: Run OCR on the file (works for PDFs and images)
             let ocrResult = try await ocrService.processDocument(at: url)
 
             // Step 2: Extract entities (org, amount, due date)
@@ -553,13 +607,11 @@ struct ContentView: View {
                         )
                     }
                 }
-                isProcessingDrop = false
             }
         } catch {
             await MainActor.run {
-                importError = "Failed to process invoice: \(error.localizedDescription)"
+                importError = "Failed to process file: \(error.localizedDescription)"
                 showingImportError = true
-                isProcessingDrop = false
             }
         }
     }
