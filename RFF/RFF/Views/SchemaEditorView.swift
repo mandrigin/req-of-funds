@@ -103,7 +103,7 @@ class SchemaEditorViewModel: ObservableObject {
     }
 
     /// Run field classification on detected regions
-    private func classifyRegions() async {
+    func classifyRegions() async {
         guard !detectedRegions.isEmpty else { return }
 
         let observations = detectedRegions.map { region in
@@ -389,7 +389,7 @@ struct FieldDropTarget: View {
     var body: some View {
         HStack {
             Circle()
-                .fill(colorForFieldType(fieldType))
+                .fill(Color(nsColor: colorForFieldType(fieldType)))
                 .frame(width: 10, height: 10)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -421,7 +421,7 @@ struct FieldDropTarget: View {
         .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(isHighlighted ? Color.accentColor.opacity(0.2) : (mapping != nil ? colorForFieldType(fieldType).opacity(0.1) : Color.clear))
+                .fill(isHighlighted ? Color.accentColor.opacity(0.2) : (mapping != nil ? Color(nsColor: colorForFieldType(fieldType)).opacity(0.1) : Color.clear))
         )
         .dropDestination(for: DetectedTextRegionTransfer.self) { items, _ in
             guard let item = items.first else { return false }

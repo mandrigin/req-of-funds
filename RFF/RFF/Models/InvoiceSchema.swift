@@ -67,7 +67,7 @@ enum InvoiceFieldType: String, Codable, CaseIterable, Identifiable {
 }
 
 /// Normalized bounding box region (0.0-1.0 coordinates relative to page)
-struct NormalizedRegion: Codable, Equatable, Sendable {
+struct NormalizedRegion: Codable, Equatable, Sendable, Hashable {
     /// Left edge (0.0 = left, 1.0 = right)
     let x: Double
     /// Bottom edge (0.0 = bottom, 1.0 = top) - Vision coordinate system
@@ -112,7 +112,7 @@ struct NormalizedRegion: Codable, Equatable, Sendable {
 }
 
 /// Maps a field to its extraction rules
-struct FieldMapping: Codable, Identifiable, Sendable {
+struct FieldMapping: Codable, Identifiable, Sendable, Hashable {
     /// Unique identifier
     let id: UUID
 
@@ -169,7 +169,7 @@ struct FieldMapping: Codable, Identifiable, Sendable {
 }
 
 /// A reusable schema for extracting data from a specific invoice format
-struct InvoiceSchema: Codable, Identifiable, Sendable {
+struct InvoiceSchema: Codable, Identifiable, Sendable, Hashable, Equatable {
     /// Unique identifier
     let id: UUID
 
