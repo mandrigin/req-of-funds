@@ -1068,12 +1068,7 @@ struct DocumentDetailView: View {
                         let isAnalyzing = AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id)
 
                         Button {
-                            Task {
-                                await AIAnalysisProgressManager.shared.startAnalysis(
-                                    documentId: document.id,
-                                    text: document.extractedText ?? ""
-                                )
-                            }
+                            performAIAnalysis()
                         } label: {
                             HStack {
                                 if isAnalyzing {
@@ -1569,6 +1564,9 @@ struct DocumentDetailView: View {
                 documentId: document.id,
                 text: extractedText
             )
+            // Check for results immediately after analysis completes
+            // This ensures the result sheet shows even if .onChange() doesn't fire
+            checkForAIResults()
         }
     }
 
