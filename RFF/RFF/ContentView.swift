@@ -380,19 +380,19 @@ struct ContentView: View {
                         Label(currencyFilterLabel, systemImage: "dollarsign.circle")
                     }
 
-                    // Recipient filter menu
-                    if !availableRecipients.isEmpty {
-                        Menu {
-                            Button {
-                                selectedRecipientFilter = .all
-                            } label: {
-                                if case .all = selectedRecipientFilter {
-                                    Label("All Recipients", systemImage: "checkmark")
-                                } else {
-                                    Text("All Recipients")
-                                }
+                    // Recipient filter menu (always visible for consistent UI)
+                    Menu {
+                        Button {
+                            selectedRecipientFilter = .all
+                        } label: {
+                            if case .all = selectedRecipientFilter {
+                                Label("All Recipients", systemImage: "checkmark")
+                            } else {
+                                Text("All Recipients")
                             }
+                        }
 
+                        if !availableRecipients.isEmpty {
                             Divider()
 
                             ForEach(availableRecipients, id: \.self) { recipient in
@@ -406,9 +406,9 @@ struct ContentView: View {
                                     }
                                 }
                             }
-                        } label: {
-                            Label(recipientFilterLabel, systemImage: "person.crop.circle")
                         }
+                    } label: {
+                        Label(recipientFilterLabel, systemImage: "person.crop.circle")
                     }
                 }
 
