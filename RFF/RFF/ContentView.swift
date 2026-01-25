@@ -1022,7 +1022,6 @@ struct StatusBadge: View {
 struct DocumentDetailView: View {
     @Bindable var document: RFFDocument
     @Environment(\.modelContext) private var modelContext
-    @State private var selectedTab = 0
     @State private var pdfDocument: PDFDocument?
     @State private var highlights: [HighlightRegion] = []
     @State private var selectedHighlight: HighlightRegion?
@@ -1162,291 +1161,180 @@ struct DocumentDetailView: View {
     }
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // Info Tab
-            Form {
-                Section("Document Info") {
-                    LabeledContent("Title", value: document.title)
-                    LabeledContent("Organization", value: document.requestingOrganization)
-                    LabeledContent("Amount", value: document.amount, format: .currency(code: document.currency.currencyCode))
-                    LabeledContent("Currency", value: "\(document.currency.symbol) \(document.currency.displayName)")
-                    LabeledContent("Due Date", value: document.dueDate, format: .dateTime)
-                    LabeledContent("Status") {
-                        StatusBadge(status: document.status)
-                    }
-                }
-
-                // AI Analysis section (primary extraction method)
-                if !(document.extractedText ?? "").isEmpty {
-                    Section("AI Analysis") {
-                        let isAnalyzing = AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id)
-
-                        // Cloud AI option (uses configured provider: Claude Code, Anthropic, or OpenAI)
-                        Button {
-                            Task {
-                                await AIAnalysisProgressManager.shared.startAnalysis(
-                                    documentId: document.id,
-                                    text: document.extractedText ?? ""
-                                )
-                            }
-                        } label: {
+        Group {
+            if document.documentPath != nil {
+                if isEditingSchema {
+                    // Inline schema editor mode
+                    InlineSchemaEditorView(
+                        document: document,
+                        isEditing: $isEditingSchema
+                    )
+                } else {
+                    // Normal review mode - vertical layout with preview on top, form below
+                    VStack(spacing: 0) {
+                        // Top: Collapsible PDF Viewer with highlight controls
+                        VStack(spacing: 0) {
                             HStack {
-                                if isAnalyzing {
-                                    ProgressView()
-                                        .controlSize(.small)
-                                    Text("Analyzing...")
-                                } else {
-                                    Label("Analyze with Claude", systemImage: "cloud")
-                                }
-                            }
-                        }
-                        .disabled(isAnalyzing)
-
-                        // On-Device AI option (Apple Foundation Models, macOS 26+)
-                        if #available(macOS 26, *) {
-                            Button {
-                                Task {
-                                    await AIAnalysisProgressManager.shared.startAnalysis(
-                                        documentId: document.id,
-                                        text: document.extractedText ?? "",
-                                        provider: .foundation
+                                // Expand/collapse toggle
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        isPreviewExpanded.toggle()
+                                    }
+                                } label: {
+                                    Label(
+                                        isPreviewExpanded ? "Collapse Preview" : "Expand Preview",
+                                        systemImage: isPreviewExpanded ? "chevron.up" : "chevron.down"
                                     )
                                 }
-                            } label: {
-                                HStack {
-                                    if isAnalyzing {
-                                        ProgressView()
-                                            .controlSize(.small)
-                                        Text("Analyzing...")
-                                    } else {
-                                        Label("Analyze On-Device", systemImage: "desktopcomputer")
-                                    }
-                                }
-                            }
-                            .disabled(isAnalyzing)
-                        }
-                    }
-                }
-
-                // Show confirmed values section for approved documents
-                if let confirmedAt = document.confirmedAt {
-                    Section("Confirmed Values") {
-                        if let confirmedOrg = document.confirmedOrganization {
-                            LabeledContent("Organization", value: confirmedOrg)
-                        }
-                        if let confirmedAmount = document.confirmedAmount {
-                            LabeledContent("Amount", value: confirmedAmount, format: .currency(code: "USD"))
-                        }
-                        if let confirmedDate = document.confirmedDueDate {
-                            LabeledContent("Due Date", value: confirmedDate, format: .dateTime)
-                        }
-                        LabeledContent("Confirmed At", value: confirmedAt, format: .dateTime)
-                    }
-                }
-
-                // Show payment info section for paid documents
-                if let paidDate = document.paidDate {
-                    Section("Payment Info") {
-                        LabeledContent("Payment Date", value: paidDate, format: .dateTime.month().day().year())
-                    }
-                }
-
-                if let extractedText = document.extractedText, !extractedText.isEmpty {
-                    Section("Extracted Text") {
-                        ScrollView {
-                            Text(extractedText)
-                                .font(.body)
-                                .textSelection(.enabled)
-                        }
-                        .frame(maxHeight: 300)
-                    }
-                }
-
-                Section("Line Items") {
-                    if document.lineItems.isEmpty {
-                        Text("No line items")
-                            .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(document.lineItems) { item in
-                            HStack {
-                                Text(item.itemDescription)
-                                Spacer()
-                                Text(item.total, format: .currency(code: document.currency.currencyCode))
-                            }
-                        }
-                    }
-                }
-            }
-            .padding()
-            .tabItem {
-                Label("Info", systemImage: "info.circle")
-            }
-            .tag(0)
-
-            // Review & Confirm Tab - DocuSign-style split view
-            if document.documentPath != nil {
-                Group {
-                    if isEditingSchema {
-                        // Inline schema editor mode
-                        InlineSchemaEditorView(
-                            document: document,
-                            isEditing: $isEditingSchema
-                        )
-                    } else {
-                        // Normal review mode - vertical layout with preview on top, form below
-                        VStack(spacing: 0) {
-                            // Top: Collapsible PDF Viewer with highlight controls
-                            VStack(spacing: 0) {
-                                HStack {
-                                    // Expand/collapse toggle
-                                    Button {
-                                        withAnimation(.easeInOut(duration: 0.2)) {
-                                            isPreviewExpanded.toggle()
-                                        }
-                                    } label: {
-                                        Label(
-                                            isPreviewExpanded ? "Collapse Preview" : "Expand Preview",
-                                            systemImage: isPreviewExpanded ? "chevron.up" : "chevron.down"
-                                        )
-                                    }
-
-                                    Divider()
-                                        .frame(height: 20)
-
-                                    // Field detection status
-                                    if isDetectingFields {
-                                        ProgressView()
-                                            .controlSize(.small)
-                                        Text("Detecting fields...")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    } else {
-                                        Text("\(highlights.count) fields detected")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-
-                                    Divider()
-                                        .frame(height: 20)
-
-                                    // AI Analysis menu with Cloud and On-Device options
-                                    Menu {
-                                        Button {
-                                            performAIAnalysis()
-                                        } label: {
-                                            Label("Analyze with Claude", systemImage: "cloud")
-                                        }
-
-                                        if #available(macOS 26, *) {
-                                            Button {
-                                                performAIAnalysis(using: .foundation)
-                                            } label: {
-                                                Label("Analyze On-Device", systemImage: "desktopcomputer")
-                                            }
-                                        }
-                                    } label: {
-                                        if AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) {
-                                            ProgressView()
-                                                .controlSize(.small)
-                                        } else {
-                                            Label("AI Analyze", systemImage: "sparkles")
-                                        }
-                                    }
-                                    .disabled(AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) || (document.extractedText ?? "").isEmpty)
-
-                                    Spacer()
-                                }
-                                .padding(.horizontal)
-                                .padding(.vertical, 8)
 
                                 Divider()
+                                    .frame(height: 20)
 
-                                // Preview content (collapsible)
-                                if isPreviewExpanded {
-                                    VStack(spacing: 0) {
-                                        // Fixed legend header
-                                        if !highlights.isEmpty {
-                                            HighlightLegendView()
-                                            Divider()
-                                        }
-
-                                        PDFViewer(
-                                            document: pdfDocument,
-                                            highlights: highlights,
-                                            selectedHighlightId: selectedHighlight?.id,
-                                            onHighlightTapped: { highlight in
-                                                withAnimation {
-                                                    selectedHighlight = highlight
-                                                }
-                                            }
-                                        )
-                                    }
-                                    .frame(minHeight: 300, maxHeight: 400)
-
-                                    // Selected field info panel
-                                    if let selected = selectedHighlight {
-                                        SelectedFieldPanel(
-                                            highlight: selected,
-                                            document: document,
-                                            onDismiss: {
-                                                withAnimation {
-                                                    selectedHighlight = nil
-                                                }
-                                            },
-                                            onApply: { fieldType, value in
-                                                applyFieldValue(fieldType: fieldType, value: value)
-                                                withAnimation {
-                                                    selectedHighlight = nil
-                                                }
-                                            }
-                                        )
-                                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                                    }
+                                // Field detection status
+                                if isDetectingFields {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                    Text("Detecting fields...")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
                                 } else {
-                                    // Collapsed preview - show thumbnail
-                                    HStack {
-                                        if let pdf = pdfDocument, let page = pdf.page(at: 0) {
-                                            let thumb = page.thumbnail(of: CGSize(width: 120, height: 160), for: .mediaBox)
-                                            Image(nsImage: thumb)
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(height: 80)
-                                                .cornerRadius(4)
-                                                .shadow(radius: 2)
-                                        }
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("Document Preview")
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                            Text("Click 'Expand Preview' to view full document")
-                                                .font(.caption2)
-                                                .foregroundStyle(.tertiary)
-                                        }
-                                        Spacer()
-                                    }
-                                    .padding()
-                                    .background(Color(nsColor: .controlBackgroundColor))
+                                    Text("\(highlights.count) fields detected")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
                                 }
+
+                                Divider()
+                                    .frame(height: 20)
+
+                                // AI Analysis menu with Cloud and On-Device options
+                                Menu {
+                                    Button {
+                                        performAIAnalysis()
+                                    } label: {
+                                        Label("Analyze with Claude", systemImage: "cloud")
+                                    }
+
+                                    if #available(macOS 26, *) {
+                                        Button {
+                                            performAIAnalysis(using: .foundation)
+                                        } label: {
+                                            Label("Analyze On-Device", systemImage: "desktopcomputer")
+                                        }
+                                    }
+                                } label: {
+                                    if AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                    } else {
+                                        Label("AI Analyze", systemImage: "sparkles")
+                                    }
+                                }
+                                .disabled(AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) || (document.extractedText ?? "").isEmpty)
+
+                                Spacer()
                             }
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
 
                             Divider()
 
-                            // Bottom: Confirmation form panel
-                            ConfirmationFormView(document: document)
+                            // Preview content (collapsible)
+                            if isPreviewExpanded {
+                                VStack(spacing: 0) {
+                                    // Fixed legend header
+                                    if !highlights.isEmpty {
+                                        HighlightLegendView()
+                                        Divider()
+                                    }
+
+                                    PDFViewer(
+                                        document: pdfDocument,
+                                        highlights: highlights,
+                                        selectedHighlightId: selectedHighlight?.id,
+                                        onHighlightTapped: { highlight in
+                                            withAnimation {
+                                                selectedHighlight = highlight
+                                            }
+                                        }
+                                    )
+                                }
+                                .frame(minHeight: 300, maxHeight: 400)
+
+                                // Selected field info panel
+                                if let selected = selectedHighlight {
+                                    SelectedFieldPanel(
+                                        highlight: selected,
+                                        document: document,
+                                        onDismiss: {
+                                            withAnimation {
+                                                selectedHighlight = nil
+                                            }
+                                        },
+                                        onApply: { fieldType, value in
+                                            applyFieldValue(fieldType: fieldType, value: value)
+                                            withAnimation {
+                                                selectedHighlight = nil
+                                            }
+                                        }
+                                    )
+                                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                                }
+                            } else {
+                                // Collapsed preview - show thumbnail
+                                HStack {
+                                    if let pdf = pdfDocument, let page = pdf.page(at: 0) {
+                                        let thumb = page.thumbnail(of: CGSize(width: 120, height: 160), for: .mediaBox)
+                                        Image(nsImage: thumb)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(height: 80)
+                                            .cornerRadius(4)
+                                            .shadow(radius: 2)
+                                    }
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Document Preview")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        Text("Click 'Expand Preview' to view full document")
+                                            .font(.caption2)
+                                            .foregroundStyle(.tertiary)
+                                    }
+                                    Spacer()
+                                }
+                                .padding()
+                                .background(Color(nsColor: .controlBackgroundColor))
+                            }
+                        }
+
+                        Divider()
+
+                        // Bottom: Confirmation form panel with line items
+                        ScrollView {
+                            VStack(spacing: 0) {
+                                ConfirmationFormView(document: document)
+
+                                // Line Items section
+                                if !document.lineItems.isEmpty {
+                                    Divider()
+                                    LineItemsSection(document: document)
+                                }
+                            }
                         }
                     }
                 }
-                .tabItem {
-                    Label("Review & Confirm", systemImage: "checkmark.rectangle")
-                }
-                .tag(1)
             } else {
-                // No PDF - show confirmation form only
-                ConfirmationFormView(document: document)
-                    .tabItem {
-                        Label("Confirm", systemImage: "checkmark.rectangle")
+                // No PDF - show confirmation form only with line items
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ConfirmationFormView(document: document)
+
+                        // Line Items section
+                        if !document.lineItems.isEmpty {
+                            Divider()
+                            LineItemsSection(document: document)
+                        }
                     }
-                    .tag(1)
+                }
             }
         }
         .navigationTitle(document.title)
@@ -1834,6 +1722,63 @@ struct DocumentDetailView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Line Items Section
+
+/// Displays line items for the document in a collapsible section
+struct LineItemsSection: View {
+    let document: RFFDocument
+    @State private var isExpanded = true
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("Line Items (\(document.lineItems.count))")
+                        .font(.headline)
+                    Spacer()
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding()
+
+            if isExpanded {
+                Divider()
+                    .padding(.horizontal)
+
+                VStack(spacing: 0) {
+                    ForEach(document.lineItems) { item in
+                        HStack {
+                            Text(item.itemDescription)
+                                .lineLimit(2)
+                            Spacer()
+                            Text(item.total, format: .currency(code: document.currency.currencyCode))
+                                .fontWeight(.medium)
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
+
+                        if item.id != document.lineItems.last?.id {
+                            Divider()
+                                .padding(.horizontal)
+                        }
+                    }
+                }
+                .padding(.bottom)
+            }
+        }
+        .background(Color(nsColor: .controlBackgroundColor))
     }
 }
 

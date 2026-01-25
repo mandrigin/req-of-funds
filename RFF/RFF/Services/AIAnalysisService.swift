@@ -39,20 +39,57 @@ enum AIProvider: String, CaseIterable, Codable {
     }
 }
 
-/// Suggested field from AI analysis
-struct AIFieldSuggestion: Identifiable, Codable, Sendable {
+/// A single option/value for a field suggestion, with its own confidence
+struct AIFieldOption: Identifiable, Codable, Sendable {
     let id: UUID
-    let fieldType: String
     let value: String
     let confidence: Double
     let reasoning: String?
 
-    init(id: UUID = UUID(), fieldType: String, value: String, confidence: Double, reasoning: String? = nil) {
+    init(id: UUID = UUID(), value: String, confidence: Double, reasoning: String? = nil) {
         self.id = id
-        self.fieldType = fieldType
         self.value = value
         self.confidence = confidence
         self.reasoning = reasoning
+    }
+}
+
+/// Suggested field from AI analysis
+struct AIFieldSuggestion: Identifiable, Codable, Sendable {
+    let id: UUID
+    let fieldType: String
+    let options: [AIFieldOption]
+
+    /// Primary/recommended value (first option)
+    var value: String {
+        options.first?.value ?? ""
+    }
+
+    /// Primary confidence (first option)
+    var confidence: Double {
+        options.first?.confidence ?? 0
+    }
+
+    /// Primary reasoning (first option)
+    var reasoning: String? {
+        options.first?.reasoning
+    }
+
+    /// Whether there are multiple options to choose from
+    var hasAlternatives: Bool {
+        options.count > 1
+    }
+
+    init(id: UUID = UUID(), fieldType: String, value: String, confidence: Double, reasoning: String? = nil) {
+        self.id = id
+        self.fieldType = fieldType
+        self.options = [AIFieldOption(value: value, confidence: confidence, reasoning: reasoning)]
+    }
+
+    init(id: UUID = UUID(), fieldType: String, options: [AIFieldOption]) {
+        self.id = id
+        self.fieldType = fieldType
+        self.options = options
     }
 
     /// Convert to InvoiceFieldType if valid
