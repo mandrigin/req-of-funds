@@ -45,13 +45,28 @@ struct ContentView: View {
                 dueDate: Date().addingTimeInterval(7 * 24 * 60 * 60)
             )
             modelContext.insert(newDocument)
+
+            // Schedule deadline notification
+            Task {
+                try? await NotificationService.shared.scheduleDeadlineNotification(
+                    documentId: newDocument.id,
+                    title: newDocument.title,
+                    organization: newDocument.requestingOrganization,
+                    dueDate: newDocument.dueDate
+                )
+            }
         }
     }
 
     private func deleteDocuments(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                modelContext.delete(documents[index])
+                let document = documents[index]
+                // Cancel any scheduled notifications
+                Task {
+                    await NotificationService.shared.cancelNotification(for: document.id)
+                }
+                modelContext.delete(document)
             }
         }
     }
