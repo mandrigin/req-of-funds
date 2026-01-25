@@ -27,13 +27,13 @@ enum FieldHighlightColor {
 
     static var legendItems: [(fieldType: InvoiceFieldType, color: NSColor, label: String)] {
         [
-            (.total, NSColor.systemGreen, "Amounts (Total, Subtotal, Tax)"),
-            (.invoiceDate, NSColor.systemBlue, "Dates (Invoice, Due)"),
+            (.total, NSColor.systemGreen, "Amount"),
+            (.invoiceDate, NSColor.systemBlue, "Date"),
             (.vendor, NSColor.systemOrange, "Vendor"),
-            (.invoiceNumber, NSColor.systemPurple, "Invoice/PO Number"),
+            (.invoiceNumber, NSColor.systemPurple, "Invoice #"),
             (.customerName, NSColor.systemTeal, "Customer"),
-            (.lineItemDescription, NSColor.systemGray, "Line Items"),
-            (.currency, NSColor.systemIndigo, "Currency/Terms"),
+            (.lineItemDescription, NSColor.systemGray, "Line Item"),
+            (.currency, NSColor.systemIndigo, "Terms"),
         ]
     }
 }
@@ -255,34 +255,29 @@ private class HighlightOverlayView: NSView {
     }
 }
 
-/// Legend view showing what each highlight color represents
+/// Compact horizontal legend bar showing what each highlight color represents
 struct HighlightLegendView: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Field Legend")
-                .font(.headline)
-                .padding(.bottom, 2)
-
+        HStack(spacing: 12) {
             ForEach(FieldHighlightColor.legendItems, id: \.fieldType) { item in
-                HStack(spacing: 8) {
+                HStack(spacing: 4) {
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(Color(nsColor: item.color.withAlphaComponent(0.3)))
+                        .fill(Color(nsColor: item.color.withAlphaComponent(0.4)))
                         .overlay(
                             RoundedRectangle(cornerRadius: 2)
                                 .stroke(Color(nsColor: item.color), lineWidth: 1)
                         )
-                        .frame(width: 16, height: 16)
+                        .frame(width: 12, height: 12)
 
                     Text(item.label)
-                        .font(.caption)
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
             }
         }
-        .padding(8)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
         .background(Color(nsColor: .controlBackgroundColor))
-        .cornerRadius(8)
-        .shadow(radius: 2)
     }
 }
 
