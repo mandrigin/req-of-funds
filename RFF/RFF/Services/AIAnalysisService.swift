@@ -343,7 +343,7 @@ actor AIAnalysisService {
         - Customer/buyer name (customer_name)
         - Subtotal before tax (subtotal) - numeric value only
         - Tax amount (tax) - numeric value only
-        - Total amount (total) - numeric value only
+        - Total amount (total) - numeric value only. Look for synonyms: "Balance Due", "Amount Due", "Grand Total", "Total Due" all refer to the total
         - Currency (currency) - USD, EUR, GBP, etc.
         - PO number if present (po_number)
 
