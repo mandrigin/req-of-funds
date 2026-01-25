@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationModels)
+import FoundationModels
+#endif
 
 /// AI provider options
 enum AIProvider: String, CaseIterable, Codable {
@@ -263,11 +266,15 @@ actor AIAnalysisService {
 
     /// Check if Foundation Models (Apple Intelligence) is available on this system
     nonisolated func isFoundationModelsAvailable() -> Bool {
+        #if canImport(FoundationModels)
         if #available(macOS 26.0, *) {
-            // On macOS 26+, Foundation Models are available
-            // TODO: Add actual availability check using FoundationModels framework
-            return true
+            // Check if the device supports Apple Intelligence and model is ready
+            let model = SystemLanguageModel.default
+            if case .available = model.availability {
+                return true
+            }
         }
+        #endif
         return false
     }
 
@@ -482,14 +489,35 @@ actor AIAnalysisService {
     /// Call Apple Foundation Models for on-device AI inference
     /// Requires macOS 26.0 or later with Apple Intelligence
     private func callFoundation(prompt: String) async throws -> String {
-        guard isFoundationModelsAvailable() else {
+        #if canImport(FoundationModels)
+        guard #available(macOS 26.0, *) else {
             throw AIAnalysisError.foundationModelsNotAvailable
         }
 
-        // TODO: Implement actual Foundation Models API call
-        // This will be implemented in rff-twmya: Implement Foundation Models API client
-        // For now, throw an error indicating the feature is coming soon
-        throw AIAnalysisError.foundationModelsError("Foundation Models support is coming soon. Please use another provider.")
+        // Check if on-device model is available
+        let model = SystemLanguageModel.default
+        guard case .available = model.availability else {
+            throw AIAnalysisError.foundationModelsNotAvailable
+        }
+
+        do {
+            // Create a session for on-device inference
+            // Using instructions to guide the model for invoice analysis
+            let session = LanguageModelSession(
+                instructions: "You are a document analysis assistant that extracts structured data from invoices. Always respond with valid JSON."
+            )
+
+            // Generate response using on-device model
+            let response = try await session.respond(to: prompt)
+
+            // Extract the text content from the response
+            return response.content
+        } catch {
+            throw AIAnalysisError.foundationModelsError(error.localizedDescription)
+        }
+        #else
+        throw AIAnalysisError.foundationModelsNotAvailable
+        #endif
     }
 
     private func callOpenAI(prompt: String, apiKey: String) async throws -> String {
