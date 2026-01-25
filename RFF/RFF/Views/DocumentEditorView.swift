@@ -21,7 +21,8 @@ struct DocumentEditorView: View {
                 // Line items table
                 LineItemsTableView(
                     lineItems: $document.data.lineItems,
-                    selection: $selectedLineItems
+                    selection: $selectedLineItems,
+                    currency: document.data.currency
                 )
 
                 Divider()
@@ -48,7 +49,7 @@ struct DocumentEditorView: View {
             }
         }
         .sheet(isPresented: $showingAddLineItem) {
-            AddLineItemSheet(lineItems: $document.data.lineItems)
+            AddLineItemSheet(lineItems: $document.data.lineItems, currency: document.data.currency)
         }
         .fileImporter(
             isPresented: $isImporting,
@@ -107,6 +108,10 @@ struct DocumentEditorView: View {
                         }
                         if document.data.amount == Decimal.zero {
                             document.data.amount = entities.amount ?? Decimal.zero
+                            // Also set currency when updating amount
+                            if let currency = entities.currency {
+                                document.data.currency = currency
+                            }
                         }
                         if let dueDate = entities.dueDate {
                             document.data.dueDate = dueDate
@@ -164,10 +169,16 @@ struct DocumentInfoSidebar: View {
             }
 
             Section("Financial") {
+                Picker("Currency", selection: $document.currency) {
+                    ForEach(Currency.allCases) { currency in
+                        Text("\(currency.symbol) \(currency.displayName)").tag(currency)
+                    }
+                }
+
                 HStack {
                     Text("Amount")
                     Spacer()
-                    TextField("Amount", value: $document.amount, format: .currency(code: "USD"))
+                    TextField("Amount", value: $document.amount, format: .currency(code: document.currency.currencyCode))
                         .multilineTextAlignment(.trailing)
                         .frame(width: 120)
                 }
@@ -175,7 +186,7 @@ struct DocumentInfoSidebar: View {
                 HStack {
                     Text("Total (Line Items)")
                     Spacer()
-                    Text(document.totalAmount, format: .currency(code: "USD"))
+                    Text(document.totalAmount, format: .currency(code: document.currency.currencyCode))
                         .foregroundStyle(.secondary)
                 }
             }
@@ -241,6 +252,7 @@ struct DocumentInfoSidebar: View {
 struct LineItemsTableView: View {
     @Binding var lineItems: [RFFDocumentData.LineItemData]
     @Binding var selection: Set<RFFDocumentData.LineItemData.ID>
+    let currency: Currency
 
     var body: some View {
         Table(lineItems, selection: $selection) {
@@ -262,13 +274,13 @@ struct LineItemsTableView: View {
             .width(50)
 
             TableColumn("Unit Price") { item in
-                Text(item.unitPrice, format: .currency(code: "USD"))
+                Text(item.unitPrice, format: .currency(code: currency.currencyCode))
                     .monospacedDigit()
             }
             .width(100)
 
             TableColumn("Total") { item in
-                Text(item.total, format: .currency(code: "USD"))
+                Text(item.total, format: .currency(code: currency.currencyCode))
                     .monospacedDigit()
                     .fontWeight(.medium)
             }
@@ -312,7 +324,7 @@ struct BottomBar: View {
                 Text("Line Items Total")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text(document.totalAmount, format: .currency(code: "USD"))
+                Text(document.totalAmount, format: .currency(code: document.currency.currencyCode))
                     .font(.title2)
                     .fontWeight(.semibold)
                     .monospacedDigit()
@@ -327,6 +339,7 @@ struct BottomBar: View {
 struct AddLineItemSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var lineItems: [RFFDocumentData.LineItemData]
+    let currency: Currency
 
     @State private var description = ""
     @State private var quantity = 1
@@ -355,7 +368,7 @@ struct AddLineItemSheet: View {
                 HStack {
                     Text("Unit Price")
                     Spacer()
-                    TextField("Price", value: $unitPrice, format: .currency(code: "USD"))
+                    TextField("Price", value: $unitPrice, format: .currency(code: currency.currencyCode))
                         .frame(width: 120)
                         .multilineTextAlignment(.trailing)
                 }

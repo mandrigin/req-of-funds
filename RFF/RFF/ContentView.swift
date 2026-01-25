@@ -10,6 +10,21 @@ enum DocumentFilter: String, CaseIterable {
     case confirmed = "Confirmed"
 }
 
+/// Currency filter for document list
+enum CurrencyFilter: Hashable {
+    case all
+    case specific(Currency)
+
+    var displayName: String {
+        switch self {
+        case .all:
+            return "All Currencies"
+        case .specific(let currency):
+            return currency.displayName
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
 
@@ -27,15 +42,38 @@ struct ContentView: View {
     }
 
     @State private var selectedFilter: DocumentFilter = .inbox
+    @State private var selectedCurrencyFilter: CurrencyFilter = .all
 
-    /// Documents to display based on current filter
+    /// Documents to display based on current filters
     private var documents: [RFFDocument] {
+        let statusFiltered: [RFFDocument]
         switch selectedFilter {
         case .inbox:
-            return inboxDocuments
+            statusFiltered = inboxDocuments
         case .confirmed:
-            return confirmedDocuments
+            statusFiltered = confirmedDocuments
         }
+
+        // Apply currency filter
+        switch selectedCurrencyFilter {
+        case .all:
+            return statusFiltered
+        case .specific(let currency):
+            return statusFiltered.filter { $0.currency == currency }
+        }
+    }
+
+    /// Available currencies in the current document set (for filter menu)
+    private var availableCurrencies: [Currency] {
+        let statusFiltered: [RFFDocument]
+        switch selectedFilter {
+        case .inbox:
+            statusFiltered = inboxDocuments
+        case .confirmed:
+            statusFiltered = confirmedDocuments
+        }
+        let currencies = Set(statusFiltered.map { $0.currency })
+        return Currency.allCases.filter { currencies.contains($0) }
     }
     @State private var isImportingPDF = false
     @State private var importError: String?
@@ -66,10 +104,19 @@ struct ContentView: View {
                 .width(min: 120, ideal: 180)
 
                 TableColumn("Amount") { document in
-                    Text(document.amount, format: .currency(code: "USD"))
+                    Text(document.amount, format: .currency(code: document.currency.currencyCode))
                         .monospacedDigit()
                 }
                 .width(100)
+
+                TableColumn("Currency") { document in
+                    Text(document.currency.rawValue)
+                        .font(.caption)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(currencyColor(for: document.currency).opacity(0.2), in: Capsule())
+                }
+                .width(60)
 
                 TableColumn("Due Date", value: \.dueDate) { document in
                     HStack {
@@ -155,6 +202,35 @@ struct ContentView: View {
                     }
                     .pickerStyle(.segmented)
                     .frame(width: 180)
+
+                    // Currency filter menu
+                    Menu {
+                        Button {
+                            selectedCurrencyFilter = .all
+                        } label: {
+                            if case .all = selectedCurrencyFilter {
+                                Label("All Currencies", systemImage: "checkmark")
+                            } else {
+                                Text("All Currencies")
+                            }
+                        }
+
+                        Divider()
+
+                        ForEach(Currency.allCases) { currency in
+                            Button {
+                                selectedCurrencyFilter = .specific(currency)
+                            } label: {
+                                if case .specific(let selected) = selectedCurrencyFilter, selected == currency {
+                                    Label("\(currency.symbol) \(currency.displayName)", systemImage: "checkmark")
+                                } else {
+                                    Text("\(currency.symbol) \(currency.displayName)")
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(currencyFilterLabel, systemImage: "dollarsign.circle")
+                    }
                 }
 
                 ToolbarItemGroup(placement: .primaryAction) {
@@ -314,6 +390,7 @@ struct ContentView: View {
                         title: generateTitle(from: entities, url: url),
                         requestingOrganization: entities.organizationName ?? "Unknown Organization",
                         amount: entities.amount ?? Decimal(0),
+                        currency: entities.currency ?? .usd,
                         dueDate: entities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
                         extractedText: ocrResult.fullText,
                         documentPath: url.path
@@ -347,13 +424,33 @@ struct ContentView: View {
         if let org = entities.organizationName, let amount = entities.amount {
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
-            formatter.currencyCode = "USD"
+            formatter.currencyCode = entities.currency?.currencyCode ?? "USD"
             let amountStr = formatter.string(from: amount as NSDecimalNumber) ?? "\(amount)"
             return "\(org) - \(amountStr)"
         } else if let org = entities.organizationName {
             return "RFF - \(org)"
         } else {
             return baseName
+        }
+    }
+
+    private var currencyFilterLabel: String {
+        switch selectedCurrencyFilter {
+        case .all:
+            return "All"
+        case .specific(let currency):
+            return currency.symbol
+        }
+    }
+
+    private func currencyColor(for currency: Currency) -> Color {
+        switch currency {
+        case .usd:
+            return .green
+        case .eur:
+            return .blue
+        case .gbp:
+            return .purple
         }
     }
 
@@ -460,6 +557,7 @@ struct ContentView: View {
                     title: generateTitle(from: entities),
                     requestingOrganization: entities.organizationName ?? "Unknown",
                     amount: entities.amount ?? Decimal(0),
+                    currency: entities.currency ?? .usd,
                     dueDate: entities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
                     extractedText: ocrResult.fullText
                 )
@@ -489,7 +587,7 @@ struct ContentView: View {
         if let org = entities.organizationName, let amount = entities.amount {
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
-            formatter.currencyCode = "USD"
+            formatter.currencyCode = entities.currency?.currencyCode ?? "USD"
             let amountStr = formatter.string(from: amount as NSDecimalNumber) ?? "\(amount)"
             return "RFF - \(org) - \(amountStr)"
         } else if let org = entities.organizationName {
@@ -561,7 +659,8 @@ struct DocumentDetailView: View {
                 Section("Document Info") {
                     LabeledContent("Title", value: document.title)
                     LabeledContent("Organization", value: document.requestingOrganization)
-                    LabeledContent("Amount", value: document.amount, format: .currency(code: "USD"))
+                    LabeledContent("Amount", value: document.amount, format: .currency(code: document.currency.currencyCode))
+                    LabeledContent("Currency", value: "\(document.currency.symbol) \(document.currency.displayName)")
                     LabeledContent("Due Date", value: document.dueDate, format: .dateTime)
                     LabeledContent("Status", value: document.status.rawValue.capitalized)
                 }
@@ -586,7 +685,7 @@ struct DocumentDetailView: View {
                             HStack {
                                 Text(item.itemDescription)
                                 Spacer()
-                                Text(item.total, format: .currency(code: "USD"))
+                                Text(item.total, format: .currency(code: document.currency.currencyCode))
                             }
                         }
                     }

@@ -6,13 +6,15 @@ import Foundation
 struct ExtractedAmount: Sendable, Identifiable {
     let id: UUID
     let value: Decimal
+    let currency: Currency
     let rawText: String
     let confidence: Float
     let boundingBox: CGRect
 
-    init(value: Decimal, rawText: String, confidence: Float, boundingBox: CGRect) {
+    init(value: Decimal, currency: Currency = .usd, rawText: String, confidence: Float, boundingBox: CGRect) {
         self.id = UUID()
         self.value = value
+        self.currency = currency
         self.rawText = rawText
         self.confidence = confidence
         self.boundingBox = boundingBox
@@ -73,29 +75,59 @@ actor AmountDateExtractionService {
 
     // MARK: - Currency Patterns
 
-    /// Pattern for USD amounts: $1,234.56
-    private let dollarSignPattern = try! NSRegularExpression(
-        pattern: #"\$[\d,]+\.?\d*"#,
-        options: []
-    )
+    /// Currency pattern with associated currency type
+    private struct CurrencyPattern {
+        let regex: NSRegularExpression
+        let currency: Currency
+    }
 
-    /// Pattern for amounts with USD suffix: 1,234.56 USD
-    private let usdSuffixPattern = try! NSRegularExpression(
-        pattern: #"[\d,]+\.?\d*\s*USD"#,
-        options: .caseInsensitive
-    )
+    /// All currency patterns grouped by currency
+    private let currencyPatterns: [CurrencyPattern] = {
+        var patterns: [CurrencyPattern] = []
 
-    /// Pattern for USD prefix: USD 1,234.56
-    private let usdPrefixPattern = try! NSRegularExpression(
-        pattern: #"USD\s*[\d,]+\.?\d*"#,
-        options: .caseInsensitive
-    )
+        // USD patterns
+        let usdPatterns = [
+            #"\$[\d,]+\.?\d*"#,                    // $1,234.56
+            #"[\d,]+\.?\d*\s*USD"#,                // 1,234.56 USD
+            #"USD\s*[\d,]+\.?\d*"#,                // USD 1,234.56
+            #"[\d,]+\.?\d*\s*dollars?"#            // 1,234.56 dollars
+        ]
+        for pattern in usdPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .usd))
+            }
+        }
 
-    /// Pattern for "dollars": 1,234.56 dollars
-    private let dollarsPattern = try! NSRegularExpression(
-        pattern: #"[\d,]+\.?\d*\s*dollars?"#,
-        options: .caseInsensitive
-    )
+        // EUR patterns
+        let eurPatterns = [
+            #"€[\d,\s]+[.,]?\d*"#,                 // €1.234,56 or €1,234.56
+            #"[\d,\s]+[.,]?\d*\s*€"#,              // 1.234,56 € or 1,234.56 €
+            #"[\d,]+\.?\d*\s*EUR"#,                // 1,234.56 EUR
+            #"EUR\s*[\d,]+\.?\d*"#,                // EUR 1,234.56
+            #"[\d,]+\.?\d*\s*euros?"#              // 1,234.56 euros
+        ]
+        for pattern in eurPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .eur))
+            }
+        }
+
+        // GBP patterns
+        let gbpPatterns = [
+            #"£[\d,]+\.?\d*"#,                     // £1,234.56
+            #"[\d,]+\.?\d*\s*£"#,                  // 1,234.56 £
+            #"[\d,]+\.?\d*\s*GBP"#,                // 1,234.56 GBP
+            #"GBP\s*[\d,]+\.?\d*"#,                // GBP 1,234.56
+            #"[\d,]+\.?\d*\s*pounds?"#             // 1,234.56 pounds
+        ]
+        for pattern in gbpPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .gbp))
+            }
+        }
+
+        return patterns
+    }()
 
     // MARK: - Public API
 
@@ -157,20 +189,19 @@ actor AmountDateExtractionService {
         var amounts: [ExtractedAmount] = []
         let range = NSRange(text.startIndex..<text.endIndex, in: text)
 
-        // Try each pattern
-        let patterns = [dollarSignPattern, usdSuffixPattern, usdPrefixPattern, dollarsPattern]
-
-        for pattern in patterns {
-            let matches = pattern.matches(in: text, options: [], range: range)
+        // Try each currency pattern
+        for currencyPattern in currencyPatterns {
+            let matches = currencyPattern.regex.matches(in: text, options: [], range: range)
 
             for match in matches {
                 if let matchRange = Range(match.range, in: text) {
                     let matchString = String(text[matchRange])
-                    if let value = parseAmount(from: matchString) {
+                    if let value = parseAmount(from: matchString, currency: currencyPattern.currency) {
                         // Filter unreasonable amounts
                         if value > 0 && value < 1_000_000_000_000 {
                             let amount = ExtractedAmount(
                                 value: value,
+                                currency: currencyPattern.currency,
                                 rawText: matchString,
                                 confidence: observation.confidence,
                                 boundingBox: observation.boundingBox
@@ -186,14 +217,55 @@ actor AmountDateExtractionService {
     }
 
     /// Parse currency string into Decimal
-    private func parseAmount(from string: String) -> Decimal? {
+    private func parseAmount(from string: String, currency: Currency) -> Decimal? {
         var cleaned = string
+            // Remove currency symbols
             .replacingOccurrences(of: "$", with: "")
+            .replacingOccurrences(of: "€", with: "")
+            .replacingOccurrences(of: "£", with: "")
+            // Remove currency codes
             .replacingOccurrences(of: "USD", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "EUR", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "GBP", with: "", options: .caseInsensitive)
+            // Remove currency words
             .replacingOccurrences(of: "dollars", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "dollar", with: "", options: .caseInsensitive)
-            .replacingOccurrences(of: ",", with: "")
+            .replacingOccurrences(of: "euros", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "euro", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "pounds", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "pound", with: "", options: .caseInsensitive)
+            // Remove whitespace
+            .replacingOccurrences(of: " ", with: "")
             .trimmingCharacters(in: .whitespaces)
+
+        // Handle European number format (1.234,56) for EUR
+        if currency == .eur && cleaned.contains(",") {
+            // Check if it's European format: has comma as decimal separator
+            // European: 1.234,56 -> 1234.56
+            // American: 1,234.56 -> 1234.56
+            let lastComma = cleaned.lastIndex(of: ",")
+            let lastDot = cleaned.lastIndex(of: ".")
+
+            if let commaIdx = lastComma {
+                if let dotIdx = lastDot {
+                    // Both present - comma after dot means European format
+                    if commaIdx > dotIdx {
+                        // European: 1.234,56 -> remove dots, replace comma with dot
+                        cleaned = cleaned.replacingOccurrences(of: ".", with: "")
+                        cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
+                    } else {
+                        // American: 1,234.56 -> just remove commas
+                        cleaned = cleaned.replacingOccurrences(of: ",", with: "")
+                    }
+                } else {
+                    // Only comma - assume it's decimal separator for EUR
+                    cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
+                }
+            }
+        } else {
+            // USD/GBP use comma as thousand separator
+            cleaned = cleaned.replacingOccurrences(of: ",", with: "")
+        }
 
         // Handle common OCR errors
         cleaned = cleaned.replacingOccurrences(of: "O", with: "0")
@@ -202,17 +274,24 @@ actor AmountDateExtractionService {
         return Decimal(string: cleaned)
     }
 
-    /// Deduplicate amounts keeping highest confidence for each value
+    /// Deduplicate amounts keeping highest confidence for each value+currency combination
     private func deduplicateAmounts(_ amounts: [ExtractedAmount]) -> [ExtractedAmount] {
-        var seen: [Decimal: ExtractedAmount] = [:]
+        // Key by both value and currency to avoid deduplicating different currencies
+        struct AmountKey: Hashable {
+            let value: Decimal
+            let currency: Currency
+        }
+
+        var seen: [AmountKey: ExtractedAmount] = [:]
 
         for amount in amounts {
-            if let existing = seen[amount.value] {
+            let key = AmountKey(value: amount.value, currency: amount.currency)
+            if let existing = seen[key] {
                 if amount.confidence > existing.confidence {
-                    seen[amount.value] = amount
+                    seen[key] = amount
                 }
             } else {
-                seen[amount.value] = amount
+                seen[key] = amount
             }
         }
 
