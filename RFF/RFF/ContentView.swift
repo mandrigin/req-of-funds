@@ -4,46 +4,107 @@ import PDFKit
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var documents: [RFFDocument]
+    @Query(sort: \RFFDocument.dueDate) private var documents: [RFFDocument]
     @State private var isImportingPDF = false
     @State private var importError: String?
     @State private var showingImportError = false
+    @State private var selectedDocuments: Set<RFFDocument.ID> = []
+    @State private var selectedDocument: RFFDocument?
+    @State private var sortOrder = [KeyPathComparator(\RFFDocument.dueDate)]
 
     private let pdfService = PDFService()
 
     var body: some View {
         NavigationSplitView {
-            List {
-                ForEach(documents) { document in
-                    NavigationLink {
-                        DocumentDetailView(document: document)
-                    } label: {
-                        VStack(alignment: .leading) {
-                            Text(document.title)
-                                .font(.headline)
-                            Text(document.requestingOrganization)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+            // Table view with columns
+            Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
+                TableColumn("Title", value: \.title) { document in
+                    Text(document.title)
+                        .fontWeight(.medium)
+                }
+                .width(min: 150, ideal: 200)
+
+                TableColumn("Organization", value: \.requestingOrganization) { document in
+                    Text(document.requestingOrganization)
+                }
+                .width(min: 120, ideal: 180)
+
+                TableColumn("Amount") { document in
+                    Text(document.amount, format: .currency(code: "USD"))
+                        .monospacedDigit()
+                }
+                .width(100)
+
+                TableColumn("Due Date", value: \.dueDate) { document in
+                    HStack {
+                        Text(document.dueDate, format: .dateTime.month().day().year())
+                        if document.dueDate < Date() && document.status != .completed {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.red)
                         }
                     }
                 }
-                .onDelete(perform: deleteDocuments)
+                .width(120)
+
+                TableColumn("Status") { document in
+                    StatusBadge(status: document.status)
+                }
+                .width(100)
             }
-            .navigationSplitViewColumnWidth(min: 200, ideal: 250)
+            .onChange(of: sortOrder) { _, newOrder in
+                // Sorting is handled by the Table
+            }
+            .onChange(of: selectedDocuments) { _, newSelection in
+                if let first = newSelection.first {
+                    selectedDocument = documents.first { $0.id == first }
+                } else {
+                    selectedDocument = nil
+                }
+            }
+            .contextMenu(forSelectionType: RFFDocument.ID.self) { ids in
+                if !ids.isEmpty {
+                    Button(role: .destructive) {
+                        deleteDocuments(ids: ids)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+            } primaryAction: { ids in
+                // Double-click to open
+                if let id = ids.first, let doc = documents.first(where: { $0.id == id }) {
+                    selectedDocument = doc
+                }
+            }
             .toolbar {
-                ToolbarItem {
+                ToolbarItemGroup(placement: .primaryAction) {
                     Button(action: { isImportingPDF = true }) {
                         Label("Import PDF", systemImage: "doc.badge.plus")
                     }
-                }
-                ToolbarItem {
                     Button(action: addDocument) {
                         Label("Add Document", systemImage: "plus")
                     }
                 }
+
+                ToolbarItemGroup(placement: .secondaryAction) {
+                    if !selectedDocuments.isEmpty {
+                        Button(role: .destructive) {
+                            deleteDocuments(ids: selectedDocuments)
+                        } label: {
+                            Label("Delete Selected", systemImage: "trash")
+                        }
+                    }
+                }
             }
         } detail: {
-            Text("Select a document")
+            if let document = selectedDocument {
+                DocumentDetailView(document: document)
+            } else {
+                ContentUnavailableView(
+                    "No Document Selected",
+                    systemImage: "doc.text",
+                    description: Text("Select a document from the library to view details")
+                )
+            }
         }
         .fileImporter(
             isPresented: $isImportingPDF,
@@ -123,12 +184,72 @@ struct ContentView: View {
         withAnimation {
             for index in offsets {
                 let document = documents[index]
-                // Cancel any scheduled notifications
                 Task {
                     await NotificationService.shared.cancelNotification(for: document.id)
                 }
                 modelContext.delete(document)
             }
+        }
+    }
+
+    private func deleteDocuments(ids: Set<RFFDocument.ID>) {
+        withAnimation {
+            for id in ids {
+                if let document = documents.first(where: { $0.id == id }) {
+                    Task {
+                        await NotificationService.shared.cancelNotification(for: document.id)
+                    }
+                    modelContext.delete(document)
+                }
+            }
+            selectedDocuments.removeAll()
+            selectedDocument = nil
+        }
+    }
+}
+
+// MARK: - Status Badge
+
+struct StatusBadge: View {
+    let status: RFFStatus
+
+    var body: some View {
+        Text(status.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
+            .font(.caption)
+            .fontWeight(.medium)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(backgroundColor, in: Capsule())
+            .foregroundStyle(foregroundColor)
+    }
+
+    private var backgroundColor: Color {
+        switch status {
+        case .pending:
+            return .gray.opacity(0.2)
+        case .underReview:
+            return .blue.opacity(0.2)
+        case .approved:
+            return .green.opacity(0.2)
+        case .rejected:
+            return .red.opacity(0.2)
+        case .completed:
+            return .purple.opacity(0.2)
+        }
+    }
+
+    private var foregroundColor: Color {
+        switch status {
+        case .pending:
+            return .gray
+        case .underReview:
+            return .blue
+        case .approved:
+            return .green
+        case .rejected:
+            return .red
+        case .completed:
+            return .purple
         }
     }
 }

@@ -27,13 +27,45 @@ struct RFFApp: App {
     }()
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        // Document-based scene for RFF files
+        DocumentGroup(newDocument: RFFFileDocument()) { file in
+            DocumentEditorView(document: file.$document)
+                .frame(minWidth: 800, minHeight: 600)
                 .onAppear {
-                    // Provide model container to app delegate for notification actions
                     appDelegate.modelContainer = sharedModelContainer
                 }
         }
         .modelContainer(sharedModelContainer)
+
+        // Library window for browsing all documents in SwiftData
+        WindowGroup("RFF Library", id: "library") {
+            ContentView()
+                .onAppear {
+                    appDelegate.modelContainer = sharedModelContainer
+                }
+        }
+        .modelContainer(sharedModelContainer)
+        .commands {
+            CommandGroup(after: .newItem) {
+                Button("Open Library") {
+                    openLibraryWindow()
+                }
+                .keyboardShortcut("L", modifiers: [.command, .shift])
+            }
+        }
+
+        // Settings scene
+        Settings {
+            SettingsView()
+        }
+    }
+
+    private func openLibraryWindow() {
+        if let window = NSApp.windows.first(where: { $0.title == "RFF Library" }) {
+            window.makeKeyAndOrderFront(nil)
+        } else {
+            // Open new library window
+            NSApp.sendAction(Selector(("newWindowForTab:")), to: nil, from: nil)
+        }
     }
 }
