@@ -821,6 +821,9 @@ struct DocumentDetailView: View {
     @State private var selectedTab = 0
     @State private var pdfDocument: PDFDocument?
     @State private var highlights: [HighlightRegion] = []
+    @State private var selectedHighlight: HighlightRegion?
+    @State private var showLegend = true
+    @State private var isDetectingFields = false
     @State private var showConfirmationPanel = true
     @State private var showingConfirmationAlert = false
     @State private var showingValidationError = false
@@ -1001,14 +1004,38 @@ struct DocumentDetailView: View {
                             // Left: PDF Viewer with highlight controls
                             VStack(spacing: 0) {
                                 HStack {
-                                    Button("Highlight Amounts") {
-                                        highlightAmounts()
+                                    // Field detection status
+                                    if isDetectingFields {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                        Text("Detecting fields...")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    } else {
+                                        Text("\(highlights.count) fields detected")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
                                     }
-                                    Button("Highlight Dates") {
-                                        highlightDates()
+
+                                    Button {
+                                        detectAllFields()
+                                    } label: {
+                                        Label("Re-detect", systemImage: "arrow.clockwise")
                                     }
-                                    Button("Clear Highlights") {
-                                        highlights = []
+                                    .disabled(isDetectingFields)
+
+                                    Divider()
+                                        .frame(height: 20)
+
+                                    Button {
+                                        withAnimation {
+                                            showLegend.toggle()
+                                        }
+                                    } label: {
+                                        Label(
+                                            showLegend ? "Hide Legend" : "Show Legend",
+                                            systemImage: showLegend ? "list.bullet.rectangle" : "list.bullet.rectangle.fill"
+                                        )
                                     }
 
                                     Divider()
@@ -1052,7 +1079,45 @@ struct DocumentDetailView: View {
 
                                 Divider()
 
-                                PDFViewer(document: pdfDocument, highlights: highlights)
+                                ZStack(alignment: .topLeading) {
+                                    PDFViewer(
+                                        document: pdfDocument,
+                                        highlights: highlights,
+                                        selectedHighlightId: selectedHighlight?.id,
+                                        onHighlightTapped: { highlight in
+                                            withAnimation {
+                                                selectedHighlight = highlight
+                                            }
+                                        }
+                                    )
+
+                                    // Legend overlay
+                                    if showLegend {
+                                        HighlightLegendView()
+                                            .padding(8)
+                                            .transition(.move(edge: .leading).combined(with: .opacity))
+                                    }
+                                }
+
+                                // Selected field info panel
+                                if let selected = selectedHighlight {
+                                    SelectedFieldPanel(
+                                        highlight: selected,
+                                        document: document,
+                                        onDismiss: {
+                                            withAnimation {
+                                                selectedHighlight = nil
+                                            }
+                                        },
+                                        onApply: { fieldType, value in
+                                            applyFieldValue(fieldType: fieldType, value: value)
+                                            withAnimation {
+                                                selectedHighlight = nil
+                                            }
+                                        }
+                                    )
+                                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                                }
                             }
                             .frame(minWidth: 400)
 
@@ -1163,31 +1228,150 @@ struct DocumentDetailView: View {
         guard let path = document.documentPath else { return }
         let url = URL(fileURLWithPath: path)
         pdfDocument = PDFDocument(url: url)
+
+        // Auto-detect fields when PDF loads
+        detectAllFields()
     }
 
-    private func highlightAmounts() {
-        guard let pdf = pdfDocument else { return }
-        let matches = textFinder.findAmounts(in: pdf)
-        highlights = matches.map { match in
-            HighlightRegion(
-                pageIndex: match.pageIndex,
-                bounds: match.bounds,
-                color: NSColor.green.withAlphaComponent(0.3),
-                label: match.text
-            )
+    /// Apply a detected field value to the document
+    private func applyFieldValue(fieldType: InvoiceFieldType, value: String) {
+        switch fieldType {
+        case .vendor:
+            document.requestingOrganization = value
+        case .total:
+            if let amount = parseAmount(value) {
+                document.amount = amount
+            }
+        case .invoiceDate:
+            if let date = parseDate(value) {
+                document.dueDate = date
+            }
+        case .dueDate:
+            if let date = parseDate(value) {
+                document.dueDate = date
+            }
+        case .invoiceNumber:
+            // Could add an invoiceNumber field to the document model
+            break
+        default:
+            break
         }
+        document.updatedAt = Date()
     }
 
-    private func highlightDates() {
+    /// Parse a currency amount string to Decimal
+    private func parseAmount(_ text: String) -> Decimal? {
+        let cleaned = text
+            .replacingOccurrences(of: "$", with: "")
+            .replacingOccurrences(of: "€", with: "")
+            .replacingOccurrences(of: "£", with: "")
+            .replacingOccurrences(of: "CHF", with: "")
+            .replacingOccurrences(of: ",", with: "")
+            .replacingOccurrences(of: " ", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return Decimal(string: cleaned)
+    }
+
+    /// Parse a date string to Date
+    private func parseDate(_ text: String) -> Date? {
+        let formatters: [DateFormatter] = {
+            let formats = ["MM/dd/yyyy", "M/d/yyyy", "yyyy-MM-dd", "MMMM d, yyyy", "MMM d, yyyy"]
+            return formats.map { format in
+                let formatter = DateFormatter()
+                formatter.dateFormat = format
+                return formatter
+            }
+        }()
+
+        for formatter in formatters {
+            if let date = formatter.date(from: text) {
+                return date
+            }
+        }
+        return nil
+    }
+
+    /// Detect all known field types in the PDF and create highlights
+    private func detectAllFields() {
         guard let pdf = pdfDocument else { return }
-        let matches = textFinder.findDates(in: pdf)
-        highlights = matches.map { match in
-            HighlightRegion(
-                pageIndex: match.pageIndex,
-                bounds: match.bounds,
-                color: NSColor.blue.withAlphaComponent(0.3),
-                label: match.text
-            )
+
+        isDetectingFields = true
+        highlights = []
+
+        Task {
+            var allHighlights: [HighlightRegion] = []
+
+            // Find amounts (total, subtotal, prices)
+            let amounts = textFinder.findAmounts(in: pdf)
+            allHighlights.append(contentsOf: amounts.map { match in
+                HighlightRegion(
+                    pageIndex: match.pageIndex,
+                    bounds: match.bounds,
+                    label: match.text,
+                    fieldType: .total
+                )
+            })
+
+            // Find dates
+            let dates = textFinder.findDates(in: pdf)
+            allHighlights.append(contentsOf: dates.map { match in
+                HighlightRegion(
+                    pageIndex: match.pageIndex,
+                    bounds: match.bounds,
+                    label: match.text,
+                    fieldType: .invoiceDate
+                )
+            })
+
+            // Find invoice numbers (common patterns)
+            let invoicePatterns = [
+                #"(?i)inv(?:oice)?[\s#:\-]*([A-Z0-9\-]+)"#,
+                #"[A-Z]{2,4}[\-]?\d{4,}"#
+            ]
+            for pattern in invoicePatterns {
+                let matches = textFinder.findPattern(pattern, in: pdf)
+                allHighlights.append(contentsOf: matches.map { match in
+                    HighlightRegion(
+                        pageIndex: match.pageIndex,
+                        bounds: match.bounds,
+                        label: match.text,
+                        fieldType: .invoiceNumber
+                    )
+                })
+            }
+
+            // Find PO numbers
+            let poPatterns = [
+                #"(?i)p\.?o\.?[\s#:\-]*(\d+)"#,
+                #"(?i)purchase\s*order[\s#:\-]*(\d+)"#
+            ]
+            for pattern in poPatterns {
+                let matches = textFinder.findPattern(pattern, in: pdf)
+                allHighlights.append(contentsOf: matches.map { match in
+                    HighlightRegion(
+                        pageIndex: match.pageIndex,
+                        bounds: match.bounds,
+                        label: match.text,
+                        fieldType: .poNumber
+                    )
+                })
+            }
+
+            // Remove duplicate highlights (same bounds on same page)
+            var uniqueHighlights: [HighlightRegion] = []
+            var seenBounds: Set<String> = []
+            for highlight in allHighlights {
+                let key = "\(highlight.pageIndex)-\(Int(highlight.bounds.origin.x))-\(Int(highlight.bounds.origin.y))"
+                if !seenBounds.contains(key) {
+                    seenBounds.insert(key)
+                    uniqueHighlights.append(highlight)
+                }
+            }
+
+            await MainActor.run {
+                highlights = uniqueHighlights
+                isDetectingFields = false
+            }
         }
     }
 
@@ -1215,6 +1399,118 @@ struct DocumentDetailView: View {
                     isAnalyzingWithAI = false
                 }
             }
+        }
+    }
+}
+
+// MARK: - Selected Field Panel
+
+/// Panel showing details of a selected highlight with option to apply the value
+struct SelectedFieldPanel: View {
+    let highlight: HighlightRegion
+    let document: RFFDocument
+    let onDismiss: () -> Void
+    let onApply: (InvoiceFieldType, String) -> Void
+
+    @State private var editedValue: String
+    @State private var selectedFieldType: InvoiceFieldType
+
+    init(
+        highlight: HighlightRegion,
+        document: RFFDocument,
+        onDismiss: @escaping () -> Void,
+        onApply: @escaping (InvoiceFieldType, String) -> Void
+    ) {
+        self.highlight = highlight
+        self.document = document
+        self.onDismiss = onDismiss
+        self.onApply = onApply
+        self._editedValue = State(initialValue: highlight.label ?? "")
+        self._selectedFieldType = State(initialValue: highlight.fieldType ?? .total)
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Field type indicator
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color(nsColor: FieldHighlightColor.color(for: selectedFieldType).withAlphaComponent(0.3)))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(Color(nsColor: FieldHighlightColor.color(for: selectedFieldType)), lineWidth: 2)
+                )
+                .frame(width: 24, height: 24)
+
+            // Field type picker
+            Picker("Field Type", selection: $selectedFieldType) {
+                ForEach(applicableFieldTypes, id: \.self) { fieldType in
+                    Text(fieldType.displayName).tag(fieldType)
+                }
+            }
+            .labelsHidden()
+            .frame(width: 140)
+
+            // Editable value
+            TextField("Value", text: $editedValue)
+                .textFieldStyle(.roundedBorder)
+                .frame(minWidth: 150)
+
+            // Current document value for this field
+            if let currentValue = currentDocumentValue {
+                Text("Current: \(currentValue)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            // Apply button
+            Button {
+                onApply(selectedFieldType, editedValue)
+            } label: {
+                Label("Apply", systemImage: "checkmark.circle.fill")
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(editedValue.isEmpty)
+
+            // Dismiss button
+            Button {
+                onDismiss()
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundColor(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 10)
+        .background(Color(nsColor: .controlBackgroundColor))
+    }
+
+    /// Field types applicable for editing
+    private var applicableFieldTypes: [InvoiceFieldType] {
+        [.vendor, .total, .subtotal, .tax, .invoiceDate, .dueDate, .invoiceNumber, .poNumber]
+    }
+
+    /// Current value in the document for the selected field type
+    private var currentDocumentValue: String? {
+        switch selectedFieldType {
+        case .vendor:
+            return document.requestingOrganization.isEmpty ? nil : document.requestingOrganization
+        case .total, .subtotal, .tax:
+            if document.amount > 0 {
+                let formatter = NumberFormatter()
+                formatter.numberStyle = .decimal
+                formatter.minimumFractionDigits = 2
+                formatter.maximumFractionDigits = 2
+                return formatter.string(from: document.amount as NSDecimalNumber)
+            }
+            return nil
+        case .invoiceDate, .dueDate:
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            return formatter.string(from: document.dueDate)
+        default:
+            return nil
         }
     }
 }
