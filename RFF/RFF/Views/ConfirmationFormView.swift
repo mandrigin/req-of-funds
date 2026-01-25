@@ -230,24 +230,41 @@ struct ConfirmationFormView: View {
                 .foregroundStyle(.secondary)
             }
 
-            // Confirm button
-            Button {
-                showingConfirmation = true
-            } label: {
-                HStack {
-                    if isConfirming {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                    } else {
-                        Image(systemName: "checkmark.circle.fill")
+            // Action buttons
+            HStack(spacing: 12) {
+                // Cancel button - resets all edits
+                Button {
+                    cancelEdits()
+                } label: {
+                    HStack {
+                        Image(systemName: "xmark.circle")
+                        Text("Cancel")
                     }
-                    Text("Confirm & Submit")
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .disabled(isConfirming || !hasEdits)
+
+                // Confirm button
+                Button {
+                    showingConfirmation = true
+                } label: {
+                    HStack {
+                        if isConfirming {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                        } else {
+                            Image(systemName: "checkmark.circle.fill")
+                        }
+                        Text("Confirm & Submit")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .disabled(isConfirming || !isValid)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .disabled(isConfirming || !isValid)
         }
         .padding()
     }
@@ -275,6 +292,26 @@ struct ConfirmationFormView: View {
     private var isValid: Bool {
         !editingOrganization.trimmingCharacters(in: .whitespaces).isEmpty &&
         editingAmount >= 0
+    }
+
+    private func cancelEdits() {
+        // Reset editing values to original values
+        editingOrganization = originalOrganization
+        editingAmount = originalAmount
+        editingCurrency = originalCurrency
+        editingDueDate = originalDueDate
+
+        // Also reset the document values since onChange updates them live
+        document.requestingOrganization = originalOrganization
+        document.amount = originalAmount
+        document.currency = originalCurrency
+        document.dueDate = originalDueDate
+
+        // Reset source indicators back to extracted
+        organizationSource = .extracted
+        amountSource = .extracted
+        currencySource = .extracted
+        dueDateSource = .extracted
     }
 
     private func initializeFields() {
