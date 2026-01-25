@@ -193,9 +193,17 @@ struct ContentView: View {
                 .width(120)
 
                 TableColumn("Status") { document in
-                    StatusBadge(status: document.status)
+                    HStack(spacing: 6) {
+                        StatusBadge(status: document.status)
+                        // Show AI analysis progress indicator
+                        if AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) {
+                            ProgressView()
+                                .controlSize(.small)
+                                .help("AI analysis in progress...")
+                        }
+                    }
                 }
-                .width(100)
+                .width(120)
             }
             .onChange(of: sortOrder) { _, newOrder in
                 // Sorting is handled by the Table
@@ -228,6 +236,13 @@ struct ContentView: View {
                     }
                 }
             }
+            .safeAreaInset(edge: .bottom) {
+                // Batch AI analysis progress bar
+                if AIAnalysisProgressManager.shared.batchTotal > 0 {
+                    AIBatchProgressBar()
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
             .onChange(of: selectedDocuments) { _, newSelection in
                 if let first = newSelection.first {
                     selectedDocument = documents.first { $0.id == first }
@@ -242,6 +257,24 @@ struct ContentView: View {
             }
             .contextMenu(forSelectionType: RFFDocument.ID.self) { ids in
                 if !ids.isEmpty {
+                    // AI Analyze button - works with single or multiple documents
+                    let selectedDocs = documents.filter { ids.contains($0.id) }
+                    let docsWithText = selectedDocs.filter { !($0.extractedText ?? "").isEmpty }
+                    let anyAnalyzing = selectedDocs.contains { AIAnalysisProgressManager.shared.isAnalyzing(documentId: $0.id) }
+
+                    Button {
+                        performBatchAIAnalysis(documentIds: ids)
+                    } label: {
+                        if ids.count == 1 {
+                            Label("AI Analyze", systemImage: "sparkles")
+                        } else {
+                            Label("AI Analyze (\(docsWithText.count))", systemImage: "sparkles")
+                        }
+                    }
+                    .disabled(docsWithText.isEmpty || anyAnalyzing)
+
+                    Divider()
+
                     Button(role: .destructive) {
                         deleteDocuments(ids: ids)
                     } label: {
@@ -685,6 +718,27 @@ struct ContentView: View {
         }
     }
 
+    // MARK: - Batch AI Analysis
+
+    private func performBatchAIAnalysis(documentIds: Set<RFFDocument.ID>) {
+        // Get documents with extracted text
+        let docsToAnalyze = documents.filter { doc in
+            documentIds.contains(doc.id) && !(doc.extractedText ?? "").isEmpty
+        }
+
+        guard !docsToAnalyze.isEmpty else { return }
+
+        // Build array of (id, text) tuples
+        let docData = docsToAnalyze.compactMap { doc -> (id: UUID, text: String)? in
+            guard let text = doc.extractedText, !text.isEmpty else { return nil }
+            return (id: doc.id, text: text)
+        }
+
+        Task {
+            await AIAnalysisProgressManager.shared.startBatchAnalysis(documents: docData)
+        }
+    }
+
     // MARK: - Clipboard Paste Support
 
     private func handleImagePaste(providers: [NSItemProvider]) {
@@ -769,6 +823,39 @@ struct ContentView: View {
     }
 }
 
+// MARK: - AI Batch Progress Bar
+
+/// Progress bar shown during batch AI analysis
+struct AIBatchProgressBar: View {
+    private var progressManager: AIAnalysisProgressManager { AIAnalysisProgressManager.shared }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "sparkles")
+                .foregroundStyle(.blue)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Analyzing \(progressManager.batchCompleted + 1) of \(progressManager.batchTotal) documents...")
+                    .font(.caption)
+                    .fontWeight(.medium)
+
+                ProgressView(value: progressManager.batchProgress)
+                    .progressViewStyle(.linear)
+            }
+
+            Text("\(Int(progressManager.batchProgress * 100))%")
+                .font(.caption)
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
+    }
+}
+
 // MARK: - Status Badge
 
 struct StatusBadge: View {
@@ -842,8 +929,7 @@ struct DocumentDetailView: View {
     // Schema Editor state
     @State private var showingSchemaEditor = false
 
-    // AI Analysis state
-    @State private var isAnalyzingWithAI = false
+    // AI Analysis state (using global AIAnalysisProgressManager for progress tracking)
     @State private var showingAIResults = false
     @State private var aiAnalysisResult: AIAnalysisResult?
     @State private var aiErrorMessage: String?
@@ -976,35 +1062,30 @@ struct DocumentDetailView: View {
                     }
                 }
 
-                // Schema section
-                Section("Extraction Schema") {
-                    if let schemaName = documentSchemaName {
-                        LabeledContent("Schema", value: schemaName)
-                    } else {
-                        Text("No schema assigned")
-                            .foregroundStyle(.secondary)
-                    }
+                // AI Analysis section (primary extraction method)
+                if !(document.extractedText ?? "").isEmpty {
+                    Section("AI Analysis") {
+                        let isAnalyzing = AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id)
 
-                    HStack {
                         Button {
-                            showingSchemaSelector = true
+                            Task {
+                                await AIAnalysisProgressManager.shared.startAnalysis(
+                                    documentId: document.id,
+                                    text: document.extractedText ?? ""
+                                )
+                            }
                         } label: {
-                            Label(document.schemaId == nil ? "Assign Schema" : "Change Schema", systemImage: "doc.text.magnifyingglass")
-                        }
-
-                        if document.schemaId != nil && document.documentPath != nil {
-                            Button {
-                                performSchemaExtraction()
-                            } label: {
-                                if isExtractingWithSchema {
+                            HStack {
+                                if isAnalyzing {
                                     ProgressView()
                                         .controlSize(.small)
+                                    Text("Analyzing...")
                                 } else {
-                                    Label("Re-analyze", systemImage: "arrow.clockwise")
+                                    Label("AI Analyze", systemImage: "sparkles")
                                 }
                             }
-                            .disabled(isExtractingWithSchema)
                         }
+                        .disabled(isAnalyzing)
                     }
                 }
 
@@ -1104,23 +1185,14 @@ struct DocumentDetailView: View {
                                     Button {
                                         performAIAnalysis()
                                     } label: {
-                                        if isAnalyzingWithAI {
+                                        if AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) {
                                             ProgressView()
                                                 .controlSize(.small)
                                         } else {
                                             Label("AI Analyze", systemImage: "sparkles")
                                         }
                                     }
-                                    .disabled(isAnalyzingWithAI || (document.extractedText ?? "").isEmpty)
-
-                                    Button {
-                                        withAnimation {
-                                            isEditingSchema = true
-                                        }
-                                    } label: {
-                                        Label("Edit Schema", systemImage: "rectangle.and.pencil.and.ellipsis")
-                                    }
-                                    .help("Visually map document fields to schema")
+                                    .disabled(AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) || (document.extractedText ?? "").isEmpty)
 
                                     Spacer()
                                     Button {
@@ -1203,14 +1275,6 @@ struct DocumentDetailView: View {
         .navigationTitle(document.title)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                if document.documentPath != nil {
-                    Button {
-                        showingSchemaEditor = true
-                    } label: {
-                        Label("Edit Schema", systemImage: "doc.text.magnifyingglass")
-                    }
-                }
-
                 if canConfirm {
                     Button {
                         showingConfirmationAlert = true
@@ -1332,6 +1396,13 @@ struct DocumentDetailView: View {
             loadPDF()
             loadSchemaName()
             loadAvailableSchemas()
+            checkForAIResults()
+        }
+        .onChange(of: AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id)) { _, isAnalyzing in
+            // Check for results when analysis completes
+            if !isAnalyzing {
+                checkForAIResults()
+            }
         }
     }
 
@@ -1493,23 +1564,30 @@ struct DocumentDetailView: View {
             return
         }
 
-        isAnalyzingWithAI = true
-
         Task {
-            do {
-                let result = try await AIAnalysisService.shared.analyzeDocument(text: extractedText)
-                await MainActor.run {
-                    aiAnalysisResult = result
-                    showingAIResults = true
-                    isAnalyzingWithAI = false
-                }
-            } catch {
-                await MainActor.run {
-                    aiErrorMessage = error.localizedDescription
-                    showingAIError = true
-                    isAnalyzingWithAI = false
-                }
-            }
+            await AIAnalysisProgressManager.shared.startAnalysis(
+                documentId: document.id,
+                text: extractedText
+            )
+        }
+    }
+
+    /// Check for completed AI analysis results from the global progress manager
+    private func checkForAIResults() {
+        let progressManager = AIAnalysisProgressManager.shared
+
+        // Check for results
+        if let result = progressManager.result(for: document.id) {
+            aiAnalysisResult = result
+            showingAIResults = true
+            progressManager.clearResult(for: document.id)
+        }
+
+        // Check for errors
+        if let error = progressManager.error(for: document.id) {
+            aiErrorMessage = error
+            showingAIError = true
+            progressManager.clearError(for: document.id)
         }
     }
 

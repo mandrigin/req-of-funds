@@ -33,7 +33,7 @@ enum InvoiceFieldType: String, Codable, CaseIterable, Identifiable {
         case .vendorAddress: return "Vendor Address"
         case .recipient: return "Recipient"
         case .customerName: return "Customer Name"
-        case .customerAddress: return "Customer Address"
+        case .customerAddress: return "Recipient Address"
         case .subtotal: return "Subtotal"
         case .tax: return "Tax"
         case .total: return "Total"
