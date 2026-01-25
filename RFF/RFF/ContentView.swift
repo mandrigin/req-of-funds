@@ -94,6 +94,9 @@ struct ContentView: View {
     @State private var isProcessingPaste = false
     @State private var isProcessingDrop = false
 
+    // Column visibility configuration
+    @StateObject private var columnConfiguration = LibraryColumnConfiguration.shared
+
     // Text entry state
     @State private var showingTextEntry = false
 
@@ -251,6 +254,7 @@ struct ContentView: View {
                     selectedDocument = doc
                 }
             }
+            .tableColumnVisibility(configuration: columnConfiguration)
             .toolbar {
                 ToolbarItemGroup(placement: .navigation) {
                     Picker("Filter", selection: $selectedFilter) {
