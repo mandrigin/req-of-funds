@@ -45,6 +45,17 @@ struct DocumentEditorView: View {
                 } label: {
                     Label("Import PDF", systemImage: "doc.badge.plus")
                 }
+
+                Button {
+                    // TODO: Implement AI analysis - send document to LLM for:
+                    // - Extracting structured data from unstructured text
+                    // - Categorizing line items automatically
+                    // - Detecting anomalies or errors
+                    // - Suggesting missing information
+                    print("AI Analyze: TODO - implement LLM-based document analysis")
+                } label: {
+                    Label("AI Analyze", systemImage: "sparkles")
+                }
             }
         }
         .sheet(isPresented: $showingAddLineItem) {
