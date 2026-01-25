@@ -601,19 +601,58 @@ struct AIAnalysisResultSheet: View {
     }
 
     private func applyFieldSuggestion(_ suggestion: AIFieldSuggestion) {
-        switch suggestion.fieldType {
-        case "vendor":
+        // Use invoiceFieldType for robust matching - it handles aliases like
+        // "recipient_name", "buyer", "bill_to" -> .recipient
+        // "seller", "seller_name", "from" -> .vendor
+        guard let fieldType = suggestion.invoiceFieldType else {
+            // Fall back to direct string matching for unknown field types
+            applyRawFieldSuggestion(suggestion)
+            return
+        }
+
+        switch fieldType {
+        case .vendor:
             document.requestingOrganization = suggestion.value
-        case "recipient", "customer_name":
+        case .recipient, .customerName:
             document.recipient = suggestion.value
-        case "total":
+        case .total:
             if let amount = Decimal(string: suggestion.value) {
                 document.amount = amount
             }
-        case "invoice_date":
+        case .invoiceDate:
             // Parse ISO date - could store separately if we add an invoice date field
             _ = parseISODate(suggestion.value)
-        case "due_date":
+        case .dueDate:
+            if let date = parseISODate(suggestion.value) {
+                document.dueDate = date
+            }
+        case .currency:
+            if let currency = Currency(rawValue: suggestion.value.uppercased()) {
+                document.currency = currency
+            }
+        case .invoiceNumber:
+            if document.title == "New Document" || document.title.isEmpty {
+                document.title = "Invoice \(suggestion.value)"
+            }
+        default:
+            break
+        }
+    }
+
+    /// Fallback for raw field types that don't map to InvoiceFieldType
+    private func applyRawFieldSuggestion(_ suggestion: AIFieldSuggestion) {
+        switch suggestion.fieldType.lowercased() {
+        case "vendor", "seller", "seller_name", "from":
+            document.requestingOrganization = suggestion.value
+        case "recipient", "recipient_name", "customer_name", "customer", "buyer", "buyer_name", "bill_to":
+            document.recipient = suggestion.value
+        case "total", "amount", "amount_due", "balance_due", "grand_total":
+            if let amount = Decimal(string: suggestion.value) {
+                document.amount = amount
+            }
+        case "invoice_date", "date", "issued_date":
+            _ = parseISODate(suggestion.value)
+        case "due_date", "payment_due", "pay_by":
             if let date = parseISODate(suggestion.value) {
                 document.dueDate = date
             }
@@ -621,7 +660,7 @@ struct AIAnalysisResultSheet: View {
             if let currency = Currency(rawValue: suggestion.value.uppercased()) {
                 document.currency = currency
             }
-        case "invoice_number":
+        case "invoice_number", "invoice_no", "inv_number", "bill_number":
             if document.title == "New Document" || document.title.isEmpty {
                 document.title = "Invoice \(suggestion.value)"
             }
@@ -704,18 +743,30 @@ struct AISuggestionRow: View {
     }
 
     private func displayName(for fieldType: String) -> String {
-        switch fieldType {
-        case "invoice_number": return "Invoice Number"
-        case "invoice_date": return "Invoice Date"
-        case "due_date": return "Due Date"
-        case "vendor": return "Vendor"
-        case "recipient", "customer_name": return "Recipient"
-        case "subtotal": return "Subtotal"
-        case "tax": return "Tax"
-        case "total": return "Total"
-        case "currency": return "Currency"
-        case "po_number": return "PO Number"
-        default: return fieldType.replacingOccurrences(of: "_", with: " ").capitalized
+        // Handle variations in field names from different AI providers
+        switch fieldType.lowercased() {
+        case "invoice_number", "invoice_no", "inv_number", "bill_number":
+            return "Invoice Number"
+        case "invoice_date", "date", "issued_date":
+            return "Invoice Date"
+        case "due_date", "payment_due", "pay_by":
+            return "Due Date"
+        case "vendor", "seller", "seller_name", "from":
+            return "Vendor"
+        case "recipient", "recipient_name", "customer_name", "customer", "buyer", "buyer_name", "bill_to":
+            return "Recipient"
+        case "subtotal", "sub_total":
+            return "Subtotal"
+        case "tax", "vat", "sales_tax":
+            return "Tax"
+        case "total", "amount", "amount_due", "balance_due", "grand_total":
+            return "Total"
+        case "currency":
+            return "Currency"
+        case "po_number", "purchase_order", "purchase_order_number":
+            return "PO Number"
+        default:
+            return fieldType.replacingOccurrences(of: "_", with: " ").capitalized
         }
     }
 }
