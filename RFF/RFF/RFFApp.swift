@@ -3,6 +3,8 @@ import SwiftData
 
 @main
 struct RFFApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             RFFDocument.self,
@@ -27,6 +29,10 @@ struct RFFApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    // Provide model container to app delegate for notification actions
+                    appDelegate.modelContainer = sharedModelContainer
+                }
         }
         .modelContainer(sharedModelContainer)
     }
