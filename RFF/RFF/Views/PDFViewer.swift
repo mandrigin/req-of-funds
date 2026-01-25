@@ -176,6 +176,7 @@ struct PDFViewer: NSViewRepresentable {
             let overlayView = HighlightOverlayView(
                 highlights: pageHighlights,
                 page: page,
+                pdfView: view,
                 selectedHighlightId: selectedHighlightId,
                 onHighlightTapped: onHighlightTapped
             )
@@ -188,21 +189,41 @@ struct PDFViewer: NSViewRepresentable {
 private class HighlightOverlayView: NSView {
     let highlights: [HighlightRegion]
     let page: PDFPage
+    weak var pdfView: PDFView?
     let selectedHighlightId: UUID?
     var onHighlightTapped: ((HighlightRegion) -> Void)?
 
     init(
         highlights: [HighlightRegion],
         page: PDFPage,
+        pdfView: PDFView,
         selectedHighlightId: UUID? = nil,
         onHighlightTapped: ((HighlightRegion) -> Void)? = nil
     ) {
         self.highlights = highlights
         self.page = page
+        self.pdfView = pdfView
         self.selectedHighlightId = selectedHighlightId
         self.onHighlightTapped = onHighlightTapped
         super.init(frame: .zero)
         self.wantsLayer = true
+
+        // Observe bounds changes to redraw when PDFKit resizes overlay
+        self.postsFrameChangedNotifications = true
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(frameDidChange),
+            name: NSView.frameDidChangeNotification,
+            object: self
+        )
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func frameDidChange(_ notification: Notification) {
+        needsDisplay = true
     }
 
     required init?(coder: NSCoder) {
@@ -248,16 +269,22 @@ private class HighlightOverlayView: NSView {
         super.mouseDown(with: event)
     }
 
-    /// Convert bounds from PDF page coordinates to view coordinates
+    /// Convert bounds from PDF page coordinates to overlay view coordinates
+    ///
+    /// PDFKit's pageOverlayViewProvider sets overlay view bounds to match the displayed
+    /// page size (including zoom). We scale from PDF coordinates to match.
     private func convert(_ rect: CGRect, from page: PDFPage) -> CGRect {
         let pageBounds = page.bounds(for: .mediaBox)
 
-        // Guard against division by zero
+        // Guard against division by zero or uninitialized bounds
         guard pageBounds.width > 0, pageBounds.height > 0,
               bounds.width > 0, bounds.height > 0 else {
             return .zero
         }
 
+        // Calculate scale from PDF coordinates to overlay view coordinates
+        // bounds = displayed page size (set by PDFKit, includes zoom)
+        // pageBounds = PDF page mediaBox (in PDF points)
         let scaleX = bounds.width / pageBounds.width
         let scaleY = bounds.height / pageBounds.height
 
