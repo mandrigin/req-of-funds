@@ -66,16 +66,19 @@ struct ConfirmationFormView: View {
     // Track original values to detect manual edits
     @State private var originalOrganization: String = ""
     @State private var originalAmount: Decimal = 0
+    @State private var originalCurrency: Currency = .usd
     @State private var originalDueDate: Date = Date()
 
     // Track which fields have been manually edited
     @State private var organizationSource: FieldSource = .extracted
     @State private var amountSource: FieldSource = .extracted
+    @State private var currencySource: FieldSource = .extracted
     @State private var dueDateSource: FieldSource = .extracted
 
     // Local editing state
     @State private var editingOrganization: String = ""
     @State private var editingAmount: Decimal = 0
+    @State private var editingCurrency: Currency = .usd
     @State private var editingDueDate: Date = Date()
 
     @State private var showingConfirmation = false
@@ -93,6 +96,7 @@ struct ConfirmationFormView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     organizationField
                     amountField
+                    currencyField
                     dueDateField
                 }
                 .padding()
@@ -156,7 +160,7 @@ struct ConfirmationFormView: View {
     private var amountField: some View {
         ConfirmationField(label: "Amount", source: amountSource) {
             HStack {
-                Text("$")
+                Text(editingCurrency.symbol)
                     .foregroundStyle(.secondary)
                 TextField("0.00", value: $editingAmount, format: .number.precision(.fractionLength(2)))
                     .textFieldStyle(.roundedBorder)
@@ -166,6 +170,26 @@ struct ConfirmationFormView: View {
                         }
                         document.amount = newValue
                     }
+            }
+        }
+    }
+
+    // MARK: - Currency Field
+
+    private var currencyField: some View {
+        ConfirmationField(label: "Currency", source: currencySource) {
+            Picker("", selection: $editingCurrency) {
+                ForEach(Currency.allCases, id: \.self) { currency in
+                    Text("\(currency.symbol) \(currency.displayName)")
+                        .tag(currency)
+                }
+            }
+            .labelsHidden()
+            .onChange(of: editingCurrency) { _, newValue in
+                if newValue != originalCurrency {
+                    currencySource = .manual
+                }
+                document.currency = newValue
             }
         }
     }
@@ -228,13 +252,14 @@ struct ConfirmationFormView: View {
     // MARK: - Helpers
 
     private var hasEdits: Bool {
-        organizationSource == .manual || amountSource == .manual || dueDateSource == .manual
+        organizationSource == .manual || amountSource == .manual || currencySource == .manual || dueDateSource == .manual
     }
 
     private var editSummary: String {
         var edited: [String] = []
         if organizationSource == .manual { edited.append("organization") }
         if amountSource == .manual { edited.append("amount") }
+        if currencySource == .manual { edited.append("currency") }
         if dueDateSource == .manual { edited.append("due date") }
 
         if edited.isEmpty {
@@ -253,17 +278,20 @@ struct ConfirmationFormView: View {
         // Store original values for edit detection
         originalOrganization = document.requestingOrganization
         originalAmount = document.amount
+        originalCurrency = document.currency
         originalDueDate = document.dueDate
 
         // Initialize editing state
         editingOrganization = document.requestingOrganization
         editingAmount = document.amount
+        editingCurrency = document.currency
         editingDueDate = document.dueDate
 
         // Assume values are extracted initially
         // (In a full implementation, this could come from document metadata)
         organizationSource = .extracted
         amountSource = .extracted
+        currencySource = .extracted
         dueDateSource = .extracted
     }
 
