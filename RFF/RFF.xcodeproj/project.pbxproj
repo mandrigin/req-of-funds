@@ -14,6 +14,20 @@
 		A1000001234567890000005 /* RFFDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000005 /* RFFDocument.swift */; };
 		A1000001234567890000006 /* RFFSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000006 /* RFFSchema.swift */; };
 		A1000001234567890000007 /* DocumentOCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000007 /* DocumentOCRService.swift */; };
+		A1000001234567890000008 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000010 /* AppDelegate.swift */; };
+		A1000001234567890000009 /* RFFFileDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000011 /* RFFFileDocument.swift */; };
+		A1000001234567890000010 /* RFFTransferable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000012 /* RFFTransferable.swift */; };
+		A1000001234567890000011 /* CalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000013 /* CalendarService.swift */; };
+		A1000001234567890000012 /* EntityExtractionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000014 /* EntityExtractionService.swift */; };
+		A1000001234567890000013 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000015 /* NotificationService.swift */; };
+		A1000001234567890000014 /* PDFService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000016 /* PDFService.swift */; };
+		A1000001234567890000015 /* PDFTextFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000017 /* PDFTextFinder.swift */; };
+		A1000001234567890000016 /* DocumentEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000018 /* DocumentEditorView.swift */; };
+		A1000001234567890000017 /* PDFViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000019 /* PDFViewer.swift */; };
+		A1000001234567890000018 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000020 /* SettingsView.swift */; };
+		A1000001234567890000019 /* DocumentCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000021 /* DocumentCategory.swift */; };
+		A1000001234567890000020 /* DocumentClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000022 /* DocumentClassifier.swift */; };
+		A1000001234567890000021 /* TrainingData.json in Resources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000023 /* TrainingData.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,8 +38,21 @@
 		A1000002234567890000005 /* RFFDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFFDocument.swift; sourceTree = "<group>"; };
 		A1000002234567890000006 /* RFFSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFFSchema.swift; sourceTree = "<group>"; };
 		A1000002234567890000007 /* DocumentOCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentOCRService.swift; sourceTree = "<group>"; };
-		A1000002234567890000008 /* RFF.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RFF.entitlements; sourceTree = "<group>"; };
 		A1000002234567890000009 /* RFF.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RFF.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000002234567890000010 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A1000002234567890000011 /* RFFFileDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFFFileDocument.swift; sourceTree = "<group>"; };
+		A1000002234567890000012 /* RFFTransferable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFFTransferable.swift; sourceTree = "<group>"; };
+		A1000002234567890000013 /* CalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarService.swift; sourceTree = "<group>"; };
+		A1000002234567890000014 /* EntityExtractionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityExtractionService.swift; sourceTree = "<group>"; };
+		A1000002234567890000015 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		A1000002234567890000016 /* PDFService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFService.swift; sourceTree = "<group>"; };
+		A1000002234567890000017 /* PDFTextFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFTextFinder.swift; sourceTree = "<group>"; };
+		A1000002234567890000018 /* DocumentEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentEditorView.swift; sourceTree = "<group>"; };
+		A1000002234567890000019 /* PDFViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFViewer.swift; sourceTree = "<group>"; };
+		A1000002234567890000020 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A1000002234567890000021 /* DocumentCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentCategory.swift; sourceTree = "<group>"; };
+		A1000002234567890000022 /* DocumentClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentClassifier.swift; sourceTree = "<group>"; };
+		A1000002234567890000023 /* TrainingData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = TrainingData.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,12 +77,15 @@
 		A1000004234567890000002 /* RFF */ = {
 			isa = PBXGroup;
 			children = (
+				A1000002234567890000010 /* AppDelegate.swift */,
 				A1000002234567890000001 /* RFFApp.swift */,
 				A1000002234567890000002 /* ContentView.swift */,
 				A1000004234567890000003 /* Models */,
 				A1000004234567890000004 /* Services */,
+				A1000004234567890000006 /* Views */,
+				A1000004234567890000007 /* ML */,
+				A1000004234567890000008 /* Resources */,
 				A1000002234567890000003 /* Assets.xcassets */,
-				A1000002234567890000008 /* RFF.entitlements */,
 			);
 			path = RFF;
 			sourceTree = "<group>";
@@ -65,7 +95,9 @@
 			children = (
 				A1000002234567890000004 /* LineItem.swift */,
 				A1000002234567890000005 /* RFFDocument.swift */,
+				A1000002234567890000011 /* RFFFileDocument.swift */,
 				A1000002234567890000006 /* RFFSchema.swift */,
+				A1000002234567890000012 /* RFFTransferable.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -73,7 +105,12 @@
 		A1000004234567890000004 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A1000002234567890000013 /* CalendarService.swift */,
 				A1000002234567890000007 /* DocumentOCRService.swift */,
+				A1000002234567890000014 /* EntityExtractionService.swift */,
+				A1000002234567890000015 /* NotificationService.swift */,
+				A1000002234567890000016 /* PDFService.swift */,
+				A1000002234567890000017 /* PDFTextFinder.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -84,6 +121,33 @@
 				A1000002234567890000009 /* RFF.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A1000004234567890000006 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A1000002234567890000018 /* DocumentEditorView.swift */,
+				A1000002234567890000019 /* PDFViewer.swift */,
+				A1000002234567890000020 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A1000004234567890000007 /* ML */ = {
+			isa = PBXGroup;
+			children = (
+				A1000002234567890000021 /* DocumentCategory.swift */,
+				A1000002234567890000022 /* DocumentClassifier.swift */,
+			);
+			path = ML;
+			sourceTree = "<group>";
+		};
+		A1000004234567890000008 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A1000002234567890000023 /* TrainingData.json */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -145,6 +209,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1000001234567890000003 /* Assets.xcassets in Resources */,
+				A1000001234567890000021 /* TrainingData.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -155,12 +220,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1000001234567890000008 /* AppDelegate.swift in Sources */,
 				A1000001234567890000001 /* RFFApp.swift in Sources */,
 				A1000001234567890000002 /* ContentView.swift in Sources */,
 				A1000001234567890000004 /* LineItem.swift in Sources */,
 				A1000001234567890000005 /* RFFDocument.swift in Sources */,
+				A1000001234567890000009 /* RFFFileDocument.swift in Sources */,
 				A1000001234567890000006 /* RFFSchema.swift in Sources */,
+				A1000001234567890000010 /* RFFTransferable.swift in Sources */,
+				A1000001234567890000011 /* CalendarService.swift in Sources */,
 				A1000001234567890000007 /* DocumentOCRService.swift in Sources */,
+				A1000001234567890000012 /* EntityExtractionService.swift in Sources */,
+				A1000001234567890000013 /* NotificationService.swift in Sources */,
+				A1000001234567890000014 /* PDFService.swift in Sources */,
+				A1000001234567890000015 /* PDFTextFinder.swift in Sources */,
+				A1000001234567890000016 /* DocumentEditorView.swift in Sources */,
+				A1000001234567890000017 /* PDFViewer.swift in Sources */,
+				A1000001234567890000018 /* SettingsView.swift in Sources */,
+				A1000001234567890000019 /* DocumentCategory.swift in Sources */,
+				A1000001234567890000020 /* DocumentClassifier.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,7 +368,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = RFF/RFF.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -315,7 +392,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = RFF/RFF.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
