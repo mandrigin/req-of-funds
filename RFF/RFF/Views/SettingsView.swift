@@ -186,6 +186,7 @@ struct AISettingsView: View {
     @State private var openAIKey = ""
     @State private var anthropicKey = ""
     @State private var isClaudeCodeAvailable = false
+    @State private var isFoundationModelsAvailable = false
     @State private var isOpenAIKeyConfigured = false
     @State private var isAnthropicKeyConfigured = false
     @State private var showingOpenAIKey = false
@@ -198,11 +199,15 @@ struct AISettingsView: View {
         Form {
             Section("AI Provider") {
                 Picker("Provider", selection: $selectedProvider) {
-                    ForEach(AIProvider.allCases, id: \.self) { provider in
+                    ForEach(AIProvider.availableCases, id: \.self) { provider in
                         HStack {
                             Text(provider.displayName)
                             if provider == .claudeCode && !isClaudeCodeAvailable {
                                 Text("(Not installed)")
+                                    .foregroundStyle(.secondary)
+                            }
+                            if provider == .foundation && !isFoundationModelsAvailable {
+                                Text("(Coming soon)")
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -214,6 +219,13 @@ struct AISettingsView: View {
                     // Don't allow selecting Claude Code if not available
                     if newValue == .claudeCode && !isClaudeCodeAvailable {
                         // Revert to previous or default
+                        Task {
+                            selectedProvider = await AIAnalysisService.shared.detectAvailableProvider() ?? .anthropic
+                        }
+                        return
+                    }
+                    // Don't allow selecting Foundation Models if not available
+                    if newValue == .foundation && !isFoundationModelsAvailable {
                         Task {
                             selectedProvider = await AIAnalysisService.shared.detectAvailableProvider() ?? .anthropic
                         }
@@ -241,8 +253,18 @@ struct AISettingsView: View {
                 }
             }
 
+            if isFoundationModelsAvailable {
+                Section("On-Device AI (Recommended)") {
+                    Label("Apple Intelligence available", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                    Text("Private, on-device AI processing. Your data never leaves your Mac.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             if isClaudeCodeAvailable {
-                Section("Claude Code (Recommended)") {
+                Section("Claude Code") {
                     Label("Claude Code CLI detected", systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
                     Text("Uses your existing Claude Code authentication. No API key required.")
@@ -323,6 +345,7 @@ struct AISettingsView: View {
 
     private func loadSettings() async {
         isClaudeCodeAvailable = await AIAnalysisService.shared.isClaudeCodeAvailable()
+        isFoundationModelsAvailable = await AIAnalysisService.shared.isFoundationModelsAvailable()
         selectedProvider = await AIAnalysisService.shared.getSelectedProvider()
         isOpenAIKeyConfigured = await AIAnalysisService.shared.isAPIKeyConfigured(for: .openai)
         isAnthropicKeyConfigured = await AIAnalysisService.shared.isAPIKeyConfigured(for: .anthropic)
