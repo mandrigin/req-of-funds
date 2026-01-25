@@ -209,7 +209,7 @@ struct AISettingsView: View {
                         .tag(provider)
                     }
                 }
-                .pickerStyle(.segmented)
+                .pickerStyle(.menu)
                 .onChange(of: selectedProvider) { _, newValue in
                     // Don't allow selecting Claude Code if not available
                     if newValue == .claudeCode && !isClaudeCodeAvailable {
