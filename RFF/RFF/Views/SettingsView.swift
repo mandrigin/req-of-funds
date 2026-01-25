@@ -182,88 +182,76 @@ struct OCRSettingsView: View {
 // MARK: - AI Settings
 
 struct AISettingsView: View {
-    @State private var apiKey = ""
-    @State private var isAPIKeyConfigured = false
-    @State private var showingAPIKey = false
+    @State private var selectedProvider: AIProvider = .anthropic
+    @State private var openAIKey = ""
+    @State private var anthropicKey = ""
+    @State private var isOpenAIKeyConfigured = false
+    @State private var isAnthropicKeyConfigured = false
+    @State private var showingOpenAIKey = false
+    @State private var showingAnthropicKey = false
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var successMessage: String?
 
     var body: some View {
         Form {
-            Section("OpenAI API") {
-                HStack {
-                    if showingAPIKey {
-                        TextField("API Key", text: $apiKey)
-                            .textFieldStyle(.roundedBorder)
-                    } else {
-                        SecureField("API Key", text: $apiKey)
-                            .textFieldStyle(.roundedBorder)
+            Section("AI Provider") {
+                Picker("Provider", selection: $selectedProvider) {
+                    ForEach(AIProvider.allCases, id: \.self) { provider in
+                        Text(provider.displayName).tag(provider)
                     }
-
-                    Button {
-                        showingAPIKey.toggle()
-                    } label: {
-                        Image(systemName: showingAPIKey ? "eye.slash" : "eye")
-                    }
-                    .buttonStyle(.borderless)
                 }
-
-                HStack {
-                    if isAPIKeyConfigured {
-                        Label("API key configured", systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                    } else {
-                        Label("API key not set", systemImage: "xmark.circle")
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer()
-
-                    if isSaving {
-                        ProgressView()
-                            .controlSize(.small)
-                    } else {
-                        Button("Save") {
-                            saveAPIKey()
-                        }
-                        .disabled(apiKey.isEmpty)
-
-                        if isAPIKeyConfigured {
-                            Button("Remove", role: .destructive) {
-                                removeAPIKey()
-                            }
-                        }
+                .pickerStyle(.segmented)
+                .onChange(of: selectedProvider) { _, newValue in
+                    Task {
+                        await AIAnalysisService.shared.setSelectedProvider(newValue)
                     }
                 }
 
-                if let error = errorMessage {
-                    Text(error)
-                        .foregroundStyle(.red)
+                if hasEnvKey(for: selectedProvider) {
+                    Label("Using \(selectedProvider.apiKeyEnvVar) environment variable", systemImage: "terminal")
                         .font(.caption)
+                        .foregroundStyle(.blue)
                 }
+            }
 
-                if let success = successMessage {
-                    Text(success)
-                        .foregroundStyle(.green)
-                        .font(.caption)
-                }
+            Section("Anthropic API Key") {
+                APIKeyInputView(
+                    apiKey: $anthropicKey,
+                    isConfigured: $isAnthropicKeyConfigured,
+                    showingKey: $showingAnthropicKey,
+                    provider: .anthropic,
+                    isSaving: $isSaving,
+                    errorMessage: $errorMessage,
+                    successMessage: $successMessage,
+                    hasEnvKey: hasEnvKey(for: .anthropic)
+                )
+            }
+
+            Section("OpenAI API Key") {
+                APIKeyInputView(
+                    apiKey: $openAIKey,
+                    isConfigured: $isOpenAIKeyConfigured,
+                    showingKey: $showingOpenAIKey,
+                    provider: .openai,
+                    isSaving: $isSaving,
+                    errorMessage: $errorMessage,
+                    successMessage: $successMessage,
+                    hasEnvKey: hasEnvKey(for: .openai)
+                )
             }
 
             Section("Privacy") {
-                Text("Your API key is stored securely in the macOS Keychain.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                Text("Document text is only sent to OpenAI when you explicitly tap the 'AI Analyze' button. No automatic data transmission occurs.")
+                Text("API keys are stored in UserDefaults. Document text is only sent when you explicitly tap 'AI Analyze'.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
-            Section("About") {
+            Section("Links") {
+                Link("Get an Anthropic API key", destination: URL(string: "https://console.anthropic.com/settings/keys")!)
                 Link("Get an OpenAI API key", destination: URL(string: "https://platform.openai.com/api-keys")!)
 
-                Text("Uses GPT-4o-mini model for cost-effective analysis.")
+                Text("Anthropic uses Claude Sonnet, OpenAI uses GPT-4o-mini.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -271,13 +259,85 @@ struct AISettingsView: View {
         .formStyle(.grouped)
         .padding()
         .task {
-            checkAPIKeyStatus()
+            await loadSettings()
         }
     }
 
-    private func checkAPIKeyStatus() {
-        Task {
-            isAPIKeyConfigured = await AIAnalysisService.shared.isAPIKeyConfigured()
+    private func hasEnvKey(for provider: AIProvider) -> Bool {
+        if let envKey = ProcessInfo.processInfo.environment[provider.apiKeyEnvVar],
+           !envKey.isEmpty {
+            return true
+        }
+        return false
+    }
+
+    private func loadSettings() async {
+        selectedProvider = await AIAnalysisService.shared.getSelectedProvider()
+        isOpenAIKeyConfigured = await AIAnalysisService.shared.isAPIKeyConfigured(for: .openai)
+        isAnthropicKeyConfigured = await AIAnalysisService.shared.isAPIKeyConfigured(for: .anthropic)
+    }
+}
+
+/// Reusable API key input component
+private struct APIKeyInputView: View {
+    @Binding var apiKey: String
+    @Binding var isConfigured: Bool
+    @Binding var showingKey: Bool
+    let provider: AIProvider
+    @Binding var isSaving: Bool
+    @Binding var errorMessage: String?
+    @Binding var successMessage: String?
+    let hasEnvKey: Bool
+
+    var body: some View {
+        if hasEnvKey {
+            Label("Using environment variable", systemImage: "checkmark.circle.fill")
+                .foregroundStyle(.green)
+        } else {
+            HStack {
+                if showingKey {
+                    TextField("API Key", text: $apiKey)
+                        .textFieldStyle(.roundedBorder)
+                } else {
+                    SecureField("API Key", text: $apiKey)
+                        .textFieldStyle(.roundedBorder)
+                }
+
+                Button {
+                    showingKey.toggle()
+                } label: {
+                    Image(systemName: showingKey ? "eye.slash" : "eye")
+                }
+                .buttonStyle(.borderless)
+            }
+
+            HStack {
+                if isConfigured {
+                    Label("Configured", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                } else {
+                    Label("Not set", systemImage: "xmark.circle")
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                if isSaving {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Button("Save") {
+                        saveAPIKey()
+                    }
+                    .disabled(apiKey.isEmpty)
+
+                    if isConfigured {
+                        Button("Remove", role: .destructive) {
+                            removeAPIKey()
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -287,27 +347,19 @@ struct AISettingsView: View {
         successMessage = nil
 
         Task {
-            do {
-                try await AIAnalysisService.shared.saveAPIKey(apiKey)
-                isAPIKeyConfigured = true
-                apiKey = ""
-                successMessage = "API key saved successfully"
-            } catch {
-                errorMessage = error.localizedDescription
-            }
+            await AIAnalysisService.shared.saveAPIKey(apiKey, for: provider)
+            isConfigured = true
+            apiKey = ""
+            successMessage = "\(provider.displayName) API key saved"
             isSaving = false
         }
     }
 
     private func removeAPIKey() {
         Task {
-            do {
-                try await AIAnalysisService.shared.deleteAPIKey()
-                isAPIKeyConfigured = false
-                successMessage = "API key removed"
-            } catch {
-                errorMessage = error.localizedDescription
-            }
+            await AIAnalysisService.shared.deleteAPIKey(for: provider)
+            isConfigured = false
+            successMessage = "\(provider.displayName) API key removed"
         }
     }
 }

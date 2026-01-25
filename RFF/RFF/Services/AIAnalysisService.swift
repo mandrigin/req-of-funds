@@ -1,5 +1,25 @@
 import Foundation
 
+/// AI provider options
+enum AIProvider: String, CaseIterable, Codable {
+    case openai = "openai"
+    case anthropic = "anthropic"
+
+    var displayName: String {
+        switch self {
+        case .openai: return "OpenAI"
+        case .anthropic: return "Claude (Anthropic)"
+        }
+    }
+
+    var apiKeyEnvVar: String {
+        switch self {
+        case .openai: return "OPENAI_API_KEY"
+        case .anthropic: return "ANTHROPIC_API_KEY"
+        }
+    }
+}
+
 /// Suggested field from AI analysis
 struct AIFieldSuggestion: Identifiable, Codable, Sendable {
     let id: UUID
@@ -48,7 +68,7 @@ enum AIAnalysisError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .apiKeyNotConfigured:
-            return "OpenAI API key not configured. Add it in Settings > AI."
+            return "API key not configured. Add it in Settings > AI."
         case .networkError(let message):
             return "Network error: \(message)"
         case .invalidResponse:
@@ -56,22 +76,24 @@ enum AIAnalysisError: Error, LocalizedError {
         case .rateLimited:
             return "Rate limited. Please try again later."
         case .insufficientQuota:
-            return "OpenAI API quota exceeded. Check your billing settings."
+            return "API quota exceeded. Check your billing settings."
         }
     }
 }
 
-/// Service for AI-assisted document analysis using OpenAI API
+/// Service for AI-assisted document analysis using OpenAI or Anthropic API
 /// Privacy-first: Only sends data when user explicitly requests
 actor AIAnalysisService {
-    /// Keychain key for OpenAI API key
-    static let apiKeyKeychainKey = "openai_api_key"
+    /// UserDefaults keys for API configuration
+    private static let openAIKeyDefaultsKey = "ai_openai_api_key"
+    private static let anthropicKeyDefaultsKey = "ai_anthropic_api_key"
+    private static let selectedProviderDefaultsKey = "ai_selected_provider"
 
     /// Shared instance
     static let shared = AIAnalysisService()
 
-    private let keychainManager = KeychainManager()
     private let session: URLSession
+    private let defaults = UserDefaults.standard
 
     init() {
         let config = URLSessionConfiguration.default
@@ -80,47 +102,124 @@ actor AIAnalysisService {
         self.session = URLSession(configuration: config)
     }
 
+    // MARK: - Provider Management
+
+    /// Get the currently selected provider
+    func getSelectedProvider() -> AIProvider {
+        if let rawValue = defaults.string(forKey: Self.selectedProviderDefaultsKey),
+           let provider = AIProvider(rawValue: rawValue) {
+            return provider
+        }
+        // Auto-detect based on available API keys
+        return detectAvailableProvider() ?? .anthropic
+    }
+
+    /// Set the selected provider
+    func setSelectedProvider(_ provider: AIProvider) {
+        defaults.set(provider.rawValue, forKey: Self.selectedProviderDefaultsKey)
+    }
+
+    /// Auto-detect available provider based on env vars and stored keys
+    func detectAvailableProvider() -> AIProvider? {
+        // Priority: Anthropic first (as specified in requirements)
+        if isAPIKeyConfigured(for: .anthropic) {
+            return .anthropic
+        }
+        if isAPIKeyConfigured(for: .openai) {
+            return .openai
+        }
+        return nil
+    }
+
     // MARK: - API Key Management
 
-    /// Check if API key is configured
-    func isAPIKeyConfigured() -> Bool {
-        keychainManager.tokenExists(forKey: Self.apiKeyKeychainKey)
-    }
-
-    /// Get the API key (throws if not configured)
-    func getAPIKey() throws -> String {
-        guard isAPIKeyConfigured() else {
-            throw AIAnalysisError.apiKeyNotConfigured
+    /// Check if API key is configured for a specific provider
+    func isAPIKeyConfigured(for provider: AIProvider) -> Bool {
+        // Check environment variable first
+        if let envKey = ProcessInfo.processInfo.environment[provider.apiKeyEnvVar],
+           !envKey.isEmpty {
+            return true
         }
-        return try keychainManager.retrieveToken(forKey: Self.apiKeyKeychainKey)
+        // Check UserDefaults
+        let defaultsKey = provider == .openai ? Self.openAIKeyDefaultsKey : Self.anthropicKeyDefaultsKey
+        if let storedKey = defaults.string(forKey: defaultsKey), !storedKey.isEmpty {
+            return true
+        }
+        return false
     }
 
-    /// Save the API key
-    func saveAPIKey(_ key: String) throws {
-        try keychainManager.saveToken(key, forKey: Self.apiKeyKeychainKey)
+    /// Check if any API key is configured
+    func isAnyAPIKeyConfigured() -> Bool {
+        isAPIKeyConfigured(for: .openai) || isAPIKeyConfigured(for: .anthropic)
     }
 
-    /// Delete the API key
-    func deleteAPIKey() throws {
-        try keychainManager.deleteToken(forKey: Self.apiKeyKeychainKey)
+    /// Get the API key for a provider (throws if not configured)
+    func getAPIKey(for provider: AIProvider) throws -> String {
+        // Check environment variable first
+        if let envKey = ProcessInfo.processInfo.environment[provider.apiKeyEnvVar],
+           !envKey.isEmpty {
+            return envKey
+        }
+        // Check UserDefaults
+        let defaultsKey = provider == .openai ? Self.openAIKeyDefaultsKey : Self.anthropicKeyDefaultsKey
+        if let storedKey = defaults.string(forKey: defaultsKey), !storedKey.isEmpty {
+            return storedKey
+        }
+        throw AIAnalysisError.apiKeyNotConfigured
+    }
+
+    /// Save the API key for a provider
+    func saveAPIKey(_ key: String, for provider: AIProvider) {
+        let defaultsKey = provider == .openai ? Self.openAIKeyDefaultsKey : Self.anthropicKeyDefaultsKey
+        defaults.set(key, forKey: defaultsKey)
+    }
+
+    /// Delete the API key for a provider
+    func deleteAPIKey(for provider: AIProvider) {
+        let defaultsKey = provider == .openai ? Self.openAIKeyDefaultsKey : Self.anthropicKeyDefaultsKey
+        defaults.removeObject(forKey: defaultsKey)
+    }
+
+    // MARK: - Legacy API (for compatibility)
+
+    /// Check if API key is configured (uses selected provider)
+    func isAPIKeyConfigured() -> Bool {
+        isAPIKeyConfigured(for: getSelectedProvider())
+    }
+
+    /// Get the API key (uses selected provider)
+    func getAPIKey() throws -> String {
+        try getAPIKey(for: getSelectedProvider())
+    }
+
+    /// Save the API key (uses selected provider)
+    func saveAPIKey(_ key: String) {
+        saveAPIKey(key, for: getSelectedProvider())
+    }
+
+    /// Delete the API key (uses selected provider)
+    func deleteAPIKey() {
+        deleteAPIKey(for: getSelectedProvider())
     }
 
     // MARK: - Document Analysis
 
-    /// Analyze document text using OpenAI
+    /// Analyze document text using the selected AI provider
     /// This is only called when user explicitly taps "AI Analyze"
     func analyzeDocument(text: String) async throws -> AIAnalysisResult {
-        let apiKey = try getAPIKey()
+        let provider = getSelectedProvider()
+        let apiKey = try getAPIKey(for: provider)
 
         let prompt = buildAnalysisPrompt(for: text)
-        let response = try await callOpenAI(prompt: prompt, apiKey: apiKey)
+        let response = try await callAI(prompt: prompt, apiKey: apiKey, provider: provider)
 
         return try parseAnalysisResponse(response)
     }
 
     /// Suggest a schema for the document
     func suggestSchema(text: String, existingSchemas: [InvoiceSchema]) async throws -> InvoiceSchema? {
-        let apiKey = try getAPIKey()
+        let provider = getSelectedProvider()
+        let apiKey = try getAPIKey(for: provider)
 
         let schemaNames = existingSchemas.map { $0.name }.joined(separator: ", ")
         let prompt = """
@@ -133,7 +232,7 @@ actor AIAnalysisService {
         \(text.prefix(3000))
         """
 
-        let response = try await callOpenAI(prompt: prompt, apiKey: apiKey)
+        let response = try await callAI(prompt: prompt, apiKey: apiKey, provider: provider)
 
         if response.hasPrefix("NEW:") {
             // Create new schema suggestion
@@ -185,6 +284,15 @@ actor AIAnalysisService {
         """
     }
 
+    private func callAI(prompt: String, apiKey: String, provider: AIProvider) async throws -> String {
+        switch provider {
+        case .openai:
+            return try await callOpenAI(prompt: prompt, apiKey: apiKey)
+        case .anthropic:
+            return try await callAnthropic(prompt: prompt, apiKey: apiKey)
+        }
+    }
+
     private func callOpenAI(prompt: String, apiKey: String) async throws -> String {
         let url = URL(string: "https://api.openai.com/v1/chat/completions")!
 
@@ -233,6 +341,56 @@ actor AIAnalysisService {
         }
 
         return content
+    }
+
+    private func callAnthropic(prompt: String, apiKey: String) async throws -> String {
+        let url = URL(string: "https://api.anthropic.com/v1/messages")!
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 2000,
+            "messages": [
+                ["role": "user", "content": prompt]
+            ]
+        ]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await session.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AIAnalysisError.networkError("Invalid response")
+        }
+
+        switch httpResponse.statusCode {
+        case 200:
+            break
+        case 429:
+            throw AIAnalysisError.rateLimited
+        case 401:
+            throw AIAnalysisError.apiKeyNotConfigured
+        case 402:
+            throw AIAnalysisError.insufficientQuota
+        default:
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
+            throw AIAnalysisError.networkError("HTTP \(httpResponse.statusCode): \(errorMessage)")
+        }
+
+        // Parse Anthropic response format
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let content = json["content"] as? [[String: Any]],
+              let firstBlock = content.first,
+              let text = firstBlock["text"] as? String else {
+            throw AIAnalysisError.invalidResponse
+        }
+
+        return text
     }
 
     private func parseAnalysisResponse(_ response: String) throws -> AIAnalysisResult {
