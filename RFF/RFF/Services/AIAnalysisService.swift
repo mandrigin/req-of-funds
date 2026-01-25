@@ -5,25 +5,33 @@ enum AIProvider: String, CaseIterable, Codable {
     case claudeCode = "claude_code"
     case openai = "openai"
     case anthropic = "anthropic"
+    case foundation = "foundation"  // Apple Foundation Models (macOS 26+)
 
     var displayName: String {
         switch self {
         case .claudeCode: return "Claude Code (Local)"
         case .openai: return "OpenAI"
         case .anthropic: return "Claude (Anthropic)"
+        case .foundation: return "On-Device (Apple)"
         }
     }
 
     var apiKeyEnvVar: String? {
         switch self {
         case .claudeCode: return nil  // No API key needed
+        case .foundation: return nil  // No API key needed - on-device
         case .openai: return "OPENAI_API_KEY"
         case .anthropic: return "ANTHROPIC_API_KEY"
         }
     }
 
     var requiresAPIKey: Bool {
-        self != .claudeCode
+        self != .claudeCode && self != .foundation
+    }
+
+    /// Whether this provider runs entirely on-device (no network)
+    var isOnDevice: Bool {
+        self == .foundation
     }
 }
 
@@ -82,6 +90,8 @@ enum AIAnalysisError: Error, LocalizedError {
     case apiKeyNotConfigured
     case claudeCodeNotAvailable
     case claudeCodeError(String)
+    case foundationModelsNotAvailable
+    case foundationModelsError(String)
     case networkError(String)
     case invalidResponse
     case rateLimited
@@ -95,6 +105,10 @@ enum AIAnalysisError: Error, LocalizedError {
             return "Claude Code CLI not found. Install Claude Code or configure an API key."
         case .claudeCodeError(let message):
             return "Claude Code error: \(message)"
+        case .foundationModelsNotAvailable:
+            return "On-device AI requires macOS 26 or later."
+        case .foundationModelsError(let message):
+            return "On-device AI error: \(message)"
         case .networkError(let message):
             return "Network error: \(message)"
         case .invalidResponse:
@@ -163,6 +177,16 @@ actor AIAnalysisService {
         return nil
     }
 
+    // MARK: - Foundation Models Detection (macOS 26+)
+
+    /// Check if Apple Foundation Models is available (requires macOS 26+)
+    nonisolated func isFoundationModelsAvailable() -> Bool {
+        if #available(macOS 26, *) {
+            return true
+        }
+        return false
+    }
+
     // MARK: - Provider Management
 
     /// Get the currently selected provider
@@ -209,6 +233,10 @@ actor AIAnalysisService {
         if provider == .claudeCode {
             return isClaudeCodeAvailable()
         }
+        // Foundation Models doesn't need an API key - just macOS 26+
+        if provider == .foundation {
+            return isFoundationModelsAvailable()
+        }
         // Check environment variable first
         if let envVar = provider.apiKeyEnvVar,
            let envKey = ProcessInfo.processInfo.environment[envVar],
@@ -223,9 +251,9 @@ actor AIAnalysisService {
         return false
     }
 
-    /// Check if any AI provider is available (CLI or API key)
+    /// Check if any AI provider is available (CLI, on-device, or API key)
     func isAnyAPIKeyConfigured() -> Bool {
-        isClaudeCodeAvailable() || isAPIKeyConfigured(for: .openai) || isAPIKeyConfigured(for: .anthropic)
+        isClaudeCodeAvailable() || isFoundationModelsAvailable() || isAPIKeyConfigured(for: .openai) || isAPIKeyConfigured(for: .anthropic)
     }
 
     /// Get the API key for a provider (throws if not configured)
@@ -236,6 +264,13 @@ actor AIAnalysisService {
                 return ""  // No key needed
             }
             throw AIAnalysisError.claudeCodeNotAvailable
+        }
+        // Foundation Models doesn't need an API key
+        if provider == .foundation {
+            if isFoundationModelsAvailable() {
+                return ""  // No key needed - on-device
+            }
+            throw AIAnalysisError.foundationModelsNotAvailable
         }
         // Check environment variable first
         if let envVar = provider.apiKeyEnvVar,
@@ -291,6 +326,17 @@ actor AIAnalysisService {
     /// This is only called when user explicitly taps "AI Analyze"
     func analyzeDocument(text: String) async throws -> AIAnalysisResult {
         let provider = getSelectedProvider()
+        let apiKey = try getAPIKey(for: provider)
+
+        let prompt = buildAnalysisPrompt(for: text)
+        let response = try await callAI(prompt: prompt, apiKey: apiKey, provider: provider)
+
+        return try parseAnalysisResponse(response)
+    }
+
+    /// Analyze document text using a specific provider
+    /// Used for explicit "AI Analyze (Local)" vs "AI Analyze" actions
+    func analyzeDocument(text: String, using provider: AIProvider) async throws -> AIAnalysisResult {
         let apiKey = try getAPIKey(for: provider)
 
         let prompt = buildAnalysisPrompt(for: text)
@@ -371,6 +417,8 @@ actor AIAnalysisService {
         switch provider {
         case .claudeCode:
             return try await callClaudeCode(prompt: prompt)
+        case .foundation:
+            return try await callFoundationModels(prompt: prompt)
         case .openai:
             return try await callOpenAI(prompt: prompt, apiKey: apiKey)
         case .anthropic:
@@ -420,6 +468,18 @@ actor AIAnalysisService {
                 continuation.resume(throwing: AIAnalysisError.claudeCodeError(error.localizedDescription))
             }
         }
+    }
+
+    private func callFoundationModels(prompt: String) async throws -> String {
+        // Requires macOS 26+ - check availability first
+        guard isFoundationModelsAvailable() else {
+            throw AIAnalysisError.foundationModelsNotAvailable
+        }
+
+        // TODO: Implement Foundation Models API call (rff-twmya)
+        // This will use Apple's FoundationModels framework when available
+        // For now, throw an error indicating implementation pending
+        throw AIAnalysisError.foundationModelsError("Foundation Models integration pending implementation")
     }
 
     private func callOpenAI(prompt: String, apiKey: String) async throws -> String {

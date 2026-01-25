@@ -60,14 +60,23 @@ final class AIAnalysisProgressManager {
     }
 
     /// Start analysis for a single document
-    func startAnalysis(documentId: UUID, text: String) async {
+    /// - Parameters:
+    ///   - documentId: The document's unique identifier
+    ///   - text: The extracted text to analyze
+    ///   - provider: Optional specific provider to use (nil uses the default selected provider)
+    func startAnalysis(documentId: UUID, text: String, provider: AIProvider? = nil) async {
         // Add to tracking
         analyzingDocuments.insert(documentId)
         errors.removeValue(forKey: documentId)
         completedResults.removeValue(forKey: documentId)
 
         do {
-            let result = try await AIAnalysisService.shared.analyzeDocument(text: text)
+            let result: AIAnalysisResult
+            if let provider = provider {
+                result = try await AIAnalysisService.shared.analyzeDocument(text: text, using: provider)
+            } else {
+                result = try await AIAnalysisService.shared.analyzeDocument(text: text)
+            }
             completedResults[documentId] = result
         } catch {
             errors[documentId] = error.localizedDescription
@@ -78,8 +87,10 @@ final class AIAnalysisProgressManager {
     }
 
     /// Start batch analysis for multiple documents
-    /// - Parameter documents: Array of (id, extractedText) tuples
-    func startBatchAnalysis(documents: [(id: UUID, text: String)]) async {
+    /// - Parameters:
+    ///   - documents: Array of (id, extractedText) tuples
+    ///   - provider: Optional specific provider to use (nil uses the default selected provider)
+    func startBatchAnalysis(documents: [(id: UUID, text: String)], provider: AIProvider? = nil) async {
         guard !documents.isEmpty else { return }
 
         // Reset batch tracking
@@ -95,14 +106,15 @@ final class AIAnalysisProgressManager {
         // Process documents concurrently with a limit
         await withTaskGroup(of: Void.self) { group in
             // Limit concurrency to avoid overwhelming the API
-            let maxConcurrency = 3
+            // Use higher concurrency for on-device processing
+            let maxConcurrency = provider?.isOnDevice == true ? 5 : 3
             var pending = documents[...]
 
             // Start initial batch
             for _ in 0..<min(maxConcurrency, documents.count) {
                 if let doc = pending.popFirst() {
                     group.addTask { [weak self] in
-                        await self?.analyzeDocument(id: doc.id, text: doc.text)
+                        await self?.analyzeDocument(id: doc.id, text: doc.text, provider: provider)
                     }
                 }
             }
@@ -113,7 +125,7 @@ final class AIAnalysisProgressManager {
 
                 if let doc = pending.popFirst() {
                     group.addTask { [weak self] in
-                        await self?.analyzeDocument(id: doc.id, text: doc.text)
+                        await self?.analyzeDocument(id: doc.id, text: doc.text, provider: provider)
                     }
                 }
             }
@@ -125,11 +137,16 @@ final class AIAnalysisProgressManager {
     }
 
     /// Analyze a single document (internal helper)
-    private func analyzeDocument(id: UUID, text: String) async {
+    private func analyzeDocument(id: UUID, text: String, provider: AIProvider? = nil) async {
         analyzingDocuments.insert(id)
 
         do {
-            let result = try await AIAnalysisService.shared.analyzeDocument(text: text)
+            let result: AIAnalysisResult
+            if let provider = provider {
+                result = try await AIAnalysisService.shared.analyzeDocument(text: text, using: provider)
+            } else {
+                result = try await AIAnalysisService.shared.analyzeDocument(text: text)
+            }
             completedResults[id] = result
         } catch {
             errors[id] = error.localizedDescription
