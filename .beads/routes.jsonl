@@ -2,10 +2,12 @@
 {"prefix":"hq-","path":"."}
 {"prefix":"ll-","path":"llmbrandchecker"}
 {"prefix":"in-","path":"invoices"}
-{"prefix":"pr-","path":"prompter"}
+{"prefix":"pr-","path":"presto"}
 {"prefix":"gr-","path":"gw_research"}
 {"prefix":"no-","path":"notiondiff"}
 {"prefix":"st-","path":"stablecoins"}
 {"prefix":"mi-","path":"miden"}
 {"prefix":"om-","path":"omnifocus"}
 {"prefix":"er-","path":"erigon"}
+{"prefix":"rff-","path":"rff"}
+{"prefix":"raa","path":"/Users/mandrigin/gt/raas/.beads","rig":"raas"}
