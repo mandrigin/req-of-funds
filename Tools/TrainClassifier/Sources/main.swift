@@ -1,5 +1,6 @@
 import Foundation
 import CreateML
+import CoreML
 import NaturalLanguage
 
 /// Document Classifier Training Tool
@@ -87,17 +88,14 @@ func trainClassifier(config: TrainingConfig) throws {
 
     // Configure the text classifier
     print("Configuring MLTextClassifier...")
-    print("  Algorithm: Transfer Learning with Dynamic Embedding")
+    print("  Algorithm: Transfer Learning with ELMo Embedding")
     print("  Max iterations: \(config.maxIterations)")
     print("")
 
-    // Train the model using Transfer Learning with Dynamic Embedding
-    // This is the recommended algorithm for text classification
+    // Train the model using Transfer Learning with ELMo embedding
+    // ELMo (Embeddings from Language Models) provides contextualized word representations
     let parameters = MLTextClassifier.ModelParameters(
-        algorithm: .transferLearning(
-            featureExtractor: .dynamicEmbedding,
-            maxIterations: config.maxIterations
-        )
+        algorithm: .transferLearning(.elmoEmbedding, revision: 1)
     )
 
     print("Training model...")
