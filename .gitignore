@@ -2,3 +2,5 @@
 .claude/
 .beads/
 .logs/
+.build/
+.swiftpm/
