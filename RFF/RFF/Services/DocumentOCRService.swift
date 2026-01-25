@@ -77,7 +77,13 @@ actor DocumentOCRService {
         "funding", "allocation", "expenditure",
         "reimbursement", "invoice", "purchase order",
         "budget", "fiscal", "appropriation",
-        "encumbrance", "voucher", "ledger"
+        "encumbrance", "voucher", "ledger",
+        // Swiss document terms
+        "CHF", "Franken", "Quellensteuer", "QST",
+        "AHV", "Alters", "Hinterlassenenversicherung",
+        "KTG", "Krankentaggeld", "Krankentaggeldversicherung",
+        "UVG", "Unfallversicherung", "Prämie", "Beitrag",
+        "Rechnung", "Betrag", "Fälligkeit", "MwSt", "MWST"
     ]
 
     /// Semaphore for limiting concurrent requests
