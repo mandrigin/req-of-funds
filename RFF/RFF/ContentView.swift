@@ -135,6 +135,7 @@ struct ContentView: View {
     @State private var isProcessingPaste = false
     @State private var isProcessingDrop = false
     @State private var pendingDropCount = 0
+    @State private var batchCreatedDocumentIds: Set<RFFDocument.ID> = []
 
     // Column visibility configuration
     @StateObject private var columnConfiguration = LibraryColumnConfiguration.shared
@@ -594,7 +595,14 @@ struct ContentView: View {
             url.stopAccessingSecurityScopedResource()
 
             Task {
-                await processDroppedPDF(at: tempCopy)
+                let documentId = await processDroppedPDF(at: tempCopy)
+                await MainActor.run {
+                    isProcessingDrop = false
+                    // Select the created document so user can see its preview/fields
+                    if let id = documentId {
+                        selectedDocuments = [id]
+                    }
+                }
             }
 
         case .failure(let error):
@@ -608,6 +616,7 @@ struct ContentView: View {
 
         isProcessingDrop = true
         pendingDropCount = providers.count
+        batchCreatedDocumentIds = []
 
         for provider in providers {
             provider.loadFileRepresentation(forTypeIdentifier: UTType.pdf.identifier) { url, error in
@@ -645,11 +654,18 @@ struct ContentView: View {
                 }
 
                 Task {
-                    await processDroppedPDF(at: tempCopy)
+                    let documentId = await processDroppedPDF(at: tempCopy)
                     await MainActor.run {
+                        if let id = documentId {
+                            batchCreatedDocumentIds.insert(id)
+                        }
                         pendingDropCount -= 1
                         if pendingDropCount == 0 {
                             isProcessingDrop = false
+                            // Select all created documents so user can see their preview/fields
+                            if !batchCreatedDocumentIds.isEmpty {
+                                selectedDocuments = batchCreatedDocumentIds
+                            }
                         }
                     }
                 }
@@ -657,7 +673,7 @@ struct ContentView: View {
         }
     }
 
-    private func processDroppedPDF(at url: URL) async {
+    private func processDroppedPDF(at url: URL) async -> RFFDocument.ID? {
         do {
             // Step 1: Run OCR on the PDF
             let ocrResult = try await ocrService.processDocument(at: url)
@@ -666,7 +682,8 @@ struct ContentView: View {
             let entities = try await entityService.extractEntities(from: ocrResult)
 
             // Step 3: Create RFFDocument with extracted data
-            await MainActor.run {
+            return await MainActor.run {
+                var createdId: RFFDocument.ID?
                 withAnimation {
                     let newDocument = RFFDocument(
                         title: generateTitle(from: entities, url: url),
@@ -678,6 +695,7 @@ struct ContentView: View {
                         documentPath: url.path
                     )
                     modelContext.insert(newDocument)
+                    createdId = newDocument.id
 
                     // Schedule deadline notification
                     Task {
@@ -689,12 +707,14 @@ struct ContentView: View {
                         )
                     }
                 }
+                return createdId
             }
         } catch {
             await MainActor.run {
                 importError = "Failed to process invoice: \(error.localizedDescription)"
                 showingImportError = true
             }
+            return nil
         }
     }
 
