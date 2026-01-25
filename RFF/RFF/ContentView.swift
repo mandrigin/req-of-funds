@@ -1816,17 +1816,21 @@ struct LibraryAIAnalysisResultSheet: View {
             applyFieldSuggestion(suggestion)
         }
 
+        // Save schema if suggested
+        if let schemaName = result.suggestedSchemaName, !schemaName.isEmpty {
+            saveSchema(name: schemaName, suggestions: selectedItems)
+        }
+
+        document.updatedAt = Date()
         onDismiss()
     }
 
     private func applyFieldSuggestion(_ suggestion: AIFieldSuggestion) {
         switch suggestion.fieldType {
         case "vendor":
-            if document.requestingOrganization.isEmpty || document.requestingOrganization == "Unknown" {
-                document.requestingOrganization = suggestion.value
-            }
+            document.requestingOrganization = suggestion.value
         case "total":
-            if document.amount == .zero, let amount = Decimal(string: suggestion.value) {
+            if let amount = Decimal(string: suggestion.value) {
                 document.amount = amount
             }
         case "due_date":
@@ -1838,15 +1842,47 @@ struct LibraryAIAnalysisResultSheet: View {
                 document.currency = currency
             }
         case "invoice_number":
-            // Could update title or store separately
             if document.title == "New Document" || document.title.isEmpty {
                 document.title = "Invoice \(suggestion.value)"
             }
         default:
             break
         }
+    }
 
-        document.updatedAt = Date()
+    private func saveSchema(name: String, suggestions: [AIFieldSuggestion]) {
+        Task {
+            // Check if schema with this name already exists
+            let existingSchemas = await SchemaStore.shared.allSchemas()
+            let exists = existingSchemas.contains { $0.name.lowercased() == name.lowercased() }
+
+            if !exists {
+                // Convert suggestions to field mappings
+                let fieldMappings: [FieldMapping] = suggestions.compactMap { suggestion in
+                    guard let fieldType = InvoiceFieldType(rawValue: suggestion.fieldType) else {
+                        return nil
+                    }
+                    return FieldMapping(
+                        fieldType: fieldType,
+                        confidence: suggestion.confidence
+                    )
+                }
+
+                // Extract vendor identifier from suggestions
+                let vendorIdentifier = suggestions.first { $0.fieldType == "vendor" }?.value
+
+                do {
+                    _ = try await SchemaStore.shared.createSchema(
+                        name: name,
+                        vendorIdentifier: vendorIdentifier,
+                        description: "Auto-generated from AI analysis",
+                        fieldMappings: fieldMappings
+                    )
+                } catch {
+                    print("Failed to save schema: \(error)")
+                }
+            }
+        }
     }
 
     private func parseISODate(_ string: String) -> Date? {
