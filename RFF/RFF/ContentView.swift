@@ -4,10 +4,11 @@ import PDFKit
 import AppKit
 import UniformTypeIdentifiers
 
-/// Filter for document list: Inbox (pending/underReview) vs Confirmed (approved/completed)
+/// Filter for document list: Inbox (pending/underReview) vs Confirmed (approved/completed) vs Paid (archive)
 enum DocumentFilter: String, CaseIterable {
     case inbox = "Inbox"
     case confirmed = "Confirmed"
+    case paid = "Paid"
 }
 
 /// Currency filter for document list
@@ -41,6 +42,11 @@ struct ContentView: View {
         allDocuments.filter { $0.status == .approved || $0.status == .completed }
     }
 
+    // Paid: archived documents with payment recorded
+    private var paidDocuments: [RFFDocument] {
+        allDocuments.filter { $0.status == .paid }
+    }
+
     @State private var selectedFilter: DocumentFilter = .inbox
     @State private var selectedCurrencyFilter: CurrencyFilter = .all
 
@@ -52,6 +58,8 @@ struct ContentView: View {
             statusFiltered = inboxDocuments
         case .confirmed:
             statusFiltered = confirmedDocuments
+        case .paid:
+            statusFiltered = paidDocuments
         }
 
         // Apply currency filter
@@ -71,6 +79,8 @@ struct ContentView: View {
             statusFiltered = inboxDocuments
         case .confirmed:
             statusFiltered = confirmedDocuments
+        case .paid:
+            statusFiltered = paidDocuments
         }
         let currencies = Set(statusFiltered.map { $0.currency })
         return Currency.allCases.filter { currencies.contains($0) }
@@ -165,13 +175,11 @@ struct ContentView: View {
                 } else if documents.isEmpty {
                     ContentUnavailableView {
                         Label(
-                            selectedFilter == .inbox ? "No Pending Documents" : "No Confirmed Documents",
-                            systemImage: selectedFilter == .inbox ? "tray" : "checkmark.circle"
+                            emptyStateTitle,
+                            systemImage: emptyStateIcon
                         )
                     } description: {
-                        Text(selectedFilter == .inbox
-                            ? "Documents pending review will appear here."
-                            : "Approved and completed documents will appear here.")
+                        Text(emptyStateDescription)
                     }
                 }
             }
@@ -209,7 +217,7 @@ struct ContentView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    .frame(width: 180)
+                    .frame(width: 270)
 
                     // Currency filter menu
                     Menu {
@@ -500,6 +508,39 @@ struct ContentView: View {
         }
     }
 
+    private var emptyStateTitle: String {
+        switch selectedFilter {
+        case .inbox:
+            return "No Pending Documents"
+        case .confirmed:
+            return "No Confirmed Documents"
+        case .paid:
+            return "No Paid Documents"
+        }
+    }
+
+    private var emptyStateIcon: String {
+        switch selectedFilter {
+        case .inbox:
+            return "tray"
+        case .confirmed:
+            return "checkmark.circle"
+        case .paid:
+            return "banknote"
+        }
+    }
+
+    private var emptyStateDescription: String {
+        switch selectedFilter {
+        case .inbox:
+            return "Documents pending review will appear here."
+        case .confirmed:
+            return "Approved and completed documents will appear here."
+        case .paid:
+            return "Paid documents will appear here as an archive."
+        }
+    }
+
     private func currencyColor(for currency: Currency) -> Color {
         switch currency {
         case .usd:
@@ -671,6 +712,8 @@ struct StatusBadge: View {
             return .red.opacity(0.2)
         case .completed:
             return .purple.opacity(0.2)
+        case .paid:
+            return .orange.opacity(0.2)
         }
     }
 
@@ -686,6 +729,8 @@ struct StatusBadge: View {
             return .red
         case .completed:
             return .purple
+        case .paid:
+            return .orange
         }
     }
 }
@@ -701,6 +746,10 @@ struct DocumentDetailView: View {
     @State private var showingValidationError = false
     @State private var validationErrors: [String] = []
 
+    // Mark as Paid state
+    @State private var showingPaidSheet = false
+    @State private var selectedPaidDate = Date()
+
     // AI Analysis state
     @State private var isAnalyzingWithAI = false
     @State private var showingAIResults = false
@@ -713,6 +762,25 @@ struct DocumentDetailView: View {
     /// Check if document can be confirmed (is in inbox state)
     private var canConfirm: Bool {
         document.status == .pending || document.status == .underReview
+    }
+
+    /// Check if document can be marked as paid (is in confirmed state)
+    private var canMarkAsPaid: Bool {
+        document.status == .approved || document.status == .completed
+    }
+
+    /// Mark the document as paid with the selected payment date
+    private func markAsPaid() {
+        document.paidDate = selectedPaidDate
+        document.status = .paid
+        document.updatedAt = Date()
+
+        // Post notification for UI updates
+        NotificationCenter.default.post(
+            name: .documentStatusChanged,
+            object: nil,
+            userInfo: ["documentId": document.id, "status": RFFStatus.paid]
+        )
     }
 
     /// Validate document fields before confirmation
@@ -790,6 +858,13 @@ struct DocumentDetailView: View {
                             LabeledContent("Due Date", value: confirmedDate, format: .dateTime)
                         }
                         LabeledContent("Confirmed At", value: confirmedAt, format: .dateTime)
+                    }
+                }
+
+                // Show payment info section for paid documents
+                if let paidDate = document.paidDate {
+                    Section("Payment Info") {
+                        LabeledContent("Payment Date", value: paidDate, format: .dateTime.month().day().year())
                     }
                 }
 
@@ -907,6 +982,17 @@ struct DocumentDetailView: View {
                     .buttonStyle(.borderedProminent)
                     .tint(.green)
                 }
+
+                if canMarkAsPaid {
+                    Button {
+                        selectedPaidDate = Date()
+                        showingPaidSheet = true
+                    } label: {
+                        Label("Mark as Paid", systemImage: "banknote.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.orange)
+                }
             }
         }
         .alert("Confirm Document", isPresented: $showingConfirmationAlert) {
@@ -935,6 +1021,18 @@ struct DocumentDetailView: View {
                     onDismiss: { showingAIResults = false }
                 )
             }
+        }
+        .sheet(isPresented: $showingPaidSheet) {
+            MarkAsPaidSheet(
+                selectedDate: $selectedPaidDate,
+                onConfirm: {
+                    markAsPaid()
+                    showingPaidSheet = false
+                },
+                onCancel: {
+                    showingPaidSheet = false
+                }
+            )
         }
         .onAppear {
             loadPDF()
@@ -1422,6 +1520,63 @@ struct LibraryConfidenceBadge: View {
         } else {
             return .red
         }
+    }
+}
+
+// MARK: - Mark as Paid Sheet
+
+/// Sheet for selecting payment date when marking a document as paid
+struct MarkAsPaidSheet: View {
+    @Binding var selectedDate: Date
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Mark as Paid")
+                    .font(.headline)
+                Spacer()
+                Button("Cancel") {
+                    onCancel()
+                }
+                .keyboardShortcut(.cancelAction)
+            }
+            .padding()
+
+            Divider()
+
+            // Date picker
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Select the payment date for this document.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                DatePicker(
+                    "Payment Date",
+                    selection: $selectedDate,
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(.graphical)
+            }
+            .padding()
+
+            Divider()
+
+            // Footer
+            HStack {
+                Spacer()
+                Button("Mark as Paid") {
+                    onConfirm()
+                }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+            }
+            .padding()
+        }
+        .frame(width: 340, height: 400)
     }
 }
 

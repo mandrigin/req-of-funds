@@ -8,6 +8,7 @@ enum RFFStatus: String, Codable, CaseIterable {
     case approved = "approved"
     case rejected = "rejected"
     case completed = "completed"
+    case paid = "paid"
 }
 
 /// Supported currencies for RFF documents
@@ -99,6 +100,9 @@ final class RFFDocument {
 
     /// Timestamp when document was confirmed/approved
     var confirmedAt: Date?
+
+    /// Date when the document was marked as paid
+    var paidDate: Date?
 
     init(
         id: UUID = UUID(),
