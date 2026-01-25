@@ -43,12 +43,14 @@ struct DocumentEditorView: View {
                 } label: {
                     Label("Add Line Item", systemImage: "plus")
                 }
+                .help("Add a new line item to this document")
 
                 Button {
                     isImporting = true
                 } label: {
                     Label("Import PDF", systemImage: "doc.badge.plus")
                 }
+                .help("Import a PDF file to extract text and data from")
 
                 Button {
                     performAIAnalysis()
@@ -61,6 +63,7 @@ struct DocumentEditorView: View {
                     }
                 }
                 .disabled(isAnalyzingWithAI || (document.data.extractedText ?? "").isEmpty)
+                .help("Use AI to analyze the document and extract fields automatically")
             }
         }
         .sheet(isPresented: $showingAddLineItem) {

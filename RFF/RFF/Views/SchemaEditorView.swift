@@ -282,12 +282,14 @@ struct SchemaEditorView: View {
                 } label: {
                     Label("Open Document", systemImage: "doc.badge.plus")
                 }
+                .help("Open a PDF or image document to create a schema from")
 
                 Button {
                     viewModel.autoMapFields()
                 } label: {
                     Label("Auto-Map", systemImage: "wand.and.stars")
                 }
+                .help("Automatically map detected text regions to schema fields")
 
                 Button {
                     showingSaveSheet = true
@@ -295,6 +297,7 @@ struct SchemaEditorView: View {
                     Label("Save Schema", systemImage: "square.and.arrow.down")
                 }
                 .disabled(viewModel.fieldMappings.isEmpty)
+                .help("Save the current field mappings as a reusable schema")
             }
         }
         .sheet(isPresented: $showingSaveSheet) {

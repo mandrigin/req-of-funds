@@ -295,12 +295,15 @@ struct ContentView: View {
                     Button(action: { isImportingPDF = true }) {
                         Label("Import PDF", systemImage: "doc.badge.plus")
                     }
+                    .help("Import an invoice or document from a PDF file")
                     Button(action: { showingTextEntry = true }) {
                         Label("Enter Text", systemImage: "text.badge.plus")
                     }
+                    .help("Manually enter document details as text")
                     Button(action: addDocument) {
                         Label("Add Document", systemImage: "plus")
                     }
+                    .help("Create a new blank document")
                 }
 
                 ToolbarItemGroup(placement: .secondaryAction) {
@@ -310,6 +313,7 @@ struct ContentView: View {
                         } label: {
                             Label("Delete Selected", systemImage: "trash")
                         }
+                        .help("Delete the selected documents")
                     }
                 }
             }
@@ -1177,6 +1181,7 @@ struct DocumentDetailView: View {
                     } label: {
                         Label("Edit Schema", systemImage: "doc.text.magnifyingglass")
                     }
+                    .help("Edit the extraction schema for this document type")
                 }
 
                 if canConfirm {
@@ -1187,6 +1192,7 @@ struct DocumentDetailView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.green)
+                    .help("Approve this document and lock in the current values")
                 }
 
                 if canMarkAsPaid {
@@ -1198,6 +1204,7 @@ struct DocumentDetailView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.orange)
+                    .help("Record payment date and move to Paid archive")
                 }
             }
         }
