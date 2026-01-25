@@ -1,6 +1,8 @@
 import SwiftUI
 import SwiftData
 import PDFKit
+import AppKit
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -11,8 +13,11 @@ struct ContentView: View {
     @State private var selectedDocuments: Set<RFFDocument.ID> = []
     @State private var selectedDocument: RFFDocument?
     @State private var sortOrder = [KeyPathComparator(\RFFDocument.dueDate)]
+    @State private var isProcessingPaste = false
 
     private let pdfService = PDFService()
+    private let ocrService = DocumentOCRService()
+    private let entityService = EntityExtractionService()
 
     var body: some View {
         NavigationSplitView {
@@ -118,6 +123,25 @@ struct ContentView: View {
         } message: {
             Text(importError ?? "Unknown error")
         }
+        .onPasteCommand(of: [.png, .jpeg, .tiff]) { providers in
+            handleClipboardPaste(providers: providers)
+        }
+        .overlay {
+            if isProcessingPaste {
+                ZStack {
+                    Color.black.opacity(0.3)
+                    VStack(spacing: 12) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                        Text("Processing clipboard image...")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                    }
+                    .padding(24)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
+            }
+        }
     }
 
     private func handlePDFImport(_ result: Result<[URL], Error>) {
@@ -204,6 +228,84 @@ struct ContentView: View {
             }
             selectedDocuments.removeAll()
             selectedDocument = nil
+        }
+    }
+
+    private func handleClipboardPaste(providers: [NSItemProvider]) {
+        guard let provider = providers.first else { return }
+
+        isProcessingPaste = true
+
+        // Determine UTI to load based on what's available
+        let supportedTypes: [UTType] = [.png, .jpeg, .tiff]
+        guard let matchingType = supportedTypes.first(where: { provider.hasItemConformingToTypeIdentifier($0.identifier) }) else {
+            isProcessingPaste = false
+            return
+        }
+
+        provider.loadDataRepresentation(forTypeIdentifier: matchingType.identifier) { data, error in
+            Task { @MainActor in
+                defer { isProcessingPaste = false }
+
+                if let error = error {
+                    importError = "Failed to read clipboard: \(error.localizedDescription)"
+                    showingImportError = true
+                    return
+                }
+
+                guard let imageData = data else {
+                    importError = "No image data in clipboard"
+                    showingImportError = true
+                    return
+                }
+
+                await processClipboardImage(data: imageData)
+            }
+        }
+    }
+
+    private func processClipboardImage(data: Data) async {
+        do {
+            // Run OCR on the image
+            let ocrResult = try await ocrService.processImageData(data)
+
+            guard !ocrResult.fullText.isEmpty else {
+                importError = "No text found in the pasted image"
+                showingImportError = true
+                return
+            }
+
+            // Extract entities from OCR text
+            let entities = try await entityService.extractEntities(from: ocrResult.fullText)
+
+            // Create document with extracted data
+            withAnimation {
+                let newDocument = RFFDocument(
+                    title: entities.organizationName.map { "RFF - \($0)" } ?? "Pasted Invoice",
+                    requestingOrganization: entities.organizationName ?? "Unknown",
+                    amount: entities.amount ?? Decimal(0),
+                    dueDate: entities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
+                    extractedText: ocrResult.fullText
+                )
+                modelContext.insert(newDocument)
+
+                // Schedule deadline notification
+                Task {
+                    try? await NotificationService.shared.scheduleDeadlineNotification(
+                        documentId: newDocument.id,
+                        title: newDocument.title,
+                        organization: newDocument.requestingOrganization,
+                        dueDate: newDocument.dueDate
+                    )
+                }
+
+                // Select the new document
+                selectedDocuments = [newDocument.id]
+                selectedDocument = newDocument
+            }
+        } catch {
+            importError = "Failed to process image: \(error.localizedDescription)"
+            showingImportError = true
         }
     }
 }
