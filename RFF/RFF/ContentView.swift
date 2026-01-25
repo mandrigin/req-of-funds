@@ -1,6 +1,8 @@
 import SwiftUI
 import SwiftData
 import PDFKit
+import AppKit
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -11,8 +13,11 @@ struct ContentView: View {
     @State private var selectedDocuments: Set<RFFDocument.ID> = []
     @State private var selectedDocument: RFFDocument?
     @State private var sortOrder = [KeyPathComparator(\RFFDocument.dueDate)]
+    @State private var isProcessingPaste = false
 
     private let pdfService = PDFService()
+    private let ocrService = DocumentOCRService()
+    private let entityService = EntityExtractionService()
 
     var body: some View {
         NavigationSplitView {
@@ -118,6 +123,24 @@ struct ContentView: View {
         } message: {
             Text(importError ?? "Unknown error")
         }
+        .onPasteCommand(of: [.png, .jpeg, .tiff]) { providers in
+            handleImagePaste(providers: providers)
+        }
+        .overlay {
+            if isProcessingPaste {
+                ZStack {
+                    Color.black.opacity(0.3)
+                    VStack(spacing: 12) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                        Text("Processing pasted image...")
+                            .font(.headline)
+                    }
+                    .padding(24)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
+            }
+        }
     }
 
     private func handlePDFImport(_ result: Result<[URL], Error>) {
@@ -204,6 +227,99 @@ struct ContentView: View {
             }
             selectedDocuments.removeAll()
             selectedDocument = nil
+        }
+    }
+
+    // MARK: - Clipboard Paste Support
+
+    private func handleImagePaste(providers: [NSItemProvider]) {
+        guard let provider = providers.first else { return }
+
+        isProcessingPaste = true
+
+        // Try to load image data from the provider
+        let imageTypes: [UTType] = [.png, .jpeg, .tiff]
+
+        for imageType in imageTypes {
+            if provider.hasItemConformingToTypeIdentifier(imageType.identifier) {
+                provider.loadDataRepresentation(forTypeIdentifier: imageType.identifier) { data, error in
+                    Task { @MainActor in
+                        if let data = data {
+                            await processClipboardImage(data: data)
+                        } else {
+                            isProcessingPaste = false
+                            importError = error?.localizedDescription ?? "Failed to load image from clipboard"
+                            showingImportError = true
+                        }
+                    }
+                }
+                return
+            }
+        }
+
+        isProcessingPaste = false
+        importError = "No supported image found in clipboard"
+        showingImportError = true
+    }
+
+    @MainActor
+    private func processClipboardImage(data: Data) async {
+        do {
+            // Run OCR on the pasted image
+            let ocrResult = try await ocrService.processImageData(data)
+
+            guard !ocrResult.isEmpty else {
+                isProcessingPaste = false
+                importError = "No text found in the pasted image"
+                showingImportError = true
+                return
+            }
+
+            // Extract entities from OCR text
+            let entities = try await entityService.extractEntities(from: ocrResult.fullText)
+
+            // Create document with extracted data
+            withAnimation {
+                let newDocument = RFFDocument(
+                    title: generateTitle(from: entities),
+                    requestingOrganization: entities.organizationName ?? "Unknown",
+                    amount: entities.amount ?? Decimal(0),
+                    dueDate: entities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
+                    extractedText: ocrResult.fullText
+                )
+                modelContext.insert(newDocument)
+
+                // Schedule deadline notification
+                Task {
+                    try? await NotificationService.shared.scheduleDeadlineNotification(
+                        documentId: newDocument.id,
+                        title: newDocument.title,
+                        organization: newDocument.requestingOrganization,
+                        dueDate: newDocument.dueDate
+                    )
+                }
+            }
+
+            isProcessingPaste = false
+
+        } catch {
+            isProcessingPaste = false
+            importError = error.localizedDescription
+            showingImportError = true
+        }
+    }
+
+    private func generateTitle(from entities: ExtractedEntities) -> String {
+        if let org = entities.organizationName, let amount = entities.amount {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.currencyCode = "USD"
+            let amountStr = formatter.string(from: amount as NSDecimalNumber) ?? "\(amount)"
+            return "RFF - \(org) - \(amountStr)"
+        } else if let org = entities.organizationName {
+            return "RFF - \(org)"
+        } else {
+            return "RFF - Pasted Invoice"
         }
     }
 }
