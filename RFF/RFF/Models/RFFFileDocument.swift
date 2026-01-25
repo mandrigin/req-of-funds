@@ -14,6 +14,7 @@ struct RFFDocumentData: Codable {
     var id: UUID
     var title: String
     var requestingOrganization: String
+    var recipient: String?
     var amount: Decimal
     var currency: Currency
     var dueDate: Date
@@ -63,6 +64,7 @@ struct RFFDocumentData: Codable {
         self.id = UUID()
         self.title = "New RFF Document"
         self.requestingOrganization = ""
+        self.recipient = nil
         self.amount = Decimal.zero
         self.currency = .usd
         self.dueDate = Date().addingTimeInterval(7 * 24 * 60 * 60)
