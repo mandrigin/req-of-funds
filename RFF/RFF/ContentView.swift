@@ -547,10 +547,11 @@ struct StatusBadge: View {
 }
 
 struct DocumentDetailView: View {
-    let document: RFFDocument
+    @Bindable var document: RFFDocument
     @State private var selectedTab = 0
     @State private var pdfDocument: PDFDocument?
     @State private var highlights: [HighlightRegion] = []
+    @State private var showConfirmationPanel = true
 
     private let textFinder = PDFTextFinder()
 
@@ -598,28 +599,58 @@ struct DocumentDetailView: View {
             }
             .tag(0)
 
-            // PDF Viewer Tab
+            // Review & Confirm Tab - DocuSign-style split view
             if document.documentPath != nil {
-                VStack {
-                    HStack {
-                        Button("Highlight Amounts") {
-                            highlightAmounts()
+                HSplitView {
+                    // Left: PDF Viewer with highlight controls
+                    VStack(spacing: 0) {
+                        HStack {
+                            Button("Highlight Amounts") {
+                                highlightAmounts()
+                            }
+                            Button("Highlight Dates") {
+                                highlightDates()
+                            }
+                            Button("Clear Highlights") {
+                                highlights = []
+                            }
+                            Spacer()
+                            Button {
+                                withAnimation {
+                                    showConfirmationPanel.toggle()
+                                }
+                            } label: {
+                                Label(
+                                    showConfirmationPanel ? "Hide Form" : "Show Form",
+                                    systemImage: showConfirmationPanel ? "sidebar.trailing" : "sidebar.leading"
+                                )
+                            }
                         }
-                        Button("Highlight Dates") {
-                            highlightDates()
-                        }
-                        Button("Clear Highlights") {
-                            highlights = []
-                        }
-                    }
-                    .padding(.horizontal)
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
 
-                    PDFViewer(document: pdfDocument, highlights: highlights)
+                        Divider()
+
+                        PDFViewer(document: pdfDocument, highlights: highlights)
+                    }
+                    .frame(minWidth: 400)
+
+                    // Right: Confirmation form panel
+                    if showConfirmationPanel {
+                        ConfirmationFormView(document: document)
+                    }
                 }
                 .tabItem {
-                    Label("PDF", systemImage: "doc.richtext")
+                    Label("Review & Confirm", systemImage: "checkmark.rectangle")
                 }
                 .tag(1)
+            } else {
+                // No PDF - show confirmation form only
+                ConfirmationFormView(document: document)
+                    .tabItem {
+                        Label("Confirm", systemImage: "checkmark.rectangle")
+                    }
+                    .tag(1)
             }
         }
         .navigationTitle(document.title)

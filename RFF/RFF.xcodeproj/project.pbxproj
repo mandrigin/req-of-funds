@@ -29,6 +29,7 @@
 		A1000001234567890000020 /* DocumentClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000022 /* DocumentClassifier.swift */; };
 		A1000001234567890000021 /* TrainingData.json in Resources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000023 /* TrainingData.json */; };
 		A1000001234567890000022 /* AmountDateExtractionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000024 /* AmountDateExtractionService.swift */; };
+		A1000001234567890000023 /* ConfirmationFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000025 /* ConfirmationFormView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +56,7 @@
 		A1000002234567890000022 /* DocumentClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentClassifier.swift; sourceTree = "<group>"; };
 		A1000002234567890000023 /* TrainingData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = TrainingData.json; sourceTree = "<group>"; };
 		A1000002234567890000024 /* AmountDateExtractionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountDateExtractionService.swift; sourceTree = "<group>"; };
+		A1000002234567890000025 /* ConfirmationFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmationFormView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +131,7 @@
 		A1000004234567890000006 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A1000002234567890000025 /* ConfirmationFormView.swift */,
 				A1000002234567890000018 /* DocumentEditorView.swift */,
 				A1000002234567890000019 /* PDFViewer.swift */,
 				A1000002234567890000020 /* SettingsView.swift */,
@@ -243,6 +246,7 @@
 				A1000001234567890000019 /* DocumentCategory.swift in Sources */,
 				A1000001234567890000020 /* DocumentClassifier.swift in Sources */,
 				A1000001234567890000022 /* AmountDateExtractionService.swift in Sources */,
+				A1000001234567890000023 /* ConfirmationFormView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
