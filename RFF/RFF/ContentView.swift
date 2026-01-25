@@ -194,81 +194,6 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             VStack(spacing: 0) {
-                // Filter tabs at top of library
-                HStack {
-                    Picker("Filter", selection: $selectedFilter) {
-                        ForEach(DocumentFilter.allCases, id: \.self) { filter in
-                            Text(filter.rawValue).tag(filter)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 270)
-
-                    // Currency filter menu
-                    Menu {
-                        Button {
-                            selectedCurrencyFilter = .all
-                        } label: {
-                            if case .all = selectedCurrencyFilter {
-                                Label("All Currencies", systemImage: "checkmark")
-                            } else {
-                                Text("All Currencies")
-                            }
-                        }
-
-                        Divider()
-
-                        ForEach(Currency.allCases) { currency in
-                            Button {
-                                selectedCurrencyFilter = .specific(currency)
-                            } label: {
-                                if case .specific(let selected) = selectedCurrencyFilter, selected == currency {
-                                    Label("\(currency.symbol) \(currency.displayName)", systemImage: "checkmark")
-                                } else {
-                                    Text("\(currency.symbol) \(currency.displayName)")
-                                }
-                            }
-                        }
-                    } label: {
-                        Label(currencyFilterLabel, systemImage: "dollarsign.circle")
-                    }
-
-                    // Recipient filter menu
-                    if !availableRecipients.isEmpty {
-                        Menu {
-                            Button {
-                                selectedRecipientFilter = .all
-                            } label: {
-                                if case .all = selectedRecipientFilter {
-                                    Label("All Recipients", systemImage: "checkmark")
-                                } else {
-                                    Text("All Recipients")
-                                }
-                            }
-
-                            Divider()
-
-                            ForEach(availableRecipients, id: \.self) { recipient in
-                                Button {
-                                    selectedRecipientFilter = .specific(recipient)
-                                } label: {
-                                    if case .specific(let selected) = selectedRecipientFilter, selected == recipient {
-                                        Label(recipient, systemImage: "checkmark")
-                                    } else {
-                                        Text(recipient)
-                                    }
-                                }
-                            }
-                        } label: {
-                            Label(recipientFilterLabel, systemImage: "person.crop.circle")
-                        }
-                    }
-
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-
                 // Table view with columns
                 Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
                 TableColumn("Title", value: \.title) { document in
@@ -417,6 +342,76 @@ struct ContentView: View {
             }
             .tableColumnVisibility(configuration: columnConfiguration)
             .toolbar {
+                ToolbarItemGroup(placement: .navigation) {
+                    Picker("Filter", selection: $selectedFilter) {
+                        ForEach(DocumentFilter.allCases, id: \.self) { filter in
+                            Text(filter.rawValue).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 270)
+
+                    // Currency filter menu
+                    Menu {
+                        Button {
+                            selectedCurrencyFilter = .all
+                        } label: {
+                            if case .all = selectedCurrencyFilter {
+                                Label("All Currencies", systemImage: "checkmark")
+                            } else {
+                                Text("All Currencies")
+                            }
+                        }
+
+                        Divider()
+
+                        ForEach(Currency.allCases) { currency in
+                            Button {
+                                selectedCurrencyFilter = .specific(currency)
+                            } label: {
+                                if case .specific(let selected) = selectedCurrencyFilter, selected == currency {
+                                    Label("\(currency.symbol) \(currency.displayName)", systemImage: "checkmark")
+                                } else {
+                                    Text("\(currency.symbol) \(currency.displayName)")
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(currencyFilterLabel, systemImage: "dollarsign.circle")
+                    }
+
+                    // Recipient filter menu (always visible for consistent UI)
+                    Menu {
+                        Button {
+                            selectedRecipientFilter = .all
+                        } label: {
+                            if case .all = selectedRecipientFilter {
+                                Label("All Recipients", systemImage: "checkmark")
+                            } else {
+                                Text("All Recipients")
+                            }
+                        }
+
+                        if !availableRecipients.isEmpty {
+                            Divider()
+
+                            ForEach(availableRecipients, id: \.self) { recipient in
+                                Button {
+                                    selectedRecipientFilter = .specific(recipient)
+                                } label: {
+                                    if case .specific(let selected) = selectedRecipientFilter, selected == recipient {
+                                        Label(recipient, systemImage: "checkmark")
+                                    } else {
+                                        Text(recipient)
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(recipientFilterLabel, systemImage: "person.crop.circle")
+                    }
+                }
+
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button(action: { isImportingPDF = true }) {
                         Label("Import PDF", systemImage: "doc.badge.plus")
@@ -562,7 +557,6 @@ struct ContentView: View {
                 }
             }
         }
-        .frame(minWidth: 900, maxWidth: 1400, minHeight: 500)
     }
 
     private func handlePDFImport(_ result: Result<[URL], Error>) {
@@ -1459,7 +1453,7 @@ struct DocumentDetailView: View {
         .sheet(isPresented: $showingSchemaEditor) {
             if let path = document.documentPath {
                 SchemaEditorView(documentURL: URL(fileURLWithPath: path))
-                    .frame(minWidth: 850, minHeight: 600)
+                    .frame(minWidth: 1000, minHeight: 700)
             }
         }
         .sheet(isPresented: $showingSchemaExtractionResults) {
