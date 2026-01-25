@@ -135,6 +135,7 @@ struct ContentView: View {
     @State private var isProcessingPaste = false
     @State private var isProcessingDrop = false
     @State private var pendingDropCount = 0
+    @State private var newlyDroppedDocumentIDs: [RFFDocument.ID] = []
 
     // Column visibility configuration
     @StateObject private var columnConfiguration = LibraryColumnConfiguration.shared
@@ -609,6 +610,7 @@ struct ContentView: View {
 
         isProcessingDrop = true
         pendingDropCount = providers.count
+        newlyDroppedDocumentIDs = []
 
         for provider in providers {
             provider.loadFileRepresentation(forTypeIdentifier: UTType.pdf.identifier) { url, error in
@@ -651,6 +653,10 @@ struct ContentView: View {
                         pendingDropCount -= 1
                         if pendingDropCount == 0 {
                             isProcessingDrop = false
+                            // Select the first newly dropped document to show its preview
+                            if let firstNewID = newlyDroppedDocumentIDs.first {
+                                selectedDocuments = [firstNewID]
+                            }
                         }
                     }
                 }
@@ -679,6 +685,7 @@ struct ContentView: View {
                         documentPath: url.path
                     )
                     modelContext.insert(newDocument)
+                    newlyDroppedDocumentIDs.append(newDocument.id)
 
                     // Schedule deadline notification
                     Task {
