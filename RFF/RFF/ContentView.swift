@@ -1030,7 +1030,7 @@ struct DocumentDetailView: View {
     @State private var showingSchemaEditor = false
 
     // AI Analysis state (using global AIAnalysisProgressManager for progress tracking)
-    @State private var showingAIResults = false
+    @State private var showingInlineAIResults = false  // Show AI results inline alongside document preview
     @State private var aiAnalysisResult: AIAnalysisResult?
     @State private var aiErrorMessage: String?
     @State private var showingAIError = false
@@ -1278,6 +1278,93 @@ struct DocumentDetailView: View {
                             document: document,
                             isEditing: $isEditingSchema
                         )
+                    } else if showingInlineAIResults, let result = aiAnalysisResult {
+                        // AI Review mode - side-by-side document preview with AI suggestions
+                        HSplitView {
+                            // Left: Document preview (always expanded in AI review mode)
+                            VStack(spacing: 0) {
+                                // Toolbar
+                                HStack {
+                                    Text("\(highlights.count) fields detected")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+
+                                    Spacer()
+
+                                    Button {
+                                        withAnimation {
+                                            showingInlineAIResults = false
+                                            aiAnalysisResult = nil
+                                        }
+                                    } label: {
+                                        Label("Back to Form", systemImage: "arrow.left")
+                                    }
+                                    .buttonStyle(.bordered)
+                                }
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
+
+                                Divider()
+
+                                // Legend
+                                if !highlights.isEmpty {
+                                    HighlightLegendView()
+                                    Divider()
+                                }
+
+                                // PDF viewer
+                                PDFViewer(
+                                    document: pdfDocument,
+                                    highlights: highlights,
+                                    selectedHighlightId: selectedHighlight?.id,
+                                    onHighlightTapped: { highlight in
+                                        withAnimation {
+                                            selectedHighlight = highlight
+                                        }
+                                    }
+                                )
+
+                                // Selected field panel
+                                if let selected = selectedHighlight {
+                                    SelectedFieldPanel(
+                                        highlight: selected,
+                                        document: document,
+                                        onDismiss: {
+                                            withAnimation {
+                                                selectedHighlight = nil
+                                            }
+                                        },
+                                        onApply: { fieldType, value in
+                                            applyFieldValue(fieldType: fieldType, value: value)
+                                            withAnimation {
+                                                selectedHighlight = nil
+                                            }
+                                        }
+                                    )
+                                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                                }
+                            }
+                            .frame(minWidth: 400)
+
+                            // Right: AI suggestions panel
+                            InlineAISuggestionsPanel(
+                                result: result,
+                                document: document,
+                                onApplyAndContinue: {
+                                    withAnimation {
+                                        showingInlineAIResults = false
+                                        aiAnalysisResult = nil
+                                    }
+                                },
+                                onDismiss: {
+                                    withAnimation {
+                                        showingInlineAIResults = false
+                                        aiAnalysisResult = nil
+                                    }
+                                }
+                            )
+                            .frame(minWidth: 320, idealWidth: 380)
+                        }
                     } else {
                         // Normal review mode - vertical layout with preview on top, form below
                         VStack(spacing: 0) {
@@ -1494,15 +1581,6 @@ struct DocumentDetailView: View {
             Button("OK") { }
         } message: {
             Text(aiErrorMessage ?? "Unknown error")
-        }
-        .sheet(isPresented: $showingAIResults) {
-            if let result = aiAnalysisResult {
-                LibraryAIAnalysisResultSheet(
-                    result: result,
-                    document: document,
-                    onDismiss: { showingAIResults = false }
-                )
-            }
         }
         .sheet(isPresented: $showingPaidSheet) {
             MarkAsPaidSheet(
@@ -1747,7 +1825,12 @@ struct DocumentDetailView: View {
         // Check for results
         if let result = progressManager.result(for: document.id) {
             aiAnalysisResult = result
-            showingAIResults = true
+            // Show results inline alongside document preview (not in a sheet)
+            withAnimation {
+                showingInlineAIResults = true
+                // Auto-expand preview when showing AI results
+                isPreviewExpanded = true
+            }
             progressManager.clearResult(for: document.id)
         }
 
@@ -2133,6 +2216,256 @@ struct PastePreviewSheet: View {
             .padding()
         }
         .frame(minWidth: 800, minHeight: 600)
+    }
+}
+
+// MARK: - Inline AI Suggestions Panel
+
+/// Inline panel showing AI suggestions alongside document preview
+struct InlineAISuggestionsPanel: View {
+    let result: AIAnalysisResult
+    @Bindable var document: RFFDocument
+    let onApplyAndContinue: () -> Void
+    let onDismiss: () -> Void
+
+    @State private var selectedSuggestions: Set<UUID> = []
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Image(systemName: "sparkles")
+                        .foregroundStyle(.blue)
+                    Text("AI Suggestions")
+                        .font(.headline)
+                    Spacer()
+                }
+
+                if let summary = result.summary {
+                    Text(summary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Text("Review the document on the left while selecting suggestions to apply.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding()
+
+            Divider()
+
+            // Suggestions list
+            List(selection: $selectedSuggestions) {
+                Section("Extracted Fields (\(result.suggestions.count))") {
+                    ForEach(result.suggestions) { suggestion in
+                        InlineAISuggestionRow(
+                            suggestion: suggestion,
+                            isSelected: selectedSuggestions.contains(suggestion.id)
+                        )
+                        .tag(suggestion.id)
+                    }
+                }
+
+                if !result.notes.isEmpty {
+                    Section("Notes") {
+                        ForEach(result.notes, id: \.self) { note in
+                            Label(note, systemImage: "info.circle")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                if let schemaName = result.suggestedSchemaName {
+                    Section("Suggested Schema") {
+                        Label(schemaName, systemImage: "doc.text")
+                    }
+                }
+            }
+            .listStyle(.inset)
+
+            Divider()
+
+            // Action bar
+            VStack(spacing: 12) {
+                HStack {
+                    Text("\(selectedSuggestions.count) of \(result.suggestions.count) selected")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+
+                HStack(spacing: 12) {
+                    Button {
+                        onDismiss()
+                    } label: {
+                        Text("Skip")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+
+                    Button {
+                        applySelectedSuggestions()
+                    } label: {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                            Text("Apply & Continue")
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(selectedSuggestions.isEmpty)
+                }
+            }
+            .padding()
+        }
+        .background(Color(nsColor: .controlBackgroundColor))
+        .onAppear {
+            // Pre-select high confidence suggestions
+            selectedSuggestions = Set(
+                result.suggestions
+                    .filter { $0.confidence >= 0.7 }
+                    .map { $0.id }
+            )
+        }
+    }
+
+    private func applySelectedSuggestions() {
+        let selectedItems = result.suggestions.filter { selectedSuggestions.contains($0.id) }
+
+        for suggestion in selectedItems {
+            applyFieldSuggestion(suggestion)
+        }
+
+        // Save schema if suggested
+        if let schemaName = result.suggestedSchemaName, !schemaName.isEmpty {
+            saveSchema(name: schemaName, suggestions: selectedItems)
+        }
+
+        document.updatedAt = Date()
+        onApplyAndContinue()
+    }
+
+    private func applyFieldSuggestion(_ suggestion: AIFieldSuggestion) {
+        switch suggestion.fieldType {
+        case "vendor":
+            document.requestingOrganization = suggestion.value
+        case "recipient", "customer_name":
+            document.recipient = suggestion.value
+        case "total":
+            if let amount = Decimal(string: suggestion.value) {
+                document.amount = amount
+            }
+        case "due_date":
+            if let date = parseISODate(suggestion.value) {
+                document.dueDate = date
+            }
+        case "currency":
+            if let currency = Currency(rawValue: suggestion.value.uppercased()) {
+                document.currency = currency
+            }
+        case "invoice_number":
+            if document.title == "New Document" || document.title.isEmpty {
+                document.title = "Invoice \(suggestion.value)"
+            }
+        default:
+            break
+        }
+    }
+
+    private func saveSchema(name: String, suggestions: [AIFieldSuggestion]) {
+        Task {
+            // Check if schema with this name already exists
+            let existingSchemas = await SchemaStore.shared.allSchemas()
+            let exists = existingSchemas.contains { $0.name.lowercased() == name.lowercased() }
+
+            if !exists {
+                // Convert suggestions to field mappings
+                let fieldMappings: [FieldMapping] = suggestions.compactMap { suggestion in
+                    guard let fieldType = InvoiceFieldType(rawValue: suggestion.fieldType) else {
+                        return nil
+                    }
+                    return FieldMapping(
+                        fieldType: fieldType,
+                        confidence: suggestion.confidence
+                    )
+                }
+
+                // Extract vendor identifier from suggestions
+                let vendorIdentifier = suggestions.first { $0.fieldType == "vendor" }?.value
+
+                do {
+                    _ = try await SchemaStore.shared.createSchema(
+                        name: name,
+                        vendorIdentifier: vendorIdentifier,
+                        description: "Auto-generated from AI analysis",
+                        fieldMappings: fieldMappings
+                    )
+                } catch {
+                    print("Failed to save schema: \(error)")
+                }
+            }
+        }
+    }
+
+    private func parseISODate(_ string: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        return formatter.date(from: string)
+    }
+}
+
+/// Row for displaying an AI suggestion in the inline panel
+struct InlineAISuggestionRow: View {
+    let suggestion: AIFieldSuggestion
+    let isSelected: Bool
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(displayName(for: suggestion.fieldType))
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+
+                    Spacer()
+
+                    LibraryConfidenceBadge(confidence: suggestion.confidence)
+                }
+
+                Text(suggestion.value)
+                    .font(.body)
+                    .foregroundStyle(isSelected ? .primary : .secondary)
+
+                if let reasoning = suggestion.reasoning {
+                    Text(reasoning)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(2)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func displayName(for fieldType: String) -> String {
+        switch fieldType {
+        case "vendor": return "Vendor/Organization"
+        case "recipient", "customer_name": return "Recipient"
+        case "total": return "Total Amount"
+        case "subtotal": return "Subtotal"
+        case "tax": return "Tax"
+        case "due_date": return "Due Date"
+        case "invoice_date": return "Invoice Date"
+        case "invoice_number": return "Invoice Number"
+        case "po_number": return "PO Number"
+        case "currency": return "Currency"
+        default: return fieldType.replacingOccurrences(of: "_", with: " ").capitalized
+        }
     }
 }
 
