@@ -94,6 +94,9 @@ struct ContentView: View {
     @State private var isProcessingPaste = false
     @State private var isProcessingDrop = false
 
+    // AI Analysis tracker (global state for progress indicators)
+    private var aiTracker: AIAnalysisTracker { AIAnalysisTracker.shared }
+
     // Text entry state
     @State private var showingTextEntry = false
 
@@ -190,9 +193,16 @@ struct ContentView: View {
                 .width(120)
 
                 TableColumn("Status") { document in
-                    StatusBadge(status: document.status)
+                    HStack(spacing: 6) {
+                        if aiTracker.isAnalyzing(document.id) {
+                            ProgressView()
+                                .controlSize(.small)
+                                .help("AI analysis in progress")
+                        }
+                        StatusBadge(status: document.status)
+                    }
                 }
-                .width(100)
+                .width(120)
             }
             .onChange(of: sortOrder) { _, newOrder in
                 // Sorting is handled by the Table
@@ -239,6 +249,26 @@ struct ContentView: View {
             }
             .contextMenu(forSelectionType: RFFDocument.ID.self) { ids in
                 if !ids.isEmpty {
+                    let selectedDocs = documents.filter { ids.contains($0.id) }
+                    let docsWithText = selectedDocs.filter { ($0.extractedText ?? "").isEmpty == false }
+                    let anyAnalyzing = selectedDocs.contains { aiTracker.isAnalyzing($0.id) }
+
+                    // AI Analyze option
+                    Button {
+                        Task {
+                            await aiTracker.analyzeBatch(documents: docsWithText)
+                        }
+                    } label: {
+                        if ids.count == 1 {
+                            Label("AI Analyze", systemImage: "sparkles")
+                        } else {
+                            Label("AI Analyze (\(docsWithText.count))", systemImage: "sparkles")
+                        }
+                    }
+                    .disabled(docsWithText.isEmpty || anyAnalyzing)
+
+                    Divider()
+
                     Button(role: .destructive) {
                         deleteDocuments(ids: ids)
                     } label: {
@@ -305,6 +335,26 @@ struct ContentView: View {
 
                 ToolbarItemGroup(placement: .secondaryAction) {
                     if !selectedDocuments.isEmpty {
+                        let selectedDocs = documents.filter { selectedDocuments.contains($0.id) }
+                        let docsWithText = selectedDocs.filter { ($0.extractedText ?? "").isEmpty == false }
+                        let anyAnalyzing = selectedDocs.contains { aiTracker.isAnalyzing($0.id) }
+
+                        // Batch AI Analyze button
+                        Button {
+                            Task {
+                                await aiTracker.analyzeBatch(documents: docsWithText)
+                            }
+                        } label: {
+                            if anyAnalyzing {
+                                Label("Analyzing...", systemImage: "sparkles")
+                            } else if selectedDocuments.count == 1 {
+                                Label("AI Analyze", systemImage: "sparkles")
+                            } else {
+                                Label("AI Analyze (\(docsWithText.count))", systemImage: "sparkles")
+                            }
+                        }
+                        .disabled(docsWithText.isEmpty || anyAnalyzing)
+
                         Button(role: .destructive) {
                             deleteDocuments(ids: selectedDocuments)
                         } label: {
@@ -838,6 +888,9 @@ struct DocumentDetailView: View {
     // Schema Editor state
     @State private var showingSchemaEditor = false
 
+    // AI Analysis tracker (global state for progress indicators)
+    private var aiTracker: AIAnalysisTracker { AIAnalysisTracker.shared }
+
     // AI Analysis state
     @State private var isAnalyzingWithAI = false
     @State private var showingAIResults = false
@@ -1100,23 +1153,15 @@ struct DocumentDetailView: View {
                                     Button {
                                         performAIAnalysis()
                                     } label: {
-                                        if isAnalyzingWithAI {
+                                        if isAnalyzingWithAI || aiTracker.isAnalyzing(document.id) {
                                             ProgressView()
                                                 .controlSize(.small)
                                         } else {
                                             Label("AI Analyze", systemImage: "sparkles")
                                         }
                                     }
-                                    .disabled(isAnalyzingWithAI || (document.extractedText ?? "").isEmpty)
-
-                                    Button {
-                                        withAnimation {
-                                            isEditingSchema = true
-                                        }
-                                    } label: {
-                                        Label("Edit Schema", systemImage: "rectangle.and.pencil.and.ellipsis")
-                                    }
-                                    .help("Visually map document fields to schema")
+                                    .disabled(isAnalyzingWithAI || aiTracker.isAnalyzing(document.id) || (document.extractedText ?? "").isEmpty)
+                                    .buttonStyle(.borderedProminent)
 
                                     Spacer()
                                     Button {
@@ -1490,6 +1535,7 @@ struct DocumentDetailView: View {
         }
 
         isAnalyzingWithAI = true
+        aiTracker.startAnalysis(for: document.id)
 
         Task {
             do {
@@ -1498,12 +1544,14 @@ struct DocumentDetailView: View {
                     aiAnalysisResult = result
                     showingAIResults = true
                     isAnalyzingWithAI = false
+                    aiTracker.completeAnalysis(for: document.id, result: result)
                 }
             } catch {
                 await MainActor.run {
                     aiErrorMessage = error.localizedDescription
                     showingAIError = true
                     isAnalyzingWithAI = false
+                    aiTracker.failAnalysis(for: document.id, error: error)
                 }
             }
         }
