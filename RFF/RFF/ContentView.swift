@@ -1018,6 +1018,7 @@ struct DocumentDetailView: View {
     @State private var selectedHighlight: HighlightRegion?
     @State private var isDetectingFields = false
     @State private var showConfirmationPanel = true
+    @State private var isPreviewExpanded = false  // Preview collapsed by default
     @State private var showingConfirmationAlert = false
     @State private var showingValidationError = false
     @State private var validationErrors: [String] = []
@@ -1257,11 +1258,26 @@ struct DocumentDetailView: View {
                             isEditing: $isEditingSchema
                         )
                     } else {
-                        // Normal review mode
-                        HSplitView {
-                            // Left: PDF Viewer with highlight controls
+                        // Normal review mode - vertical layout with preview on top, form below
+                        VStack(spacing: 0) {
+                            // Top: Collapsible PDF Viewer with highlight controls
                             VStack(spacing: 0) {
                                 HStack {
+                                    // Expand/collapse toggle
+                                    Button {
+                                        withAnimation(.easeInOut(duration: 0.2)) {
+                                            isPreviewExpanded.toggle()
+                                        }
+                                    } label: {
+                                        Label(
+                                            isPreviewExpanded ? "Collapse Preview" : "Expand Preview",
+                                            systemImage: isPreviewExpanded ? "chevron.up" : "chevron.down"
+                                        )
+                                    }
+
+                                    Divider()
+                                        .frame(height: 20)
+
                                     // Field detection status
                                     if isDetectingFields {
                                         ProgressView()
@@ -1298,67 +1314,84 @@ struct DocumentDetailView: View {
                                     .disabled(AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) || (document.extractedText ?? "").isEmpty)
 
                                     Spacer()
-                                    Button {
-                                        withAnimation {
-                                            showConfirmationPanel.toggle()
-                                        }
-                                    } label: {
-                                        Label(
-                                            showConfirmationPanel ? "Hide Form" : "Show Form",
-                                            systemImage: showConfirmationPanel ? "sidebar.trailing" : "sidebar.leading"
-                                        )
-                                    }
                                 }
                                 .padding(.horizontal)
                                 .padding(.vertical, 8)
 
                                 Divider()
 
-                                VStack(spacing: 0) {
-                                    // Fixed legend header
-                                    if !highlights.isEmpty {
-                                        HighlightLegendView()
-                                        Divider()
+                                // Preview content (collapsible)
+                                if isPreviewExpanded {
+                                    VStack(spacing: 0) {
+                                        // Fixed legend header
+                                        if !highlights.isEmpty {
+                                            HighlightLegendView()
+                                            Divider()
+                                        }
+
+                                        PDFViewer(
+                                            document: pdfDocument,
+                                            highlights: highlights,
+                                            selectedHighlightId: selectedHighlight?.id,
+                                            onHighlightTapped: { highlight in
+                                                withAnimation {
+                                                    selectedHighlight = highlight
+                                                }
+                                            }
+                                        )
                                     }
+                                    .frame(minHeight: 300, maxHeight: 400)
 
-                                    PDFViewer(
-                                        document: pdfDocument,
-                                        highlights: highlights,
-                                        selectedHighlightId: selectedHighlight?.id,
-                                        onHighlightTapped: { highlight in
-                                            withAnimation {
-                                                selectedHighlight = highlight
+                                    // Selected field info panel
+                                    if let selected = selectedHighlight {
+                                        SelectedFieldPanel(
+                                            highlight: selected,
+                                            document: document,
+                                            onDismiss: {
+                                                withAnimation {
+                                                    selectedHighlight = nil
+                                                }
+                                            },
+                                            onApply: { fieldType, value in
+                                                applyFieldValue(fieldType: fieldType, value: value)
+                                                withAnimation {
+                                                    selectedHighlight = nil
+                                                }
                                             }
+                                        )
+                                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                                    }
+                                } else {
+                                    // Collapsed preview - show thumbnail
+                                    HStack {
+                                        if let pdf = pdfDocument, let page = pdf.page(at: 0) {
+                                            let thumb = page.thumbnail(of: CGSize(width: 120, height: 160), for: .mediaBox)
+                                            Image(nsImage: thumb)
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(height: 80)
+                                                .cornerRadius(4)
+                                                .shadow(radius: 2)
                                         }
-                                    )
-                                }
-
-                                // Selected field info panel
-                                if let selected = selectedHighlight {
-                                    SelectedFieldPanel(
-                                        highlight: selected,
-                                        document: document,
-                                        onDismiss: {
-                                            withAnimation {
-                                                selectedHighlight = nil
-                                            }
-                                        },
-                                        onApply: { fieldType, value in
-                                            applyFieldValue(fieldType: fieldType, value: value)
-                                            withAnimation {
-                                                selectedHighlight = nil
-                                            }
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("Document Preview")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                            Text("Click 'Expand Preview' to view full document")
+                                                .font(.caption2)
+                                                .foregroundStyle(.tertiary)
                                         }
-                                    )
-                                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                                        Spacer()
+                                    }
+                                    .padding()
+                                    .background(Color(nsColor: .controlBackgroundColor))
                                 }
                             }
-                            .frame(minWidth: 400)
 
-                            // Right: Confirmation form panel
-                            if showConfirmationPanel {
-                                ConfirmationFormView(document: document)
-                            }
+                            Divider()
+
+                            // Bottom: Confirmation form panel
+                            ConfirmationFormView(document: document)
                         }
                     }
                 }

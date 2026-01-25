@@ -114,7 +114,7 @@ struct ConfirmationFormView: View {
             // Footer with confirm button
             footer
         }
-        .frame(minWidth: 280, idealWidth: 320, maxWidth: 380)
+        .frame(minWidth: 280, maxWidth: .infinity)
         .background(Color(nsColor: .controlBackgroundColor))
         .onAppear {
             initializeFields()
