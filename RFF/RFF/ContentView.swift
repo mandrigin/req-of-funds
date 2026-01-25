@@ -26,24 +26,6 @@ enum CurrencyFilter: Hashable {
     }
 }
 
-/// Recipient filter for document list
-enum RecipientFilter: Hashable {
-    case all
-    case specific(String)
-    case unassigned
-
-    var displayName: String {
-        switch self {
-        case .all:
-            return "All Recipients"
-        case .specific(let recipient):
-            return recipient
-        case .unassigned:
-            return "No Recipient"
-        }
-    }
-}
-
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
 
@@ -67,7 +49,6 @@ struct ContentView: View {
 
     @State private var selectedFilter: DocumentFilter = .inbox
     @State private var selectedCurrencyFilter: CurrencyFilter = .all
-    @State private var selectedRecipientFilter: RecipientFilter = .all
 
     /// Documents to display based on current filters
     private var documents: [RFFDocument] {
@@ -82,22 +63,11 @@ struct ContentView: View {
         }
 
         // Apply currency filter
-        let currencyFiltered: [RFFDocument]
         switch selectedCurrencyFilter {
         case .all:
-            currencyFiltered = statusFiltered
+            return statusFiltered
         case .specific(let currency):
-            currencyFiltered = statusFiltered.filter { $0.currency == currency }
-        }
-
-        // Apply recipient filter
-        switch selectedRecipientFilter {
-        case .all:
-            return currencyFiltered
-        case .specific(let recipient):
-            return currencyFiltered.filter { $0.recipient == recipient }
-        case .unassigned:
-            return currencyFiltered.filter { $0.recipient == nil || $0.recipient?.isEmpty == true }
+            return statusFiltered.filter { $0.currency == currency }
         }
     }
 
@@ -115,35 +85,6 @@ struct ContentView: View {
         let currencies = Set(statusFiltered.map { $0.currency })
         return Currency.allCases.filter { currencies.contains($0) }
     }
-
-    /// Available recipients in the current document set (for filter menu)
-    private var availableRecipients: [String] {
-        let statusFiltered: [RFFDocument]
-        switch selectedFilter {
-        case .inbox:
-            statusFiltered = inboxDocuments
-        case .confirmed:
-            statusFiltered = confirmedDocuments
-        case .paid:
-            statusFiltered = paidDocuments
-        }
-        let recipients = Set(statusFiltered.compactMap { $0.recipient }.filter { !$0.isEmpty })
-        return recipients.sorted()
-    }
-
-    /// Whether there are documents without recipients in the current filter
-    private var hasUnassignedRecipients: Bool {
-        let statusFiltered: [RFFDocument]
-        switch selectedFilter {
-        case .inbox:
-            statusFiltered = inboxDocuments
-        case .confirmed:
-            statusFiltered = confirmedDocuments
-        case .paid:
-            statusFiltered = paidDocuments
-        }
-        return statusFiltered.contains { $0.recipient == nil || $0.recipient?.isEmpty == true }
-    }
     @State private var isImportingPDF = false
     @State private var importError: String?
     @State private var showingImportError = false
@@ -152,19 +93,9 @@ struct ContentView: View {
     @State private var sortOrder = [KeyPathComparator(\RFFDocument.dueDate)]
     @State private var isProcessingPaste = false
     @State private var isProcessingDrop = false
-    @State private var dropProcessingCount = 0
-    @State private var dropProcessingTotal = 0
 
     // Text entry state
     @State private var showingTextEntry = false
-
-    // Library AI Analysis state (for context menu)
-    @State private var isAnalyzingFromLibrary = false
-    @State private var showingLibraryAIResults = false
-    @State private var libraryAIAnalysisResult: AIAnalysisResult?
-    @State private var libraryAITargetDocument: RFFDocument?
-    @State private var libraryAIErrorMessage: String?
-    @State private var showingLibraryAIError = false
 
     // Paste preview state
     @State private var showingPastePreview = false
@@ -219,8 +150,109 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             VStack(spacing: 0) {
-                // Filter tabs at top of library
-                HStack {
+                // Table view with columns
+                Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
+                TableColumn("Title", value: \.title) { document in
+                    Text(document.title)
+                        .fontWeight(.medium)
+                }
+                .width(min: 150, ideal: 200)
+
+                TableColumn("Organization", value: \.requestingOrganization) { document in
+                    Text(document.requestingOrganization)
+                }
+                .width(min: 120, ideal: 180)
+
+                TableColumn("Amount") { document in
+                    Text(document.amount, format: .currency(code: document.currency.currencyCode))
+                        .monospacedDigit()
+                }
+                .width(100)
+
+                TableColumn("Currency") { document in
+                    Text(document.currency.rawValue)
+                        .font(.caption)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(currencyColor(for: document.currency).opacity(0.2), in: Capsule())
+                }
+                .width(60)
+
+                TableColumn("Due Date", value: \.dueDate) { document in
+                    HStack {
+                        Text(document.dueDate, format: .dateTime.month().day().year())
+                        if document.dueDate < Date() && document.status != .completed {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.red)
+                        }
+                    }
+                }
+                .width(120)
+
+                TableColumn("Status") { document in
+                    StatusBadge(status: document.status)
+                }
+                .width(100)
+            }
+            .onChange(of: sortOrder) { _, newOrder in
+                // Sorting is handled by the Table
+            }
+            .onDrop(of: [.pdf], isTargeted: nil) { providers in
+                handlePDFDrop(providers: providers)
+                return true
+            }
+            .overlay {
+                if isProcessingDrop {
+                    ZStack {
+                        Color.black.opacity(0.3)
+                        VStack(spacing: 12) {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                            Text("Processing invoice...")
+                                .font(.headline)
+                        }
+                        .padding(24)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    }
+                } else if documents.isEmpty {
+                    ContentUnavailableView {
+                        Label(
+                            emptyStateTitle,
+                            systemImage: emptyStateIcon
+                        )
+                    } description: {
+                        Text(emptyStateDescription)
+                    }
+                }
+            }
+            .onChange(of: selectedDocuments) { _, newSelection in
+                if let first = newSelection.first {
+                    selectedDocument = documents.first { $0.id == first }
+                } else {
+                    selectedDocument = nil
+                }
+            }
+            .onChange(of: selectedFilter) { _, _ in
+                // Clear selection when switching filters
+                selectedDocuments.removeAll()
+                selectedDocument = nil
+            }
+            .contextMenu(forSelectionType: RFFDocument.ID.self) { ids in
+                if !ids.isEmpty {
+                    Button(role: .destructive) {
+                        deleteDocuments(ids: ids)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+            } primaryAction: { ids in
+                // Double-click to open
+                if let id = ids.first, let doc = documents.first(where: { $0.id == id }) {
+                    selectedDocument = doc
+                }
+            }
+            .toolbar {
+                ToolbarItemGroup(placement: .navigation) {
                     Picker("Filter", selection: $selectedFilter) {
                         ForEach(DocumentFilter.allCases, id: \.self) { filter in
                             Text(filter.rawValue).tag(filter)
@@ -257,198 +289,18 @@ struct ContentView: View {
                     } label: {
                         Label(currencyFilterLabel, systemImage: "dollarsign.circle")
                     }
-
-                    // Recipient filter menu
-                    Menu {
-                        Button {
-                            selectedRecipientFilter = .all
-                        } label: {
-                            if case .all = selectedRecipientFilter {
-                                Label("All Recipients", systemImage: "checkmark")
-                            } else {
-                                Text("All Recipients")
-                            }
-                        }
-
-                        if hasUnassignedRecipients {
-                            Button {
-                                selectedRecipientFilter = .unassigned
-                            } label: {
-                                if case .unassigned = selectedRecipientFilter {
-                                    Label("No Recipient", systemImage: "checkmark")
-                                } else {
-                                    Text("No Recipient")
-                                }
-                            }
-                        }
-
-                        if !availableRecipients.isEmpty {
-                            Divider()
-
-                            ForEach(availableRecipients, id: \.self) { recipient in
-                                Button {
-                                    selectedRecipientFilter = .specific(recipient)
-                                } label: {
-                                    if case .specific(let selected) = selectedRecipientFilter, selected == recipient {
-                                        Label(recipient, systemImage: "checkmark")
-                                    } else {
-                                        Text(recipient)
-                                    }
-                                }
-                            }
-                        }
-                    } label: {
-                        Label(recipientFilterLabel, systemImage: "person.crop.circle")
-                    }
-
-                    Spacer()
                 }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
 
-                // Table view with columns
-                Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
-                TableColumn("Organization", value: \.requestingOrganization) { document in
-                    Text(document.requestingOrganization)
-                }
-                .width(min: 120, ideal: 180)
-
-                TableColumn("Recipient") { document in
-                    if let recipient = document.recipient, !recipient.isEmpty {
-                        Text(recipient)
-                            .foregroundStyle(.primary)
-                    } else {
-                        Text("—")
-                            .foregroundStyle(.tertiary)
-                    }
-                }
-                .width(min: 80, ideal: 120)
-
-                TableColumn("Amount") { document in
-                    Text(document.amount, format: .currency(code: document.currency.currencyCode))
-                        .monospacedDigit()
-                }
-                .width(100)
-
-                TableColumn("Currency") { document in
-                    Text(document.currency.rawValue)
-                        .font(.caption)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(currencyColor(for: document.currency).opacity(0.2), in: Capsule())
-                }
-                .width(60)
-
-                TableColumn("Due Date", value: \.dueDate) { document in
-                    HStack {
-                        Text(document.dueDate, format: .dateTime.month().day().year())
-                        if document.dueDate < Date() && document.status != .completed {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.red)
-                        }
-                    }
-                }
-                .width(120)
-
-                TableColumn("Status") { document in
-                    StatusBadge(status: document.status)
-                }
-                .width(100)
-            }
-            .onChange(of: sortOrder) { _, newOrder in
-                // Sorting is handled by the Table
-            }
-            .onDrop(of: [.pdf, .image], isTargeted: nil) { providers in
-                handleFileDrop(providers: providers)
-                return true
-            }
-            .overlay {
-                if isProcessingDrop {
-                    ZStack {
-                        Color.black.opacity(0.3)
-                        VStack(spacing: 12) {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                            if dropProcessingTotal > 1 {
-                                Text("Processing \(dropProcessingCount) of \(dropProcessingTotal) files...")
-                                    .font(.headline)
-                            } else {
-                                Text("Processing invoice...")
-                                    .font(.headline)
-                            }
-                        }
-                        .padding(24)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-                    }
-                } else if documents.isEmpty {
-                    ContentUnavailableView {
-                        Label(
-                            emptyStateTitle,
-                            systemImage: emptyStateIcon
-                        )
-                    } description: {
-                        Text(emptyStateDescription)
-                    }
-                }
-            }
-            .onChange(of: selectedDocuments) { _, newSelection in
-                if let first = newSelection.first {
-                    selectedDocument = documents.first { $0.id == first }
-                } else {
-                    selectedDocument = nil
-                }
-            }
-            .onChange(of: selectedFilter) { _, _ in
-                // Clear selection when switching filters
-                selectedDocuments.removeAll()
-                selectedDocument = nil
-            }
-            .contextMenu(forSelectionType: RFFDocument.ID.self) { ids in
-                if !ids.isEmpty {
-                    // AI Analyze - only for single document selection
-                    if ids.count == 1, let id = ids.first,
-                       let doc = documents.first(where: { $0.id == id }),
-                       !(doc.extractedText ?? "").isEmpty {
-                        Button {
-                            performLibraryAIAnalysis(documentId: id)
-                        } label: {
-                            if isAnalyzingFromLibrary {
-                                Label("Analyzing...", systemImage: "sparkles")
-                            } else {
-                                Label("AI Analyze", systemImage: "sparkles")
-                            }
-                        }
-                        .disabled(isAnalyzingFromLibrary)
-                    }
-
-                    Divider()
-
-                    Button(role: .destructive) {
-                        deleteDocuments(ids: ids)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                }
-            } primaryAction: { ids in
-                // Double-click to open
-                if let id = ids.first, let doc = documents.first(where: { $0.id == id }) {
-                    selectedDocument = doc
-                }
-            }
-            .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button(action: { isImportingPDF = true }) {
                         Label("Import PDF", systemImage: "doc.badge.plus")
                     }
-                    .help("Import an invoice or document from a PDF file")
                     Button(action: { showingTextEntry = true }) {
                         Label("Enter Text", systemImage: "text.badge.plus")
                     }
-                    .help("Manually enter document details as text")
                     Button(action: addDocument) {
                         Label("Add Document", systemImage: "plus")
                     }
-                    .help("Create a new blank document")
                 }
 
                 ToolbarItemGroup(placement: .secondaryAction) {
@@ -458,7 +310,6 @@ struct ContentView: View {
                         } label: {
                             Label("Delete Selected", systemImage: "trash")
                         }
-                        .help("Delete the selected documents")
                     }
                 }
             }
@@ -585,21 +436,6 @@ struct ContentView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingLibraryAIResults) {
-            if let result = libraryAIAnalysisResult,
-               let document = libraryAITargetDocument {
-                LibraryAIAnalysisResultSheet(
-                    result: result,
-                    document: document,
-                    onDismiss: { showingLibraryAIResults = false }
-                )
-            }
-        }
-        .alert("AI Analysis Error", isPresented: $showingLibraryAIError) {
-            Button("OK") { }
-        } message: {
-            Text(libraryAIErrorMessage ?? "Unknown error")
-        }
     }
 
     private func handlePDFImport(_ result: Result<[URL], Error>) {
@@ -634,10 +470,7 @@ struct ContentView: View {
             url.stopAccessingSecurityScopedResource()
 
             Task {
-                await processDroppedFile(at: tempCopy)
-                await MainActor.run {
-                    isProcessingDrop = false
-                }
+                await processDroppedPDF(at: tempCopy)
             }
 
         case .failure(let error):
@@ -646,92 +479,48 @@ struct ContentView: View {
         }
     }
 
-    private func handleFileDrop(providers: [NSItemProvider]) {
-        guard !providers.isEmpty else { return }
+    private func handlePDFDrop(providers: [NSItemProvider]) {
+        guard let provider = providers.first else { return }
 
         isProcessingDrop = true
-        dropProcessingTotal = providers.count
-        dropProcessingCount = 1
 
-        Task {
-            var errors: [String] = []
+        provider.loadFileRepresentation(forTypeIdentifier: UTType.pdf.identifier) { url, error in
+            defer { DispatchQueue.main.async { isProcessingDrop = false } }
 
-            for (index, provider) in providers.enumerated() {
-                await MainActor.run {
-                    dropProcessingCount = index + 1
-                }
-
-                do {
-                    let tempCopy = try await loadDroppedFile(from: provider)
-                    await processDroppedFile(at: tempCopy)
-                } catch {
-                    errors.append(error.localizedDescription)
-                }
-            }
-
-            await MainActor.run {
-                isProcessingDrop = false
-                dropProcessingCount = 0
-                dropProcessingTotal = 0
-
-                if !errors.isEmpty {
-                    importError = errors.count == 1
-                        ? errors[0]
-                        : "Failed to import \(errors.count) files"
-                    showingImportError = true
-                }
-            }
-        }
-    }
-
-    private func loadDroppedFile(from provider: NSItemProvider) async throws -> URL {
-        // Try PDF first, then images
-        let supportedTypes: [(UTType, String)] = [
-            (.pdf, "pdf"),
-            (.png, "png"),
-            (.jpeg, "jpg"),
-            (.heic, "heic"),
-            (.tiff, "tiff"),
-            (.bmp, "bmp"),
-            (.gif, "gif")
-        ]
-
-        for (utType, ext) in supportedTypes {
-            if provider.hasItemConformingToTypeIdentifier(utType.identifier) {
-                return try await withCheckedThrowingContinuation { continuation in
-                    provider.loadFileRepresentation(forTypeIdentifier: utType.identifier) { url, error in
-                        if let error = error {
-                            continuation.resume(throwing: error)
-                            return
-                        }
-
-                        guard let url = url else {
-                            continuation.resume(throwing: TransferError.invalidData)
-                            return
-                        }
-
-                        // Copy to a persistent location since the provided URL is temporary
-                        let tempCopy = FileManager.default.temporaryDirectory
-                            .appendingPathComponent(UUID().uuidString)
-                            .appendingPathExtension(ext)
-
-                        do {
-                            try FileManager.default.copyItem(at: url, to: tempCopy)
-                            continuation.resume(returning: tempCopy)
-                        } catch {
-                            continuation.resume(throwing: error)
-                        }
+            guard let url = url else {
+                if let error = error {
+                    DispatchQueue.main.async {
+                        importError = error.localizedDescription
+                        showingImportError = true
                     }
                 }
+                return
+            }
+
+            // Copy to a persistent location since the provided URL is temporary
+            let tempCopy = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathExtension("pdf")
+
+            do {
+                try FileManager.default.copyItem(at: url, to: tempCopy)
+            } catch {
+                DispatchQueue.main.async {
+                    importError = "Failed to access dropped file: \(error.localizedDescription)"
+                    showingImportError = true
+                }
+                return
+            }
+
+            Task {
+                await processDroppedPDF(at: tempCopy)
             }
         }
-
-        throw TransferError.invalidData
     }
 
-    private func processDroppedFile(at url: URL) async {
+    private func processDroppedPDF(at url: URL) async {
         do {
-            // Step 1: Run OCR on the file (works for PDFs and images)
+            // Step 1: Run OCR on the PDF
             let ocrResult = try await ocrService.processDocument(at: url)
 
             // Step 2: Extract entities (org, amount, due date)
@@ -761,11 +550,13 @@ struct ContentView: View {
                         )
                     }
                 }
+                isProcessingDrop = false
             }
         } catch {
             await MainActor.run {
-                importError = "Failed to process file: \(error.localizedDescription)"
+                importError = "Failed to process invoice: \(error.localizedDescription)"
                 showingImportError = true
+                isProcessingDrop = false
             }
         }
     }
@@ -792,21 +583,6 @@ struct ContentView: View {
             return "All"
         case .specific(let currency):
             return currency.symbol
-        }
-    }
-
-    private var recipientFilterLabel: String {
-        switch selectedRecipientFilter {
-        case .all:
-            return "All"
-        case .specific(let recipient):
-            // Truncate long recipient names for the label
-            if recipient.count > 15 {
-                return String(recipient.prefix(12)) + "..."
-            }
-            return recipient
-        case .unassigned:
-            return "None"
         }
     }
 
@@ -902,37 +678,6 @@ struct ContentView: View {
             }
             selectedDocuments.removeAll()
             selectedDocument = nil
-        }
-    }
-
-    // MARK: - Library AI Analysis
-
-    private func performLibraryAIAnalysis(documentId: RFFDocument.ID) {
-        guard let document = documents.first(where: { $0.id == documentId }) else { return }
-        guard let extractedText = document.extractedText, !extractedText.isEmpty else {
-            libraryAIErrorMessage = "No extracted text available. Import a document first."
-            showingLibraryAIError = true
-            return
-        }
-
-        isAnalyzingFromLibrary = true
-        libraryAITargetDocument = document
-
-        Task {
-            do {
-                let result = try await AIAnalysisService.shared.analyzeDocument(text: extractedText)
-                await MainActor.run {
-                    libraryAIAnalysisResult = result
-                    showingLibraryAIResults = true
-                    isAnalyzingFromLibrary = false
-                }
-            } catch {
-                await MainActor.run {
-                    libraryAIErrorMessage = error.localizedDescription
-                    showingLibraryAIError = true
-                    isAnalyzingFromLibrary = false
-                }
-            }
         }
     }
 
@@ -1087,6 +832,9 @@ struct DocumentDetailView: View {
     @State private var showingPaidSheet = false
     @State private var selectedPaidDate = Date()
 
+    // Un-confirm state
+    @State private var showingUnconfirmAlert = false
+
     // Schema Editor state
     @State private var showingSchemaEditor = false
 
@@ -1120,6 +868,11 @@ struct DocumentDetailView: View {
 
     /// Check if document can be marked as paid (is in confirmed state)
     private var canMarkAsPaid: Bool {
+        document.status == .approved || document.status == .completed
+    }
+
+    /// Check if document can be un-confirmed (is in confirmed state but not paid)
+    private var canUnconfirm: Bool {
         document.status == .approved || document.status == .completed
     }
 
@@ -1184,6 +937,26 @@ struct DocumentDetailView: View {
         )
     }
 
+    /// Un-confirm the document: clear confirmed values and move back to inbox
+    private func unconfirmDocument() {
+        // Clear confirmed values
+        document.confirmedOrganization = nil
+        document.confirmedAmount = nil
+        document.confirmedDueDate = nil
+        document.confirmedAt = nil
+
+        // Transition status back to pending
+        document.status = .pending
+        document.updatedAt = Date()
+
+        // Post notification for UI updates
+        NotificationCenter.default.post(
+            name: .documentStatusChanged,
+            object: nil,
+            userInfo: ["documentId": document.id, "status": RFFStatus.pending]
+        )
+    }
+
     var body: some View {
         TabView(selection: $selectedTab) {
             // Info Tab
@@ -1191,7 +964,6 @@ struct DocumentDetailView: View {
                 Section("Document Info") {
                     LabeledContent("Title", value: document.title)
                     LabeledContent("Organization", value: document.requestingOrganization)
-                    LabeledContent("Recipient", value: document.recipient ?? "—")
                     LabeledContent("Amount", value: document.amount, format: .currency(code: document.currency.currencyCode))
                     LabeledContent("Currency", value: "\(document.currency.symbol) \(document.currency.displayName)")
                     LabeledContent("Due Date", value: document.dueDate, format: .dateTime)
@@ -1433,7 +1205,6 @@ struct DocumentDetailView: View {
                     } label: {
                         Label("Edit Schema", systemImage: "doc.text.magnifyingglass")
                     }
-                    .help("Edit the extraction schema for this document type")
                 }
 
                 if canConfirm {
@@ -1444,7 +1215,15 @@ struct DocumentDetailView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.green)
-                    .help("Approve this document and lock in the current values")
+                }
+
+                if canUnconfirm {
+                    Button {
+                        showingUnconfirmAlert = true
+                    } label: {
+                        Label("Un-confirm", systemImage: "arrow.uturn.backward")
+                    }
+                    .buttonStyle(.bordered)
                 }
 
                 if canMarkAsPaid {
@@ -1456,7 +1235,6 @@ struct DocumentDetailView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.orange)
-                    .help("Record payment date and move to Paid archive")
                 }
             }
         }
@@ -1472,6 +1250,14 @@ struct DocumentDetailView: View {
             Button("OK") { }
         } message: {
             Text(validationErrors.joined(separator: "\n"))
+        }
+        .alert("Un-confirm Document", isPresented: $showingUnconfirmAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Un-confirm", role: .destructive) {
+                unconfirmDocument()
+            }
+        } message: {
+            Text("Move this document back to the Inbox for editing? The confirmed values will be cleared.")
         }
         .alert("AI Analysis Error", isPresented: $showingAIError) {
             Button("OK") { }
@@ -1595,7 +1381,21 @@ struct DocumentDetailView: View {
 
     /// Parse a date string to Date
     private func parseDate(_ text: String) -> Date? {
-        DateParsingUtility.parseDate(text)
+        let formatters: [DateFormatter] = {
+            let formats = ["MM/dd/yyyy", "M/d/yyyy", "yyyy-MM-dd", "MMMM d, yyyy", "MMM d, yyyy"]
+            return formats.map { format in
+                let formatter = DateFormatter()
+                formatter.dateFormat = format
+                return formatter
+            }
+        }()
+
+        for formatter in formatters {
+            if let date = formatter.date(from: text) {
+                return date
+            }
+        }
+        return nil
     }
 
     /// Detect all known field types in the PDF and create highlights
@@ -2199,10 +1999,8 @@ struct LibraryAIAnalysisResultSheet: View {
         switch suggestion.fieldType {
         case "vendor":
             document.requestingOrganization = suggestion.value
-        case "recipient":
-            document.recipient = suggestion.value
-        case "total", "subtotal":
-            if let amount = parseAmount(suggestion.value) {
+        case "total":
+            if let amount = Decimal(string: suggestion.value) {
                 document.amount = amount
             }
         case "due_date":
@@ -2262,19 +2060,6 @@ struct LibraryAIAnalysisResultSheet: View {
         formatter.formatOptions = [.withFullDate]
         return formatter.date(from: string)
     }
-
-    /// Parse a currency amount string to Decimal, handling commas and currency symbols
-    private func parseAmount(_ text: String) -> Decimal? {
-        let cleaned = text
-            .replacingOccurrences(of: "$", with: "")
-            .replacingOccurrences(of: "€", with: "")
-            .replacingOccurrences(of: "£", with: "")
-            .replacingOccurrences(of: "CHF", with: "")
-            .replacingOccurrences(of: ",", with: "")
-            .replacingOccurrences(of: " ", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        return Decimal(string: cleaned)
-    }
 }
 
 struct LibraryAISuggestionRow: View {
@@ -2314,8 +2099,7 @@ struct LibraryAISuggestionRow: View {
         case "invoice_date": return "Invoice Date"
         case "due_date": return "Due Date"
         case "vendor": return "Vendor"
-        case "recipient": return "Recipient"
-        case "customer_name": return "Customer"
+        case "customer_name": return "Recipient"
         case "subtotal": return "Subtotal"
         case "tax": return "Tax"
         case "total": return "Total"
@@ -2880,8 +2664,7 @@ struct TextEntrySheet: View {
         case "invoice_date": return "Invoice Date"
         case "due_date": return "Due Date"
         case "vendor": return "Vendor"
-        case "recipient": return "Recipient"
-        case "customer_name": return "Customer"
+        case "customer_name": return "Recipient"
         case "subtotal": return "Subtotal"
         case "tax": return "Tax"
         case "total": return "Total"

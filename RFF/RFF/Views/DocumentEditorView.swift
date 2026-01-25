@@ -43,14 +43,12 @@ struct DocumentEditorView: View {
                 } label: {
                     Label("Add Line Item", systemImage: "plus")
                 }
-                .help("Add a new line item to this document")
 
                 Button {
                     isImporting = true
                 } label: {
                     Label("Import PDF", systemImage: "doc.badge.plus")
                 }
-                .help("Import a PDF file to extract text and data from")
 
                 Button {
                     performAIAnalysis()
@@ -63,7 +61,6 @@ struct DocumentEditorView: View {
                     }
                 }
                 .disabled(isAnalyzingWithAI || (document.data.extractedText ?? "").isEmpty)
-                .help("Use AI to analyze the document and extract fields automatically")
             }
         }
         .sheet(isPresented: $showingAddLineItem) {
@@ -587,8 +584,8 @@ struct AIAnalysisResultSheet: View {
         switch suggestion.fieldType {
         case "vendor":
             document.requestingOrganization = suggestion.value
-        case "total", "subtotal":
-            if let amount = parseAmount(suggestion.value) {
+        case "total":
+            if let amount = Decimal(string: suggestion.value) {
                 document.amount = amount
             }
         case "invoice_date":
@@ -651,19 +648,6 @@ struct AIAnalysisResultSheet: View {
         formatter.formatOptions = [.withFullDate]
         return formatter.date(from: string)
     }
-
-    /// Parse a currency amount string to Decimal, handling commas and currency symbols
-    private func parseAmount(_ text: String) -> Decimal? {
-        let cleaned = text
-            .replacingOccurrences(of: "$", with: "")
-            .replacingOccurrences(of: "€", with: "")
-            .replacingOccurrences(of: "£", with: "")
-            .replacingOccurrences(of: "CHF", with: "")
-            .replacingOccurrences(of: ",", with: "")
-            .replacingOccurrences(of: " ", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        return Decimal(string: cleaned)
-    }
 }
 
 struct AISuggestionRow: View {
@@ -703,8 +687,7 @@ struct AISuggestionRow: View {
         case "invoice_date": return "Invoice Date"
         case "due_date": return "Due Date"
         case "vendor": return "Vendor"
-        case "recipient": return "Recipient"
-        case "customer_name": return "Customer"
+        case "customer_name": return "Recipient"
         case "subtotal": return "Subtotal"
         case "tax": return "Tax"
         case "total": return "Total"
