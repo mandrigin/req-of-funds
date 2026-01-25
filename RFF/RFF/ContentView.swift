@@ -701,6 +701,13 @@ struct DocumentDetailView: View {
     @State private var showingValidationError = false
     @State private var validationErrors: [String] = []
 
+    // AI Analysis state
+    @State private var isAnalyzingWithAI = false
+    @State private var showingAIResults = false
+    @State private var aiAnalysisResult: AIAnalysisResult?
+    @State private var aiErrorMessage: String?
+    @State private var showingAIError = false
+
     private let textFinder = PDFTextFinder()
 
     /// Check if document can be confirmed (is in inbox state)
@@ -833,6 +840,22 @@ struct DocumentDetailView: View {
                             Button("Clear Highlights") {
                                 highlights = []
                             }
+
+                            Divider()
+                                .frame(height: 20)
+
+                            Button {
+                                performAIAnalysis()
+                            } label: {
+                                if isAnalyzingWithAI {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                } else {
+                                    Label("AI Analyze", systemImage: "sparkles")
+                                }
+                            }
+                            .disabled(isAnalyzingWithAI || (document.extractedText ?? "").isEmpty)
+
                             Spacer()
                             Button {
                                 withAnimation {
@@ -899,6 +922,20 @@ struct DocumentDetailView: View {
         } message: {
             Text(validationErrors.joined(separator: "\n"))
         }
+        .alert("AI Analysis Error", isPresented: $showingAIError) {
+            Button("OK") { }
+        } message: {
+            Text(aiErrorMessage ?? "Unknown error")
+        }
+        .sheet(isPresented: $showingAIResults) {
+            if let result = aiAnalysisResult {
+                LibraryAIAnalysisResultSheet(
+                    result: result,
+                    document: document,
+                    onDismiss: { showingAIResults = false }
+                )
+            }
+        }
         .onAppear {
             loadPDF()
         }
@@ -933,6 +970,33 @@ struct DocumentDetailView: View {
                 color: NSColor.blue.withAlphaComponent(0.3),
                 label: match.text
             )
+        }
+    }
+
+    private func performAIAnalysis() {
+        guard let extractedText = document.extractedText, !extractedText.isEmpty else {
+            aiErrorMessage = "No extracted text available. Import a document first."
+            showingAIError = true
+            return
+        }
+
+        isAnalyzingWithAI = true
+
+        Task {
+            do {
+                let result = try await AIAnalysisService.shared.analyzeDocument(text: extractedText)
+                await MainActor.run {
+                    aiAnalysisResult = result
+                    showingAIResults = true
+                    isAnalyzingWithAI = false
+                }
+            } catch {
+                await MainActor.run {
+                    aiErrorMessage = error.localizedDescription
+                    showingAIError = true
+                    isAnalyzingWithAI = false
+                }
+            }
         }
     }
 }
@@ -1135,6 +1199,229 @@ struct PastePreviewSheet: View {
             .padding()
         }
         .frame(minWidth: 800, minHeight: 600)
+    }
+}
+
+// MARK: - Library AI Analysis Result Sheet
+
+/// AI Analysis result sheet for Library documents (SwiftData-backed RFFDocument)
+struct LibraryAIAnalysisResultSheet: View {
+    let result: AIAnalysisResult
+    @Bindable var document: RFFDocument
+    let onDismiss: () -> Void
+
+    @State private var selectedSuggestions: Set<UUID> = []
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                VStack(alignment: .leading) {
+                    Text("AI Analysis Results")
+                        .font(.headline)
+                    if let summary = result.summary {
+                        Text(summary)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Spacer()
+
+                Button("Done") {
+                    onDismiss()
+                }
+                .keyboardShortcut(.cancelAction)
+            }
+            .padding()
+
+            Divider()
+
+            // Suggestions list
+            List(selection: $selectedSuggestions) {
+                Section("Extracted Fields (\(result.suggestions.count))") {
+                    ForEach(result.suggestions) { suggestion in
+                        LibraryAISuggestionRow(
+                            suggestion: suggestion,
+                            isSelected: selectedSuggestions.contains(suggestion.id)
+                        )
+                        .tag(suggestion.id)
+                    }
+                }
+
+                if !result.notes.isEmpty {
+                    Section("Notes") {
+                        ForEach(result.notes, id: \.self) { note in
+                            Label(note, systemImage: "info.circle")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                if let schemaName = result.suggestedSchemaName {
+                    Section("Suggested Schema") {
+                        Label(schemaName, systemImage: "doc.text")
+                    }
+                }
+            }
+            .listStyle(.inset)
+
+            Divider()
+
+            // Action bar
+            HStack {
+                Text("\(selectedSuggestions.count) selected")
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Button("Apply Selected") {
+                    applySelectedSuggestions()
+                }
+                .disabled(selectedSuggestions.isEmpty)
+                .keyboardShortcut(.defaultAction)
+            }
+            .padding()
+        }
+        .frame(width: 500, height: 500)
+        .onAppear {
+            // Pre-select high confidence suggestions
+            selectedSuggestions = Set(
+                result.suggestions
+                    .filter { $0.confidence >= 0.7 }
+                    .map { $0.id }
+            )
+        }
+    }
+
+    private func applySelectedSuggestions() {
+        let selectedItems = result.suggestions.filter { selectedSuggestions.contains($0.id) }
+
+        for suggestion in selectedItems {
+            applyFieldSuggestion(suggestion)
+        }
+
+        onDismiss()
+    }
+
+    private func applyFieldSuggestion(_ suggestion: AIFieldSuggestion) {
+        switch suggestion.fieldType {
+        case "vendor":
+            if document.requestingOrganization.isEmpty || document.requestingOrganization == "Unknown" {
+                document.requestingOrganization = suggestion.value
+            }
+        case "total":
+            if document.amount == .zero, let amount = Decimal(string: suggestion.value) {
+                document.amount = amount
+            }
+        case "due_date":
+            if let date = parseISODate(suggestion.value) {
+                document.dueDate = date
+            }
+        case "currency":
+            if let currency = Currency(rawValue: suggestion.value.uppercased()) {
+                document.currency = currency
+            }
+        case "invoice_number":
+            // Could update title or store separately
+            if document.title == "New Document" || document.title.isEmpty {
+                document.title = "Invoice \(suggestion.value)"
+            }
+        default:
+            break
+        }
+
+        document.updatedAt = Date()
+    }
+
+    private func parseISODate(_ string: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        return formatter.date(from: string)
+    }
+}
+
+struct LibraryAISuggestionRow: View {
+    let suggestion: AIFieldSuggestion
+    let isSelected: Bool
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(displayName(for: suggestion.fieldType))
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+
+                    Spacer()
+
+                    LibraryConfidenceBadge(confidence: suggestion.confidence)
+                }
+
+                Text(suggestion.value)
+                    .font(.body)
+                    .foregroundStyle(isSelected ? .primary : .secondary)
+
+                if let reasoning = suggestion.reasoning {
+                    Text(reasoning)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func displayName(for fieldType: String) -> String {
+        switch fieldType {
+        case "invoice_number": return "Invoice Number"
+        case "invoice_date": return "Invoice Date"
+        case "due_date": return "Due Date"
+        case "vendor": return "Vendor"
+        case "customer_name": return "Customer"
+        case "subtotal": return "Subtotal"
+        case "tax": return "Tax"
+        case "total": return "Total"
+        case "currency": return "Currency"
+        case "po_number": return "PO Number"
+        case "payment_terms": return "Payment Terms"
+        default: return fieldType.replacingOccurrences(of: "_", with: " ").capitalized
+        }
+    }
+}
+
+struct LibraryConfidenceBadge: View {
+    let confidence: Double
+
+    var body: some View {
+        Text("\(Int(confidence * 100))%")
+            .font(.caption)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(backgroundColor)
+            .foregroundColor(foregroundColor)
+            .cornerRadius(4)
+    }
+
+    private var backgroundColor: Color {
+        if confidence >= 0.8 {
+            return .green.opacity(0.2)
+        } else if confidence >= 0.5 {
+            return .yellow.opacity(0.2)
+        } else {
+            return .red.opacity(0.2)
+        }
+    }
+
+    private var foregroundColor: Color {
+        if confidence >= 0.8 {
+            return .green
+        } else if confidence >= 0.5 {
+            return .orange
+        } else {
+            return .red
+        }
     }
 }
 

@@ -24,6 +24,11 @@ struct SettingsView: View {
                     Label("AI", systemImage: "sparkles")
                 }
 
+            SchemaSettingsView()
+                .tabItem {
+                    Label("Schemas", systemImage: "rectangle.3.group")
+                }
+
             AdvancedSettingsView()
                 .tabItem {
                     Label("Advanced", systemImage: "gearshape.2")
@@ -303,6 +308,45 @@ struct AISettingsView: View {
             } catch {
                 errorMessage = error.localizedDescription
             }
+        }
+    }
+}
+
+// MARK: - Schema Settings
+
+struct SchemaSettingsView: View {
+    @State private var showingSchemaEditor = false
+
+    var body: some View {
+        Form {
+            Section("Invoice Schemas") {
+                Text("Schemas define how to extract data from different invoice formats. Create custom schemas for vendors with consistent layouts.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Button {
+                    showingSchemaEditor = true
+                } label: {
+                    Label("Open Schema Editor", systemImage: "rectangle.3.group")
+                }
+                .buttonStyle(.borderedProminent)
+            }
+
+            Section("About Schemas") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("Map document regions to fields", systemImage: "square.dashed")
+                    Label("Train on multiple examples for accuracy", systemImage: "brain")
+                    Label("Auto-match vendors by identifier", systemImage: "person.badge.shield.checkmark")
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .padding()
+        .sheet(isPresented: $showingSchemaEditor) {
+            SchemaEditorView()
+                .frame(minWidth: 900, minHeight: 600)
         }
     }
 }
