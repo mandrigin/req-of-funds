@@ -196,12 +196,6 @@ struct ContentView: View {
             VStack(spacing: 0) {
                 // Table view with columns
                 Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
-                TableColumn("Title", value: \.title) { document in
-                    Text(document.title)
-                        .fontWeight(.medium)
-                }
-                .width(min: 150, ideal: 200)
-
                 TableColumn("Organization", value: \.requestingOrganization) { document in
                     Text(document.requestingOrganization)
                 }

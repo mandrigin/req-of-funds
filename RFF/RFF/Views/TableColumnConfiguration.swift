@@ -3,7 +3,6 @@ import AppKit
 
 /// Identifiers for table columns that can be shown/hidden
 enum LibraryColumn: String, CaseIterable, Identifiable {
-    case title = "Title"
     case organization = "Organization"
     case recipient = "Recipient"
     case amount = "Amount"
@@ -13,9 +12,9 @@ enum LibraryColumn: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    /// Whether this column can be hidden (Title is always visible)
+    /// Whether this column can be hidden
     var canHide: Bool {
-        self != .title
+        true
     }
 }
 
