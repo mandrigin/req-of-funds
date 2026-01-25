@@ -39,6 +39,21 @@ enum AIProvider: String, CaseIterable, Codable {
     }
 }
 
+/// A single option value for an AI field suggestion with its own confidence
+struct AIFieldOption: Identifiable, Codable, Sendable, Hashable {
+    let id: UUID
+    let value: String
+    let confidence: Double
+    let reasoning: String?
+
+    init(id: UUID = UUID(), value: String, confidence: Double, reasoning: String? = nil) {
+        self.id = id
+        self.value = value
+        self.confidence = confidence
+        self.reasoning = reasoning
+    }
+}
+
 /// Suggested field from AI analysis
 struct AIFieldSuggestion: Identifiable, Codable, Sendable {
     let id: UUID
@@ -46,28 +61,55 @@ struct AIFieldSuggestion: Identifiable, Codable, Sendable {
     let value: String
     let confidence: Double
     let reasoning: String?
+    /// Multiple value options with confidence weights (empty for single-option suggestions)
+    let options: [AIFieldOption]
 
-    init(id: UUID = UUID(), fieldType: String, value: String, confidence: Double, reasoning: String? = nil) {
+    init(id: UUID = UUID(), fieldType: String, value: String, confidence: Double, reasoning: String? = nil, options: [AIFieldOption] = []) {
         self.id = id
         self.fieldType = fieldType
         self.value = value
         self.confidence = confidence
         self.reasoning = reasoning
+        // If no options provided, create a default option from the primary value
+        if options.isEmpty {
+            self.options = [AIFieldOption(value: value, confidence: confidence, reasoning: reasoning)]
+        } else {
+            self.options = options
+        }
+    }
+
+    /// Whether this suggestion has multiple alternative values to choose from
+    var hasAlternatives: Bool {
+        options.count > 1
     }
 
     /// Convert to InvoiceFieldType if valid
-    /// Handles aliases for backwards compatibility
+    /// Handles aliases for backwards compatibility and local AI variations
     var invoiceFieldType: InvoiceFieldType? {
         // Try direct match first
         if let fieldType = InvoiceFieldType(rawValue: fieldType) {
             return fieldType
         }
-        // Handle aliases
+        // Handle aliases - local AI models may use varied field names
         switch fieldType.lowercased() {
         case "recipient_name", "buyer", "buyer_name", "bill_to", "customer_name", "customer":
             return .recipient
         case "seller", "seller_name", "from":
             return .vendor
+        case "invoice_no", "inv_number", "bill_number":
+            return .invoiceNumber
+        case "date", "issued_date":
+            return .invoiceDate
+        case "payment_due", "pay_by":
+            return .dueDate
+        case "amount", "amount_due", "balance_due", "grand_total":
+            return .total
+        case "sub_total":
+            return .subtotal
+        case "vat", "sales_tax":
+            return .tax
+        case "purchase_order", "purchase_order_number":
+            return .poNumber
         default:
             return nil
         }
