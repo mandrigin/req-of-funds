@@ -293,6 +293,13 @@ struct ContentView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .openLibrary)) { _ in
+            // Bring the library window to front when notification is received
+            if let window = NSApp.windows.first(where: { $0.title == "RFF Library" }) {
+                window.makeKeyAndOrderFront(nil)
+                NSApp.activate(ignoringOtherApps: true)
+            }
+        }
     }
 
     private func handlePDFImport(_ result: Result<[URL], Error>) {

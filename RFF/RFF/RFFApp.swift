@@ -26,17 +26,7 @@ struct RFFApp: App {
     }()
 
     var body: some Scene {
-        // Document-based scene for RFF files
-        DocumentGroup(newDocument: RFFFileDocument()) { file in
-            DocumentEditorView(document: file.$document)
-                .frame(minWidth: 800, minHeight: 600)
-                .onAppear {
-                    appDelegate.modelContainer = sharedModelContainer
-                }
-        }
-        .modelContainer(sharedModelContainer)
-
-        // Library window for browsing all documents in SwiftData
+        // Library window for browsing all documents in SwiftData (primary window)
         WindowGroup("RFF Library", id: "library") {
             ContentView()
                 .onAppear {
@@ -52,6 +42,16 @@ struct RFFApp: App {
                 .keyboardShortcut("L", modifiers: [.command, .shift])
             }
         }
+
+        // Document-based scene for RFF files
+        DocumentGroup(newDocument: RFFFileDocument()) { file in
+            DocumentEditorView(document: file.$document)
+                .frame(minWidth: 800, minHeight: 600)
+                .onAppear {
+                    appDelegate.modelContainer = sharedModelContainer
+                }
+        }
+        .modelContainer(sharedModelContainer)
 
         // Settings scene
         Settings {

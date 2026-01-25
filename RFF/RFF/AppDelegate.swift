@@ -18,6 +18,35 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         Task {
             try? await NotificationService.shared.requestAuthorization()
         }
+
+        // Open the Library window on launch
+        openLibraryWindow()
+    }
+
+    /// Prevent the default Open dialog from appearing on launch
+    func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
+        return false
+    }
+
+    /// Open the Library window
+    private func openLibraryWindow() {
+        // Check if library window already exists
+        if let existingWindow = NSApp.windows.first(where: { $0.title == "RFF Library" }) {
+            existingWindow.makeKeyAndOrderFront(nil)
+        } else {
+            // Dispatch to allow SwiftUI scene to initialize, then open via menu action
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                // Trigger the "Open Library" command (Cmd+Shift+L)
+                if let mainMenu = NSApp.mainMenu,
+                   let fileMenu = mainMenu.item(withTitle: "File")?.submenu,
+                   let openLibraryItem = fileMenu.item(withTitle: "Open Library") {
+                    _ = openLibraryItem.target?.perform(openLibraryItem.action, with: openLibraryItem)
+                } else {
+                    // Fallback: post notification for the app to handle
+                    NotificationCenter.default.post(name: .openLibrary, object: nil)
+                }
+            }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -145,4 +174,7 @@ extension Notification.Name {
 
     /// Posted when a document's status changes from a notification action
     static let documentStatusChanged = Notification.Name("RFF.documentStatusChanged")
+
+    /// Posted to open the Library window
+    static let openLibrary = Notification.Name("RFF.openLibrary")
 }
