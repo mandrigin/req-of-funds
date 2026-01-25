@@ -4,9 +4,26 @@ import PDFKit
 import AppKit
 import UniformTypeIdentifiers
 
+/// Filter for document list tabs
+enum DocumentFilter: String, CaseIterable {
+    case inbox = "Inbox"
+    case confirmed = "Confirmed"
+
+    /// Returns true if the status belongs to this filter
+    func matches(_ status: RFFStatus) -> Bool {
+        switch self {
+        case .inbox:
+            return status == .pending || status == .underReview || status == .rejected
+        case .confirmed:
+            return status == .approved || status == .completed
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \RFFDocument.dueDate) private var documents: [RFFDocument]
+    @State private var selectedFilter: DocumentFilter = .inbox
     @State private var isImportingPDF = false
     @State private var importError: String?
     @State private var showingImportError = false
@@ -16,14 +33,44 @@ struct ContentView: View {
     @State private var isProcessingPaste = false
     @State private var isProcessingDrop = false
 
+    /// Documents filtered by the current tab selection
+    private var filteredDocuments: [RFFDocument] {
+        documents.filter { selectedFilter.matches($0.status) }
+    }
+
+    /// Count of inbox documents (pending, under review, rejected)
+    private var inboxCount: Int {
+        documents.filter { DocumentFilter.inbox.matches($0.status) }.count
+    }
+
+    /// Count of confirmed documents (approved, completed)
+    private var confirmedCount: Int {
+        documents.filter { DocumentFilter.confirmed.matches($0.status) }.count
+    }
+
     private let pdfService = PDFService()
     private let ocrService = DocumentOCRService()
     private let entityService = EntityExtractionService()
 
     var body: some View {
         NavigationSplitView {
-            // Table view with columns
-            Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
+            VStack(spacing: 0) {
+                // Filter picker with document counts
+                Picker("Filter", selection: $selectedFilter) {
+                    Text("Inbox (\(inboxCount))").tag(DocumentFilter.inbox)
+                    Text("Confirmed (\(confirmedCount))").tag(DocumentFilter.confirmed)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .onChange(of: selectedFilter) { _, _ in
+                    // Clear selection when switching tabs
+                    selectedDocuments.removeAll()
+                    selectedDocument = nil
+                }
+
+                // Table view with columns
+                Table(filteredDocuments, selection: $selectedDocuments, sortOrder: $sortOrder) {
                 TableColumn("Title", value: \.title) { document in
                     Text(document.title)
                         .fontWeight(.medium)
@@ -120,6 +167,7 @@ struct ContentView: View {
                     }
                 }
             }
+            } // End VStack
         } detail: {
             if let document = selectedDocument {
                 DocumentDetailView(document: document)
