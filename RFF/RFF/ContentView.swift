@@ -548,12 +548,68 @@ struct StatusBadge: View {
 
 struct DocumentDetailView: View {
     @Bindable var document: RFFDocument
+    @Environment(\.modelContext) private var modelContext
     @State private var selectedTab = 0
     @State private var pdfDocument: PDFDocument?
     @State private var highlights: [HighlightRegion] = []
     @State private var showConfirmationPanel = true
+    @State private var showingConfirmationAlert = false
+    @State private var showingValidationError = false
+    @State private var validationErrors: [String] = []
 
     private let textFinder = PDFTextFinder()
+
+    /// Check if document can be confirmed (is in inbox state)
+    private var canConfirm: Bool {
+        document.status == .pending || document.status == .underReview
+    }
+
+    /// Validate document fields before confirmation
+    private func validateForConfirmation() -> [String] {
+        var errors: [String] = []
+
+        if document.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            errors.append("Title is required")
+        }
+
+        if document.requestingOrganization.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            errors.append("Organization is required")
+        }
+
+        if document.amount <= 0 {
+            errors.append("Amount must be greater than zero")
+        }
+
+        return errors
+    }
+
+    /// Confirm the document: validate, store confirmed values, transition status
+    private func confirmDocument() {
+        let errors = validateForConfirmation()
+
+        if !errors.isEmpty {
+            validationErrors = errors
+            showingValidationError = true
+            return
+        }
+
+        // Store confirmed values
+        document.confirmedOrganization = document.requestingOrganization
+        document.confirmedAmount = document.amount
+        document.confirmedDueDate = document.dueDate
+        document.confirmedAt = Date()
+
+        // Transition status to approved
+        document.status = .approved
+        document.updatedAt = Date()
+
+        // Post notification for UI updates
+        NotificationCenter.default.post(
+            name: .documentStatusChanged,
+            object: nil,
+            userInfo: ["documentId": document.id, "status": RFFStatus.approved]
+        )
+    }
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -564,7 +620,25 @@ struct DocumentDetailView: View {
                     LabeledContent("Organization", value: document.requestingOrganization)
                     LabeledContent("Amount", value: document.amount, format: .currency(code: "USD"))
                     LabeledContent("Due Date", value: document.dueDate, format: .dateTime)
-                    LabeledContent("Status", value: document.status.rawValue.capitalized)
+                    LabeledContent("Status") {
+                        StatusBadge(status: document.status)
+                    }
+                }
+
+                // Show confirmed values section for approved documents
+                if let confirmedAt = document.confirmedAt {
+                    Section("Confirmed Values") {
+                        if let confirmedOrg = document.confirmedOrganization {
+                            LabeledContent("Organization", value: confirmedOrg)
+                        }
+                        if let confirmedAmount = document.confirmedAmount {
+                            LabeledContent("Amount", value: confirmedAmount, format: .currency(code: "USD"))
+                        }
+                        if let confirmedDate = document.confirmedDueDate {
+                            LabeledContent("Due Date", value: confirmedDate, format: .dateTime)
+                        }
+                        LabeledContent("Confirmed At", value: confirmedAt, format: .dateTime)
+                    }
                 }
 
                 if let extractedText = document.extractedText, !extractedText.isEmpty {
@@ -654,6 +728,32 @@ struct DocumentDetailView: View {
             }
         }
         .navigationTitle(document.title)
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                if canConfirm {
+                    Button {
+                        showingConfirmationAlert = true
+                    } label: {
+                        Label("Confirm", systemImage: "checkmark.seal.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.green)
+                }
+            }
+        }
+        .alert("Confirm Document", isPresented: $showingConfirmationAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Confirm", role: .none) {
+                confirmDocument()
+            }
+        } message: {
+            Text("Approve this document? This will lock the current values as the confirmed values and move it to the Confirmed tab.")
+        }
+        .alert("Validation Error", isPresented: $showingValidationError) {
+            Button("OK") { }
+        } message: {
+            Text(validationErrors.joined(separator: "\n"))
+        }
         .onAppear {
             loadPDF()
         }
