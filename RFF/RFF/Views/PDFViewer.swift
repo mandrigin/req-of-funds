@@ -1,9 +1,46 @@
 import SwiftUI
 import PDFKit
 
+/// Color scheme for different field types in PDF highlights
+enum FieldHighlightColor {
+    static func color(for fieldType: InvoiceFieldType?) -> NSColor {
+        guard let fieldType = fieldType else {
+            return .yellow.withAlphaComponent(0.3)
+        }
+        switch fieldType {
+        case .total, .subtotal, .tax, .lineItemTotal, .lineItemUnitPrice:
+            return NSColor.systemGreen.withAlphaComponent(0.3)
+        case .invoiceDate, .dueDate:
+            return NSColor.systemBlue.withAlphaComponent(0.3)
+        case .vendor, .vendorAddress:
+            return NSColor.systemOrange.withAlphaComponent(0.3)
+        case .invoiceNumber, .poNumber:
+            return NSColor.systemPurple.withAlphaComponent(0.3)
+        case .customerName, .customerAddress:
+            return NSColor.systemTeal.withAlphaComponent(0.3)
+        case .lineItemDescription, .lineItemQuantity:
+            return NSColor.systemGray.withAlphaComponent(0.3)
+        case .currency, .paymentTerms:
+            return NSColor.systemIndigo.withAlphaComponent(0.3)
+        }
+    }
+
+    static var legendItems: [(fieldType: InvoiceFieldType, color: NSColor, label: String)] {
+        [
+            (.total, NSColor.systemGreen, "Amounts (Total, Subtotal, Tax)"),
+            (.invoiceDate, NSColor.systemBlue, "Dates (Invoice, Due)"),
+            (.vendor, NSColor.systemOrange, "Vendor"),
+            (.invoiceNumber, NSColor.systemPurple, "Invoice/PO Number"),
+            (.customerName, NSColor.systemTeal, "Customer"),
+            (.lineItemDescription, NSColor.systemGray, "Line Items"),
+            (.currency, NSColor.systemIndigo, "Currency/Terms"),
+        ]
+    }
+}
+
 /// A region to highlight in the PDF
-struct HighlightRegion: Identifiable {
-    let id = UUID()
+struct HighlightRegion: Identifiable, Equatable {
+    let id: UUID
     /// The page index (0-based)
     let pageIndex: Int
     /// The bounds of the region to highlight (in PDF page coordinates)
@@ -12,12 +49,27 @@ struct HighlightRegion: Identifiable {
     let color: NSColor
     /// Optional label for the highlight
     let label: String?
+    /// The detected field type (if any)
+    let fieldType: InvoiceFieldType?
 
-    init(pageIndex: Int, bounds: CGRect, color: NSColor = .yellow.withAlphaComponent(0.3), label: String? = nil) {
+    init(
+        id: UUID = UUID(),
+        pageIndex: Int,
+        bounds: CGRect,
+        color: NSColor? = nil,
+        label: String? = nil,
+        fieldType: InvoiceFieldType? = nil
+    ) {
+        self.id = id
         self.pageIndex = pageIndex
         self.bounds = bounds
-        self.color = color
+        self.color = color ?? FieldHighlightColor.color(for: fieldType)
         self.label = label
+        self.fieldType = fieldType
+    }
+
+    static func == (lhs: HighlightRegion, rhs: HighlightRegion) -> Bool {
+        lhs.id == rhs.id
     }
 }
 
@@ -25,15 +77,26 @@ struct HighlightRegion: Identifiable {
 struct PDFViewer: NSViewRepresentable {
     let document: PDFDocument?
     let highlights: [HighlightRegion]
+    let selectedHighlightId: UUID?
+    var onHighlightTapped: ((HighlightRegion) -> Void)?
 
-    init(document: PDFDocument?, highlights: [HighlightRegion] = []) {
+    init(
+        document: PDFDocument?,
+        highlights: [HighlightRegion] = [],
+        selectedHighlightId: UUID? = nil,
+        onHighlightTapped: ((HighlightRegion) -> Void)? = nil
+    ) {
         self.document = document
         self.highlights = highlights
+        self.selectedHighlightId = selectedHighlightId
+        self.onHighlightTapped = onHighlightTapped
     }
 
     init(url: URL, highlights: [HighlightRegion] = []) {
         self.document = PDFDocument(url: url)
         self.highlights = highlights
+        self.selectedHighlightId = nil
+        self.onHighlightTapped = nil
     }
 
     func makeNSView(context: Context) -> PDFView {
@@ -56,6 +119,8 @@ struct PDFViewer: NSViewRepresentable {
         }
 
         context.coordinator.highlights = highlights
+        context.coordinator.selectedHighlightId = selectedHighlightId
+        context.coordinator.onHighlightTapped = onHighlightTapped
 
         // Clear and reset provider to force PDFKit to recreate overlay views
         // PDFKit caches overlays and won't call the delegate again otherwise
@@ -69,14 +134,18 @@ struct PDFViewer: NSViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(highlights: highlights)
+        Coordinator(highlights: highlights, selectedHighlightId: selectedHighlightId, onHighlightTapped: onHighlightTapped)
     }
 
     class Coordinator: NSObject, PDFPageOverlayViewProvider {
         var highlights: [HighlightRegion]
+        var selectedHighlightId: UUID?
+        var onHighlightTapped: ((HighlightRegion) -> Void)?
 
-        init(highlights: [HighlightRegion]) {
+        init(highlights: [HighlightRegion], selectedHighlightId: UUID?, onHighlightTapped: ((HighlightRegion) -> Void)?) {
             self.highlights = highlights
+            self.selectedHighlightId = selectedHighlightId
+            self.onHighlightTapped = onHighlightTapped
         }
 
         func pdfView(_ view: PDFView, overlayViewFor page: PDFPage) -> NSView? {
@@ -89,7 +158,13 @@ struct PDFViewer: NSViewRepresentable {
                 return nil
             }
 
-            return HighlightOverlayView(highlights: pageHighlights, page: page)
+            let overlayView = HighlightOverlayView(
+                highlights: pageHighlights,
+                page: page,
+                selectedHighlightId: selectedHighlightId,
+                onHighlightTapped: onHighlightTapped
+            )
+            return overlayView
         }
     }
 }
@@ -98,10 +173,19 @@ struct PDFViewer: NSViewRepresentable {
 private class HighlightOverlayView: NSView {
     let highlights: [HighlightRegion]
     let page: PDFPage
+    let selectedHighlightId: UUID?
+    var onHighlightTapped: ((HighlightRegion) -> Void)?
 
-    init(highlights: [HighlightRegion], page: PDFPage) {
+    init(
+        highlights: [HighlightRegion],
+        page: PDFPage,
+        selectedHighlightId: UUID? = nil,
+        onHighlightTapped: ((HighlightRegion) -> Void)? = nil
+    ) {
         self.highlights = highlights
         self.page = page
+        self.selectedHighlightId = selectedHighlightId
+        self.onHighlightTapped = onHighlightTapped
         super.init(frame: .zero)
         self.wantsLayer = true
     }
@@ -118,10 +202,35 @@ private class HighlightOverlayView: NSView {
         for highlight in highlights {
             // Convert PDF coordinates to view coordinates
             let viewBounds = convert(highlight.bounds, from: page)
+            let isSelected = highlight.id == selectedHighlightId
 
+            // Draw fill
             context.setFillColor(highlight.color.cgColor)
             context.fill(viewBounds)
+
+            // Draw border for selected highlight
+            if isSelected {
+                context.setStrokeColor(highlight.color.withAlphaComponent(1.0).cgColor)
+                context.setLineWidth(2.0)
+                context.stroke(viewBounds)
+            }
         }
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        let locationInView = convert(event.locationInWindow, from: nil)
+
+        // Check if click is within any highlight
+        for highlight in highlights {
+            let viewBounds = convert(highlight.bounds, from: page)
+            if viewBounds.contains(locationInView) {
+                onHighlightTapped?(highlight)
+                return
+            }
+        }
+
+        // If not in a highlight, call super to allow normal PDF interaction
+        super.mouseDown(with: event)
     }
 
     /// Convert bounds from PDF page coordinates to view coordinates
@@ -146,7 +255,43 @@ private class HighlightOverlayView: NSView {
     }
 }
 
+/// Legend view showing what each highlight color represents
+struct HighlightLegendView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Field Legend")
+                .font(.headline)
+                .padding(.bottom, 2)
+
+            ForEach(FieldHighlightColor.legendItems, id: \.fieldType) { item in
+                HStack(spacing: 8) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color(nsColor: item.color.withAlphaComponent(0.3)))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 2)
+                                .stroke(Color(nsColor: item.color), lineWidth: 1)
+                        )
+                        .frame(width: 16, height: 16)
+
+                    Text(item.label)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding(8)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .cornerRadius(8)
+        .shadow(radius: 2)
+    }
+}
+
 #Preview {
     PDFViewer(document: nil)
         .frame(width: 600, height: 800)
+}
+
+#Preview("Legend") {
+    HighlightLegendView()
+        .padding()
 }
