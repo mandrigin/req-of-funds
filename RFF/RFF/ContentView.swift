@@ -1017,7 +1017,7 @@ struct DocumentDetailView: View {
     @State private var highlights: [HighlightRegion] = []
     @State private var selectedHighlight: HighlightRegion?
     @State private var isDetectingFields = false
-    @State private var showConfirmationPanel = true
+    @State private var isPreviewExpanded = false
     @State private var showingConfirmationAlert = false
     @State private var showingValidationError = false
     @State private var validationErrors: [String] = []
@@ -1257,9 +1257,9 @@ struct DocumentDetailView: View {
                             isEditing: $isEditingSchema
                         )
                     } else {
-                        // Normal review mode
-                        HSplitView {
-                            // Left: PDF Viewer with highlight controls
+                        // Normal review mode - vertical layout with preview on top, form below
+                        VStack(spacing: 0) {
+                            // Top: Collapsible PDF Viewer with highlight controls
                             VStack(spacing: 0) {
                                 HStack {
                                     // Field detection status
@@ -1300,12 +1300,12 @@ struct DocumentDetailView: View {
                                     Spacer()
                                     Button {
                                         withAnimation {
-                                            showConfirmationPanel.toggle()
+                                            isPreviewExpanded.toggle()
                                         }
                                     } label: {
                                         Label(
-                                            showConfirmationPanel ? "Hide Form" : "Show Form",
-                                            systemImage: showConfirmationPanel ? "sidebar.trailing" : "sidebar.leading"
+                                            isPreviewExpanded ? "Collapse Preview" : "Expand Preview",
+                                            systemImage: isPreviewExpanded ? "chevron.up" : "chevron.down"
                                         )
                                     }
                                 }
@@ -1314,51 +1314,73 @@ struct DocumentDetailView: View {
 
                                 Divider()
 
-                                VStack(spacing: 0) {
-                                    // Fixed legend header
-                                    if !highlights.isEmpty {
-                                        HighlightLegendView()
-                                        Divider()
+                                if isPreviewExpanded {
+                                    VStack(spacing: 0) {
+                                        // Fixed legend header
+                                        if !highlights.isEmpty {
+                                            HighlightLegendView()
+                                            Divider()
+                                        }
+
+                                        PDFViewer(
+                                            document: pdfDocument,
+                                            highlights: highlights,
+                                            selectedHighlightId: selectedHighlight?.id,
+                                            onHighlightTapped: { highlight in
+                                                withAnimation {
+                                                    selectedHighlight = highlight
+                                                }
+                                            }
+                                        )
                                     }
 
-                                    PDFViewer(
-                                        document: pdfDocument,
-                                        highlights: highlights,
-                                        selectedHighlightId: selectedHighlight?.id,
-                                        onHighlightTapped: { highlight in
-                                            withAnimation {
-                                                selectedHighlight = highlight
+                                    // Selected field info panel
+                                    if let selected = selectedHighlight {
+                                        SelectedFieldPanel(
+                                            highlight: selected,
+                                            document: document,
+                                            onDismiss: {
+                                                withAnimation {
+                                                    selectedHighlight = nil
+                                                }
+                                            },
+                                            onApply: { fieldType, value in
+                                                applyFieldValue(fieldType: fieldType, value: value)
+                                                withAnimation {
+                                                    selectedHighlight = nil
+                                                }
                                             }
+                                        )
+                                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                                    }
+                                } else {
+                                    // Collapsed state - show thumbnail preview
+                                    VStack(spacing: 0) {
+                                        if !highlights.isEmpty {
+                                            HighlightLegendView()
+                                            Divider()
                                         }
-                                    )
-                                }
 
-                                // Selected field info panel
-                                if let selected = selectedHighlight {
-                                    SelectedFieldPanel(
-                                        highlight: selected,
-                                        document: document,
-                                        onDismiss: {
-                                            withAnimation {
-                                                selectedHighlight = nil
+                                        PDFViewer(
+                                            document: pdfDocument,
+                                            highlights: highlights,
+                                            selectedHighlightId: selectedHighlight?.id,
+                                            onHighlightTapped: { highlight in
+                                                withAnimation {
+                                                    selectedHighlight = highlight
+                                                }
                                             }
-                                        },
-                                        onApply: { fieldType, value in
-                                            applyFieldValue(fieldType: fieldType, value: value)
-                                            withAnimation {
-                                                selectedHighlight = nil
-                                            }
-                                        }
-                                    )
-                                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                                        )
+                                    }
+                                    .frame(height: 150)
+                                    .clipped()
                                 }
                             }
-                            .frame(minWidth: 400)
 
-                            // Right: Confirmation form panel
-                            if showConfirmationPanel {
-                                ConfirmationFormView(document: document)
-                            }
+                            Divider()
+
+                            // Bottom: Confirmation form (always visible)
+                            ConfirmationFormView(document: document)
                         }
                     }
                 }
