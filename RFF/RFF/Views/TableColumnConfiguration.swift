@@ -5,6 +5,7 @@ import AppKit
 enum LibraryColumn: String, CaseIterable, Identifiable {
     case title = "Title"
     case organization = "Organization"
+    case recipient = "Recipient"
     case amount = "Amount"
     case currency = "Currency"
     case dueDate = "Due Date"

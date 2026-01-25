@@ -166,6 +166,12 @@ struct ContentView: View {
                 }
                 .width(min: 120, ideal: 180)
 
+                TableColumn("Recipient") { document in
+                    Text(document.recipient ?? "—")
+                        .foregroundStyle(document.recipient == nil ? .secondary : .primary)
+                }
+                .width(min: 100, ideal: 150)
+
                 TableColumn("Amount") { document in
                     Text(document.amount, format: .currency(code: document.currency.currencyCode))
                         .monospacedDigit()
