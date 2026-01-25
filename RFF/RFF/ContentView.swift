@@ -1342,21 +1342,7 @@ struct DocumentDetailView: View {
 
     /// Parse a date string to Date
     private func parseDate(_ text: String) -> Date? {
-        let formatters: [DateFormatter] = {
-            let formats = ["MM/dd/yyyy", "M/d/yyyy", "yyyy-MM-dd", "MMMM d, yyyy", "MMM d, yyyy"]
-            return formats.map { format in
-                let formatter = DateFormatter()
-                formatter.dateFormat = format
-                return formatter
-            }
-        }()
-
-        for formatter in formatters {
-            if let date = formatter.date(from: text) {
-                return date
-            }
-        }
-        return nil
+        DateParsingUtility.parseDate(text)
     }
 
     /// Detect all known field types in the PDF and create highlights

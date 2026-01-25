@@ -120,15 +120,9 @@ final class PDFTextFinder {
     /// - Parameter document: The PDF document to search in
     /// - Returns: Array of PDFTextMatch for each date found
     func findDates(in document: PDFDocument) -> [PDFTextMatch] {
-        // Pattern matches common date formats
-        let datePatterns = [
-            #"\d{1,2}/\d{1,2}/\d{2,4}"#,  // MM/DD/YYYY or M/D/YY
-            #"\d{4}-\d{2}-\d{2}"#,         // YYYY-MM-DD
-            #"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2},? \d{4}"#  // Month DD, YYYY
-        ]
-
+        // Use centralized date patterns from DateParsingUtility
         var allMatches: [PDFTextMatch] = []
-        for pattern in datePatterns {
+        for pattern in DateParsingUtility.datePatterns {
             allMatches.append(contentsOf: findPattern(pattern, in: document))
         }
 

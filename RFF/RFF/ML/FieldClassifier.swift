@@ -61,12 +61,8 @@ actor FieldClassifier {
         ])
         keywords[.invoiceNumber] = ["invoice", "inv", "number", "no.", "#"]
 
-        // Date patterns
-        let datePatterns = [
-            #"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}"#,            // 01/15/2024
-            #"\d{4}[/-]\d{1,2}[/-]\d{1,2}"#,              // 2024-01-15
-            #"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4}"#  // January 15, 2024
-        ]
+        // Date patterns - use centralized patterns from DateParsingUtility
+        let datePatterns = DateParsingUtility.datePatterns
         patterns[.invoiceDate] = Self.compilePatterns(datePatterns)
         keywords[.invoiceDate] = ["date", "invoice date", "issued"]
 

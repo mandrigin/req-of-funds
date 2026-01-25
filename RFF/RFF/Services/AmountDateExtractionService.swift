@@ -343,12 +343,23 @@ actor AmountDateExtractionService {
         let calendar = Calendar.current
 
         for match in matches {
-            if let date = match.date,
-               let matchRange = Range(match.range, in: text) {
+            if let matchRange = Range(match.range, in: text) {
+                let rawText = String(text[matchRange])
+
+                // For dot-separated dates, use smart parsing to handle European format
+                // NSDataDetector may incorrectly parse DD.MM.YYYY as MM.DD.YYYY
+                let parsedDate: Date?
+                if rawText.contains(".") {
+                    parsedDate = DateParsingUtility.parseDotSeparatedDate(rawText)
+                } else {
+                    parsedDate = match.date
+                }
+
+                guard let date = parsedDate else { continue }
+
                 // Filter dates within reasonable range (-5 to +10 years)
                 let yearDiff = calendar.dateComponents([.year], from: now, to: date).year ?? 0
                 if yearDiff >= -5 && yearDiff <= 10 {
-                    let rawText = String(text[matchRange])
                     let extractedDate = ExtractedDate(
                         date: date,
                         rawText: rawText,
