@@ -299,7 +299,7 @@ actor DocumentOCRService {
             let textObs = TextObservation(
                 text: topCandidate.string,
                 confidence: topCandidate.confidence,
-                boundingBox: observation.boundingBox
+                boundingBox: observation.boundingBox.cgRect
             )
             textObservations.append(textObs)
             textLines.append(topCandidate.string)
