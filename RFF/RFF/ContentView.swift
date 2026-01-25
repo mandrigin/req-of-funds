@@ -26,6 +26,21 @@ enum CurrencyFilter: Hashable {
     }
 }
 
+/// Recipient filter for document list
+enum RecipientFilter: Hashable {
+    case all
+    case specific(String)
+
+    var displayName: String {
+        switch self {
+        case .all:
+            return "All Recipients"
+        case .specific(let recipient):
+            return recipient
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
 
@@ -49,6 +64,7 @@ struct ContentView: View {
 
     @State private var selectedFilter: DocumentFilter = .inbox
     @State private var selectedCurrencyFilter: CurrencyFilter = .all
+    @State private var selectedRecipientFilter: RecipientFilter = .all
 
     /// Documents to display based on current filters
     private var documents: [RFFDocument] {
@@ -63,11 +79,20 @@ struct ContentView: View {
         }
 
         // Apply currency filter
+        let currencyFiltered: [RFFDocument]
         switch selectedCurrencyFilter {
         case .all:
-            return statusFiltered
+            currencyFiltered = statusFiltered
         case .specific(let currency):
-            return statusFiltered.filter { $0.currency == currency }
+            currencyFiltered = statusFiltered.filter { $0.currency == currency }
+        }
+
+        // Apply recipient filter
+        switch selectedRecipientFilter {
+        case .all:
+            return currencyFiltered
+        case .specific(let recipient):
+            return currencyFiltered.filter { $0.recipient == recipient }
         }
     }
 
@@ -85,6 +110,22 @@ struct ContentView: View {
         let currencies = Set(statusFiltered.map { $0.currency })
         return Currency.allCases.filter { currencies.contains($0) }
     }
+
+    /// Available recipients in the current document set (for filter menu)
+    private var availableRecipients: [String] {
+        let statusFiltered: [RFFDocument]
+        switch selectedFilter {
+        case .inbox:
+            statusFiltered = inboxDocuments
+        case .confirmed:
+            statusFiltered = confirmedDocuments
+        case .paid:
+            statusFiltered = paidDocuments
+        }
+        let recipients = Set(statusFiltered.compactMap { $0.recipient })
+        return recipients.sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+    }
+
     @State private var isImportingPDF = false
     @State private var importError: String?
     @State private var showingImportError = false
@@ -153,50 +194,6 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             VStack(spacing: 0) {
-                // Filter tabs at top of library
-                HStack {
-                    Picker("Filter", selection: $selectedFilter) {
-                        ForEach(DocumentFilter.allCases, id: \.self) { filter in
-                            Text(filter.rawValue).tag(filter)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 270)
-
-                    // Currency filter menu
-                    Menu {
-                        Button {
-                            selectedCurrencyFilter = .all
-                        } label: {
-                            if case .all = selectedCurrencyFilter {
-                                Label("All Currencies", systemImage: "checkmark")
-                            } else {
-                                Text("All Currencies")
-                            }
-                        }
-
-                        Divider()
-
-                        ForEach(Currency.allCases) { currency in
-                            Button {
-                                selectedCurrencyFilter = .specific(currency)
-                            } label: {
-                                if case .specific(let selected) = selectedCurrencyFilter, selected == currency {
-                                    Label("\(currency.symbol) \(currency.displayName)", systemImage: "checkmark")
-                                } else {
-                                    Text("\(currency.symbol) \(currency.displayName)")
-                                }
-                            }
-                        }
-                    } label: {
-                        Label(currencyFilterLabel, systemImage: "dollarsign.circle")
-                    }
-
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-
                 // Table view with columns
                 Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
                 TableColumn("Title", value: \.title) { document in
@@ -304,6 +301,12 @@ struct ContentView: View {
                 // Clear selection when switching filters
                 selectedDocuments.removeAll()
                 selectedDocument = nil
+                // Reset recipient filter if selected recipient no longer available
+                if case .specific(let recipient) = selectedRecipientFilter {
+                    if !availableRecipients.contains(recipient) {
+                        selectedRecipientFilter = .all
+                    }
+                }
             }
             .contextMenu(forSelectionType: RFFDocument.ID.self) { ids in
                 if !ids.isEmpty {
@@ -323,20 +326,6 @@ struct ContentView: View {
                     }
                     .disabled(docsWithText.isEmpty || anyAnalyzing)
 
-                    // AI Analyze (Local) - on-device analysis (macOS 26+)
-                    if AIAnalysisService.shared.isFoundationModelsAvailable() {
-                        Button {
-                            performBatchAIAnalysis(documentIds: ids, provider: .foundation)
-                        } label: {
-                            if ids.count == 1 {
-                                Label("AI Analyze (Local)", systemImage: "desktopcomputer")
-                            } else {
-                                Label("AI Analyze (Local) (\(docsWithText.count))", systemImage: "desktopcomputer")
-                            }
-                        }
-                        .disabled(docsWithText.isEmpty || anyAnalyzing)
-                    }
-
                     Divider()
 
                     Button(role: .destructive) {
@@ -353,6 +342,76 @@ struct ContentView: View {
             }
             .tableColumnVisibility(configuration: columnConfiguration)
             .toolbar {
+                ToolbarItemGroup(placement: .navigation) {
+                    Picker("Filter", selection: $selectedFilter) {
+                        ForEach(DocumentFilter.allCases, id: \.self) { filter in
+                            Text(filter.rawValue).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 270)
+
+                    // Currency filter menu
+                    Menu {
+                        Button {
+                            selectedCurrencyFilter = .all
+                        } label: {
+                            if case .all = selectedCurrencyFilter {
+                                Label("All Currencies", systemImage: "checkmark")
+                            } else {
+                                Text("All Currencies")
+                            }
+                        }
+
+                        Divider()
+
+                        ForEach(Currency.allCases) { currency in
+                            Button {
+                                selectedCurrencyFilter = .specific(currency)
+                            } label: {
+                                if case .specific(let selected) = selectedCurrencyFilter, selected == currency {
+                                    Label("\(currency.symbol) \(currency.displayName)", systemImage: "checkmark")
+                                } else {
+                                    Text("\(currency.symbol) \(currency.displayName)")
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(currencyFilterLabel, systemImage: "dollarsign.circle")
+                    }
+
+                    // Recipient filter menu
+                    if !availableRecipients.isEmpty {
+                        Menu {
+                            Button {
+                                selectedRecipientFilter = .all
+                            } label: {
+                                if case .all = selectedRecipientFilter {
+                                    Label("All Recipients", systemImage: "checkmark")
+                                } else {
+                                    Text("All Recipients")
+                                }
+                            }
+
+                            Divider()
+
+                            ForEach(availableRecipients, id: \.self) { recipient in
+                                Button {
+                                    selectedRecipientFilter = .specific(recipient)
+                                } label: {
+                                    if case .specific(let selected) = selectedRecipientFilter, selected == recipient {
+                                        Label(recipient, systemImage: "checkmark")
+                                    } else {
+                                        Text(recipient)
+                                    }
+                                }
+                            }
+                        } label: {
+                            Label(recipientFilterLabel, systemImage: "person.crop.circle")
+                        }
+                    }
+                }
+
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button(action: { isImportingPDF = true }) {
                         Label("Import PDF", systemImage: "doc.badge.plus")
@@ -648,6 +707,19 @@ struct ContentView: View {
         }
     }
 
+    private var recipientFilterLabel: String {
+        switch selectedRecipientFilter {
+        case .all:
+            return "All"
+        case .specific(let recipient):
+            // Truncate long recipient names for the label
+            if recipient.count > 15 {
+                return String(recipient.prefix(12)) + "..."
+            }
+            return recipient
+        }
+    }
+
     private var emptyStateTitle: String {
         switch selectedFilter {
         case .inbox:
@@ -745,7 +817,7 @@ struct ContentView: View {
 
     // MARK: - Batch AI Analysis
 
-    private func performBatchAIAnalysis(documentIds: Set<RFFDocument.ID>, provider: AIProvider? = nil) {
+    private func performBatchAIAnalysis(documentIds: Set<RFFDocument.ID>) {
         // Get documents with extracted text
         let docsToAnalyze = documents.filter { doc in
             documentIds.contains(doc.id) && !(doc.extractedText ?? "").isEmpty
@@ -760,7 +832,7 @@ struct ContentView: View {
         }
 
         Task {
-            await AIAnalysisProgressManager.shared.startBatchAnalysis(documents: docData, provider: provider)
+            await AIAnalysisProgressManager.shared.startBatchAnalysis(documents: docData)
         }
     }
 
@@ -1093,7 +1165,12 @@ struct DocumentDetailView: View {
                         let isAnalyzing = AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id)
 
                         Button {
-                            performAIAnalysis()
+                            Task {
+                                await AIAnalysisProgressManager.shared.startAnalysis(
+                                    documentId: document.id,
+                                    text: document.extractedText ?? ""
+                                )
+                            }
                         } label: {
                             HStack {
                                 if isAnalyzing {
@@ -1589,9 +1666,6 @@ struct DocumentDetailView: View {
                 documentId: document.id,
                 text: extractedText
             )
-            // Check for results immediately after analysis completes
-            // This ensures the result sheet shows even if .onChange() doesn't fire
-            checkForAIResults()
         }
     }
 
