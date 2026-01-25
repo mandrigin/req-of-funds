@@ -90,10 +90,8 @@ final class PDFTextFinder {
 
                     let matchedText = nsString.substring(with: result.range)
 
-                    // Find the selection for this text on the page
-                    if let selection = document.findString(matchedText, fromSelection: nil, withOptions: []),
-                       let firstPage = selection.pages.first,
-                       document.index(for: firstPage) == pageIndex {
+                    // Get selection at the exact character range where the regex matched
+                    if let selection = page.selection(for: result.range) {
                         matches.append(PDFTextMatch(
                             pageIndex: pageIndex,
                             selection: selection,
