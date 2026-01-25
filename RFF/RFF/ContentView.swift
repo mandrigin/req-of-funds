@@ -458,6 +458,7 @@ struct ContentView: View {
         } detail: {
             if let document = selectedDocument {
                 DocumentDetailView(document: document)
+                    .id(document.id)
             } else {
                 ContentUnavailableView(
                     "No Document Selected",
