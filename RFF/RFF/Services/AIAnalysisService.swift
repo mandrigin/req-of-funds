@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationModels)
+import FoundationModels
+#endif
 
 /// AI provider options
 enum AIProvider: String, CaseIterable, Codable {
@@ -263,11 +266,15 @@ actor AIAnalysisService {
 
     /// Check if Foundation Models (Apple Intelligence) is available on this system
     nonisolated func isFoundationModelsAvailable() -> Bool {
+        #if canImport(FoundationModels)
         if #available(macOS 26.0, *) {
-            // On macOS 26+, Foundation Models are available
-            // TODO: Add actual availability check using FoundationModels framework
-            return true
+            // Check if Apple Intelligence is actually available on this device
+            let model = SystemLanguageModel.default
+            if case .available = model.availability {
+                return true
+            }
         }
+        #endif
         return false
     }
 
@@ -482,14 +489,40 @@ actor AIAnalysisService {
     /// Call Apple Foundation Models for on-device AI inference
     /// Requires macOS 26.0 or later with Apple Intelligence
     private func callFoundation(prompt: String) async throws -> String {
-        guard isFoundationModelsAvailable() else {
+        #if canImport(FoundationModels)
+        guard #available(macOS 26.0, *) else {
             throw AIAnalysisError.foundationModelsNotAvailable
         }
 
-        // TODO: Implement actual Foundation Models API call
-        // This will be implemented in rff-twmya: Implement Foundation Models API client
-        // For now, throw an error indicating the feature is coming soon
-        throw AIAnalysisError.foundationModelsError("Foundation Models support is coming soon. Please use another provider.")
+        // Check availability and provide specific error messages
+        let model = SystemLanguageModel.default
+        switch model.availability {
+        case .available:
+            break  // Continue with generation
+        case .unavailable(.deviceNotEligible):
+            throw AIAnalysisError.foundationModelsError("This device is not eligible for Apple Intelligence.")
+        case .unavailable(.appleIntelligenceNotEnabled):
+            throw AIAnalysisError.foundationModelsError("Apple Intelligence is not enabled. Please enable it in System Settings > Apple Intelligence & Siri.")
+        case .unavailable(.modelNotReady):
+            throw AIAnalysisError.foundationModelsError("The on-device model is not ready. It may still be downloading.")
+        case .unavailable(let reason):
+            throw AIAnalysisError.foundationModelsError("Apple Intelligence is unavailable: \(reason)")
+        }
+
+        do {
+            // Create a language model session for text generation
+            let session = LanguageModelSession()
+
+            // Generate response using the on-device model
+            let response = try await session.respond(to: prompt)
+
+            return response.content
+        } catch {
+            throw AIAnalysisError.foundationModelsError(error.localizedDescription)
+        }
+        #else
+        throw AIAnalysisError.foundationModelsNotAvailable
+        #endif
     }
 
     private func callOpenAI(prompt: String, apiKey: String) async throws -> String {
