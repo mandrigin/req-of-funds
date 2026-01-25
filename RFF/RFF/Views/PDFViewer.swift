@@ -31,7 +31,7 @@ enum FieldHighlightColor {
             (.invoiceDate, NSColor.systemBlue, "Date"),
             (.vendor, NSColor.systemOrange, "Vendor"),
             (.invoiceNumber, NSColor.systemPurple, "Invoice #"),
-            (.customerName, NSColor.systemTeal, "Customer"),
+            (.customerName, NSColor.systemTeal, "Recipient"),
             (.lineItemDescription, NSColor.systemGray, "Line Item"),
             (.currency, NSColor.systemIndigo, "Terms"),
         ]

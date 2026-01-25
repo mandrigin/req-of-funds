@@ -687,7 +687,7 @@ struct AISuggestionRow: View {
         case "invoice_date": return "Invoice Date"
         case "due_date": return "Due Date"
         case "vendor": return "Vendor"
-        case "customer_name": return "Customer"
+        case "customer_name": return "Recipient"
         case "subtotal": return "Subtotal"
         case "tax": return "Tax"
         case "total": return "Total"

@@ -832,6 +832,9 @@ struct DocumentDetailView: View {
     @State private var showingPaidSheet = false
     @State private var selectedPaidDate = Date()
 
+    // Un-confirm state
+    @State private var showingUnconfirmAlert = false
+
     // Schema Editor state
     @State private var showingSchemaEditor = false
 
@@ -865,6 +868,11 @@ struct DocumentDetailView: View {
 
     /// Check if document can be marked as paid (is in confirmed state)
     private var canMarkAsPaid: Bool {
+        document.status == .approved || document.status == .completed
+    }
+
+    /// Check if document can be un-confirmed (is in confirmed state but not paid)
+    private var canUnconfirm: Bool {
         document.status == .approved || document.status == .completed
     }
 
@@ -926,6 +934,26 @@ struct DocumentDetailView: View {
             name: .documentStatusChanged,
             object: nil,
             userInfo: ["documentId": document.id, "status": RFFStatus.approved]
+        )
+    }
+
+    /// Un-confirm the document: clear confirmed values and move back to inbox
+    private func unconfirmDocument() {
+        // Clear confirmed values
+        document.confirmedOrganization = nil
+        document.confirmedAmount = nil
+        document.confirmedDueDate = nil
+        document.confirmedAt = nil
+
+        // Transition status back to pending
+        document.status = .pending
+        document.updatedAt = Date()
+
+        // Post notification for UI updates
+        NotificationCenter.default.post(
+            name: .documentStatusChanged,
+            object: nil,
+            userInfo: ["documentId": document.id, "status": RFFStatus.pending]
         )
     }
 
@@ -1189,6 +1217,15 @@ struct DocumentDetailView: View {
                     .tint(.green)
                 }
 
+                if canUnconfirm {
+                    Button {
+                        showingUnconfirmAlert = true
+                    } label: {
+                        Label("Un-confirm", systemImage: "arrow.uturn.backward")
+                    }
+                    .buttonStyle(.bordered)
+                }
+
                 if canMarkAsPaid {
                     Button {
                         selectedPaidDate = Date()
@@ -1213,6 +1250,14 @@ struct DocumentDetailView: View {
             Button("OK") { }
         } message: {
             Text(validationErrors.joined(separator: "\n"))
+        }
+        .alert("Un-confirm Document", isPresented: $showingUnconfirmAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Un-confirm", role: .destructive) {
+                unconfirmDocument()
+            }
+        } message: {
+            Text("Move this document back to the Inbox for editing? The confirmed values will be cleared.")
         }
         .alert("AI Analysis Error", isPresented: $showingAIError) {
             Button("OK") { }
@@ -2054,7 +2099,7 @@ struct LibraryAISuggestionRow: View {
         case "invoice_date": return "Invoice Date"
         case "due_date": return "Due Date"
         case "vendor": return "Vendor"
-        case "customer_name": return "Customer"
+        case "customer_name": return "Recipient"
         case "subtotal": return "Subtotal"
         case "tax": return "Tax"
         case "total": return "Total"
@@ -2619,7 +2664,7 @@ struct TextEntrySheet: View {
         case "invoice_date": return "Invoice Date"
         case "due_date": return "Due Date"
         case "vendor": return "Vendor"
-        case "customer_name": return "Customer"
+        case "customer_name": return "Recipient"
         case "subtotal": return "Subtotal"
         case "tax": return "Tax"
         case "total": return "Total"

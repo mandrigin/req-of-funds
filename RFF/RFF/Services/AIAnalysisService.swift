@@ -44,8 +44,21 @@ struct AIFieldSuggestion: Identifiable, Codable, Sendable {
     }
 
     /// Convert to InvoiceFieldType if valid
+    /// Handles aliases for backwards compatibility
     var invoiceFieldType: InvoiceFieldType? {
-        InvoiceFieldType(rawValue: fieldType)
+        // Try direct match first
+        if let fieldType = InvoiceFieldType(rawValue: fieldType) {
+            return fieldType
+        }
+        // Handle aliases
+        switch fieldType.lowercased() {
+        case "recipient", "recipient_name", "buyer", "buyer_name", "bill_to":
+            return .customerName
+        case "seller", "seller_name", "from":
+            return .vendor
+        default:
+            return nil
+        }
     }
 }
 
@@ -340,7 +353,7 @@ actor AIAnalysisService {
         - Invoice date (invoice_date) - format as ISO 8601 (YYYY-MM-DD)
         - Due date (due_date) - format as ISO 8601 (YYYY-MM-DD)
         - Vendor/seller name (vendor)
-        - Customer/buyer name (customer_name)
+        - Recipient/buyer name (customer_name)
         - Subtotal before tax (subtotal) - numeric value only
         - Tax amount (tax) - numeric value only
         - Total amount (total) - numeric value only
