@@ -10,6 +10,36 @@ enum RFFStatus: String, Codable, CaseIterable {
     case completed = "completed"
 }
 
+/// Supported currencies for RFF documents
+enum Currency: String, Codable, CaseIterable, Identifiable {
+    case usd = "USD"
+    case eur = "EUR"
+    case gbp = "GBP"
+
+    var id: String { rawValue }
+
+    /// Currency symbol
+    var symbol: String {
+        switch self {
+        case .usd: return "$"
+        case .eur: return "€"
+        case .gbp: return "£"
+        }
+    }
+
+    /// Full currency name
+    var displayName: String {
+        switch self {
+        case .usd: return "US Dollar"
+        case .eur: return "Euro"
+        case .gbp: return "British Pound"
+        }
+    }
+
+    /// Currency code for formatting
+    var currencyCode: String { rawValue }
+}
+
 /// Main document model for RFF (Request for Funding) documents
 @Model
 final class RFFDocument {
@@ -24,6 +54,9 @@ final class RFFDocument {
 
     /// Requested funding amount
     var amount: Decimal
+
+    /// Currency for the amount
+    var currency: Currency
 
     /// Deadline for the request
     var dueDate: Date
@@ -72,6 +105,7 @@ final class RFFDocument {
         title: String,
         requestingOrganization: String,
         amount: Decimal,
+        currency: Currency = .usd,
         dueDate: Date,
         status: RFFStatus = .pending,
         extractedText: String? = nil,
@@ -82,6 +116,7 @@ final class RFFDocument {
         self.title = title
         self.requestingOrganization = requestingOrganization
         self.amount = amount
+        self.currency = currency
         self.dueDate = dueDate
         self.status = status
         self.extractedText = extractedText

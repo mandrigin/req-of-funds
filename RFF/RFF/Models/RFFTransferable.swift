@@ -78,7 +78,7 @@ extension RFFDocumentData: Transferable {
         // Amount
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
-        formatter.currencyCode = "USD"
+        formatter.currencyCode = currency.currencyCode
         let amountStr = formatter.string(from: amount as NSDecimalNumber) ?? "\(amount)"
         let amountString = NSAttributedString(string: "Amount: \(amountStr)", attributes: attributes)
         amountString.draw(at: CGPoint(x: 50, y: yPosition))
@@ -137,6 +137,7 @@ extension RFFDocumentData: Transferable {
         document.extractedText = result.fullText
         document.requestingOrganization = entities.organizationName ?? ""
         document.amount = entities.amount ?? Decimal.zero
+        document.currency = entities.currency ?? .usd
         document.dueDate = entities.dueDate ?? Date().addingTimeInterval(7 * 24 * 60 * 60)
 
         // Create bookmark for the source PDF
@@ -178,6 +179,7 @@ extension RFFDocumentData: Transferable {
         document.extractedText = result.fullText
         document.requestingOrganization = entities.organizationName ?? ""
         document.amount = entities.amount ?? Decimal.zero
+        document.currency = entities.currency ?? .usd
         document.dueDate = entities.dueDate ?? Date().addingTimeInterval(7 * 24 * 60 * 60)
 
         return document
