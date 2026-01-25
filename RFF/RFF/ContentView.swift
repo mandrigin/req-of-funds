@@ -1,9 +1,15 @@
 import SwiftUI
 import SwiftData
+import PDFKit
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var documents: [RFFDocument]
+    @State private var isImportingPDF = false
+    @State private var importError: String?
+    @State private var showingImportError = false
+
+    private let pdfService = PDFService()
 
     var body: some View {
         NavigationSplitView {
@@ -26,6 +32,11 @@ struct ContentView: View {
             .navigationSplitViewColumnWidth(min: 200, ideal: 250)
             .toolbar {
                 ToolbarItem {
+                    Button(action: { isImportingPDF = true }) {
+                        Label("Import PDF", systemImage: "doc.badge.plus")
+                    }
+                }
+                ToolbarItem {
                     Button(action: addDocument) {
                         Label("Add Document", systemImage: "plus")
                     }
@@ -33,6 +44,56 @@ struct ContentView: View {
             }
         } detail: {
             Text("Select a document")
+        }
+        .fileImporter(
+            isPresented: $isImportingPDF,
+            allowedContentTypes: [.pdf],
+            allowsMultipleSelection: false
+        ) { result in
+            handlePDFImport(result)
+        }
+        .alert("Import Error", isPresented: $showingImportError) {
+            Button("OK") { }
+        } message: {
+            Text(importError ?? "Unknown error")
+        }
+    }
+
+    private func handlePDFImport(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else { return }
+
+            // Start accessing security-scoped resource
+            guard url.startAccessingSecurityScopedResource() else {
+                importError = "Unable to access the selected file."
+                showingImportError = true
+                return
+            }
+            defer { url.stopAccessingSecurityScopedResource() }
+
+            do {
+                let extractionResult = try pdfService.extractContent(from: url)
+
+                withAnimation {
+                    let newDocument = RFFDocument(
+                        title: extractionResult.title ?? url.deletingPathExtension().lastPathComponent,
+                        requestingOrganization: extractionResult.author ?? "Unknown",
+                        amount: Decimal(0),
+                        dueDate: Date().addingTimeInterval(30 * 24 * 60 * 60),
+                        extractedText: extractionResult.text,
+                        documentPath: url.path
+                    )
+                    modelContext.insert(newDocument)
+                }
+            } catch {
+                importError = error.localizedDescription
+                showingImportError = true
+            }
+
+        case .failure(let error):
+            importError = error.localizedDescription
+            showingImportError = true
         }
     }
 
@@ -59,41 +120,116 @@ struct ContentView: View {
 
 struct DocumentDetailView: View {
     let document: RFFDocument
+    @State private var selectedTab = 0
+    @State private var pdfDocument: PDFDocument?
+    @State private var highlights: [HighlightRegion] = []
+
+    private let textFinder = PDFTextFinder()
 
     var body: some View {
-        Form {
-            Section("Document Info") {
-                LabeledContent("Title", value: document.title)
-                LabeledContent("Organization", value: document.requestingOrganization)
-                LabeledContent("Amount", value: document.amount, format: .currency(code: "USD"))
-                LabeledContent("Due Date", value: document.dueDate, format: .dateTime)
-                LabeledContent("Status", value: document.status.rawValue.capitalized)
-            }
-
-            if let extractedText = document.extractedText, !extractedText.isEmpty {
-                Section("Extracted Text") {
-                    Text(extractedText)
-                        .font(.body)
+        TabView(selection: $selectedTab) {
+            // Info Tab
+            Form {
+                Section("Document Info") {
+                    LabeledContent("Title", value: document.title)
+                    LabeledContent("Organization", value: document.requestingOrganization)
+                    LabeledContent("Amount", value: document.amount, format: .currency(code: "USD"))
+                    LabeledContent("Due Date", value: document.dueDate, format: .dateTime)
+                    LabeledContent("Status", value: document.status.rawValue.capitalized)
                 }
-            }
 
-            Section("Line Items") {
-                if document.lineItems.isEmpty {
-                    Text("No line items")
-                        .foregroundStyle(.secondary)
-                } else {
-                    ForEach(document.lineItems) { item in
-                        HStack {
-                            Text(item.itemDescription)
-                            Spacer()
-                            Text(item.total, format: .currency(code: "USD"))
+                if let extractedText = document.extractedText, !extractedText.isEmpty {
+                    Section("Extracted Text") {
+                        ScrollView {
+                            Text(extractedText)
+                                .font(.body)
+                                .textSelection(.enabled)
+                        }
+                        .frame(maxHeight: 300)
+                    }
+                }
+
+                Section("Line Items") {
+                    if document.lineItems.isEmpty {
+                        Text("No line items")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(document.lineItems) { item in
+                            HStack {
+                                Text(item.itemDescription)
+                                Spacer()
+                                Text(item.total, format: .currency(code: "USD"))
+                            }
                         }
                     }
                 }
             }
+            .padding()
+            .tabItem {
+                Label("Info", systemImage: "info.circle")
+            }
+            .tag(0)
+
+            // PDF Viewer Tab
+            if document.documentPath != nil {
+                VStack {
+                    HStack {
+                        Button("Highlight Amounts") {
+                            highlightAmounts()
+                        }
+                        Button("Highlight Dates") {
+                            highlightDates()
+                        }
+                        Button("Clear Highlights") {
+                            highlights = []
+                        }
+                    }
+                    .padding(.horizontal)
+
+                    PDFViewer(document: pdfDocument, highlights: highlights)
+                }
+                .tabItem {
+                    Label("PDF", systemImage: "doc.richtext")
+                }
+                .tag(1)
+            }
         }
-        .padding()
         .navigationTitle(document.title)
+        .onAppear {
+            loadPDF()
+        }
+    }
+
+    private func loadPDF() {
+        guard let path = document.documentPath else { return }
+        let url = URL(fileURLWithPath: path)
+        pdfDocument = PDFDocument(url: url)
+    }
+
+    private func highlightAmounts() {
+        guard let pdf = pdfDocument else { return }
+        let matches = textFinder.findAmounts(in: pdf)
+        highlights = matches.map { match in
+            HighlightRegion(
+                pageIndex: match.pageIndex,
+                bounds: match.bounds,
+                color: NSColor.green.withAlphaComponent(0.3),
+                label: match.text
+            )
+        }
+    }
+
+    private func highlightDates() {
+        guard let pdf = pdfDocument else { return }
+        let matches = textFinder.findDates(in: pdf)
+        highlights = matches.map { match in
+            HighlightRegion(
+                pageIndex: match.pageIndex,
+                bounds: match.bounds,
+                color: NSColor.blue.withAlphaComponent(0.3),
+                label: match.text
+            )
+        }
     }
 }
 
