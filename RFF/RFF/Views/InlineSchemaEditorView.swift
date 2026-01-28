@@ -269,9 +269,9 @@ struct PDFViewerWithInteractiveOverlay: NSViewRepresentable {
         doubleClickRecognizer.numberOfClicksRequired = 2
         pdfView.addGestureRecognizer(doubleClickRecognizer)
 
-        // Add overlay for regions
+        // Use page overlay provider for correct coordinate handling
         context.coordinator.pdfView = pdfView
-        context.coordinator.updateOverlays()
+        pdfView.pageOverlayViewProvider = context.coordinator
 
         return pdfView
     }
@@ -282,7 +282,11 @@ struct PDFViewerWithInteractiveOverlay: NSViewRepresentable {
         }
         context.coordinator.regions = regions
         context.coordinator.selectedRegion = selectedRegion
-        context.coordinator.updateOverlays()
+
+        // Force overlay refresh
+        pdfView.pageOverlayViewProvider = nil
+        pdfView.pageOverlayViewProvider = context.coordinator
+        pdfView.layoutDocumentView()
     }
 
     func makeCoordinator() -> Coordinator {
@@ -294,13 +298,12 @@ struct PDFViewerWithInteractiveOverlay: NSViewRepresentable {
         )
     }
 
-    class Coordinator: NSObject {
+    class Coordinator: NSObject, PDFPageOverlayViewProvider {
         var pdfView: PDFView?
         var regions: [DetectedTextRegion]
         var selectedRegion: DetectedTextRegion?
         let onRegionTap: (DetectedTextRegion) -> Void
         let onRegionDoubleTap: (DetectedTextRegion) -> Void
-        var overlayViews: [NSView] = []
 
         init(
             regions: [DetectedTextRegion],
@@ -314,39 +317,23 @@ struct PDFViewerWithInteractiveOverlay: NSViewRepresentable {
             self.onRegionDoubleTap = onRegionDoubleTap
         }
 
-        func updateOverlays() {
-            // Remove existing overlays
-            overlayViews.forEach { $0.removeFromSuperview() }
-            overlayViews.removeAll()
+        // MARK: - PDFPageOverlayViewProvider
 
-            guard let pdfView = pdfView,
-                  let document = pdfView.document else { return }
+        func pdfView(_ view: PDFView, overlayViewFor page: PDFPage) -> NSView? {
+            guard let document = view.document else { return nil }
+            let pageIndex = document.index(for: page)
 
-            for region in regions {
-                guard region.pageIndex < document.pageCount,
-                      let page = document.page(at: region.pageIndex) else { continue }
+            let pageRegions = regions.filter { $0.pageIndex == pageIndex }
+            guard !pageRegions.isEmpty else { return nil }
 
-                let pageBounds = page.bounds(for: .mediaBox)
-                let pdfRect = CGRect(
-                    x: region.boundingBox.x * pageBounds.width,
-                    y: region.boundingBox.y * pageBounds.height,
-                    width: region.boundingBox.width * pageBounds.width,
-                    height: region.boundingBox.height * pageBounds.height
-                )
-
-                // Convert to view coordinates
-                let viewRect = pdfView.convert(pdfRect, from: page)
-
-                // Create overlay view
-                let overlay = RegionOverlayView(frame: viewRect)
-                overlay.region = region
-                overlay.isSelected = selectedRegion?.id == region.id
-                overlay.wantsLayer = true
-
-                pdfView.documentView?.addSubview(overlay)
-                overlayViews.append(overlay)
-            }
+            return InteractiveRegionOverlayNSView(
+                regions: pageRegions,
+                selectedRegion: selectedRegion,
+                page: page
+            )
         }
+
+        // MARK: - Click Handling
 
         @objc func handleClick(_ recognizer: NSClickGestureRecognizer) {
             guard let pdfView = pdfView else { return }
@@ -368,18 +355,21 @@ struct PDFViewerWithInteractiveOverlay: NSViewRepresentable {
 
         private func findRegion(at point: CGPoint) -> DetectedTextRegion? {
             guard let pdfView = pdfView,
-                  let document = pdfView.document,
-                  let currentPage = pdfView.currentPage else { return nil }
+                  let document = pdfView.document else { return nil }
 
-            let pageIndex = document.index(for: currentPage)
+            // Find which page was clicked
+            guard let clickedPage = pdfView.page(for: point, nearest: true) else { return nil }
+            let pageIndex = document.index(for: clickedPage)
 
-            let pagePoint = pdfView.convert(point, to: currentPage)
-            let pageBounds = currentPage.bounds(for: .mediaBox)
+            // Convert click point to page coordinates (PDF uses bottom-left origin)
+            let pagePoint = pdfView.convert(point, to: clickedPage)
+            let pageBounds = clickedPage.bounds(for: .mediaBox)
 
-            let normalizedPoint = CGPoint(
-                x: pagePoint.x / pageBounds.width,
-                y: pagePoint.y / pageBounds.height
-            )
+            // Normalize to 0-1 range (same coordinate system as Vision)
+            let normalizedX = pagePoint.x / pageBounds.width
+            let normalizedY = pagePoint.y / pageBounds.height
+
+            let normalizedPoint = CGPoint(x: normalizedX, y: normalizedY)
 
             return regions.first { region in
                 region.pageIndex == pageIndex &&
@@ -389,49 +379,108 @@ struct PDFViewerWithInteractiveOverlay: NSViewRepresentable {
     }
 }
 
-// MARK: - Region Overlay View (NSView)
+// MARK: - Interactive Region Overlay NSView
 
-class RegionOverlayView: NSView {
-    var region: DetectedTextRegion?
-    var isSelected: Bool = false {
-        didSet { needsDisplay = true }
+/// NSView overlay for PDF pages that draws detected text regions
+/// Used by PDFPageOverlayViewProvider for correct coordinate handling
+private class InteractiveRegionOverlayNSView: NSView {
+    let regions: [DetectedTextRegion]
+    let selectedRegion: DetectedTextRegion?
+    let page: PDFPage
+
+    init(regions: [DetectedTextRegion], selectedRegion: DetectedTextRegion?, page: PDFPage) {
+        self.regions = regions
+        self.selectedRegion = selectedRegion
+        self.page = page
+        super.init(frame: .zero)
+        self.wantsLayer = true
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
 
-        guard let region = region else { return }
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
 
-        let fillColor: NSColor
-        let strokeColor: NSColor
+        let pageBounds = page.bounds(for: .mediaBox)
 
-        if let fieldType = region.mappedFieldType {
-            fillColor = colorForFieldType(fieldType).withAlphaComponent(0.3)
-            strokeColor = colorForFieldType(fieldType)
-        } else {
-            fillColor = NSColor.gray.withAlphaComponent(0.2)
-            strokeColor = isSelected ? NSColor.controlAccentColor : NSColor.gray
+        for region in regions {
+            // Convert normalized Vision coordinates to view coordinates
+            // Vision: origin at bottom-left, Y increases upward (0-1 range)
+            // NSView overlay: matches page coordinate system (bottom-left origin)
+            // But we need to flip Y because the overlay is rendered with top-left origin in practice
+            let viewRect = convertToViewCoordinates(region.boundingBox, pageBounds: pageBounds)
+
+            let isSelected = selectedRegion?.id == region.id
+
+            // Draw fill
+            let fillColor: NSColor
+            let strokeColor: NSColor
+
+            if let fieldType = region.mappedFieldType {
+                fillColor = colorForFieldType(fieldType).withAlphaComponent(0.3)
+                strokeColor = colorForFieldType(fieldType)
+            } else {
+                fillColor = NSColor.gray.withAlphaComponent(0.2)
+                strokeColor = isSelected ? NSColor.controlAccentColor : NSColor.gray
+            }
+
+            context.setFillColor(fillColor.cgColor)
+            context.fill(viewRect)
+
+            context.setStrokeColor(strokeColor.cgColor)
+            context.setLineWidth(isSelected ? 2 : 1)
+            context.stroke(viewRect)
+
+            // Draw field label if mapped
+            if let fieldType = region.mappedFieldType {
+                let label = fieldType.displayName
+                let attrs: [NSAttributedString.Key: Any] = [
+                    .font: NSFont.systemFont(ofSize: 9, weight: .medium),
+                    .foregroundColor: NSColor.white,
+                    .backgroundColor: strokeColor
+                ]
+                let labelSize = label.size(withAttributes: attrs)
+                let labelRect = CGRect(
+                    x: viewRect.minX,
+                    y: viewRect.maxY - labelSize.height - 2,
+                    width: labelSize.width + 4,
+                    height: labelSize.height
+                )
+                strokeColor.setFill()
+                context.fill(labelRect)
+                label.draw(at: CGPoint(x: labelRect.minX + 2, y: labelRect.minY), withAttributes: attrs)
+            }
+        }
+    }
+
+    /// Convert normalized Vision coordinates to view coordinates
+    /// Vision uses bottom-left origin (Y=0 at bottom, Y=1 at top)
+    /// The overlay view coordinate system needs Y flipped for correct rendering
+    private func convertToViewCoordinates(_ box: NormalizedRegion, pageBounds: CGRect) -> CGRect {
+        // Guard against invalid bounds
+        guard pageBounds.width > 0, pageBounds.height > 0,
+              bounds.width > 0, bounds.height > 0 else {
+            return .zero
         }
 
-        fillColor.setFill()
-        let path = NSBezierPath(roundedRect: bounds.insetBy(dx: 1, dy: 1), xRadius: 2, yRadius: 2)
-        path.fill()
+        let scaleX = bounds.width / pageBounds.width
+        let scaleY = bounds.height / pageBounds.height
 
-        strokeColor.setStroke()
-        path.lineWidth = isSelected ? 2 : 1
-        path.stroke()
+        // Vision Y=0 is bottom, Y=1 is top
+        // Overlay view: Y=0 is top (after PDFKit transformation), Y=height is bottom
+        // So we need to flip: viewY = height - (visionY * height) - boxHeight
+        let flippedY = pageBounds.height - (box.y * pageBounds.height) - (box.height * pageBounds.height)
 
-        // Draw field label if mapped
-        if let fieldType = region.mappedFieldType {
-            let labelRect = CGRect(x: 2, y: bounds.height - 14, width: bounds.width - 4, height: 12)
-            let label = fieldType.displayName
-            let attrs: [NSAttributedString.Key: Any] = [
-                .font: NSFont.systemFont(ofSize: 9, weight: .medium),
-                .foregroundColor: NSColor.white,
-                .backgroundColor: strokeColor
-            ]
-            label.draw(in: labelRect, withAttributes: attrs)
-        }
+        return CGRect(
+            x: box.x * pageBounds.width * scaleX,
+            y: flippedY * scaleY,
+            width: box.width * pageBounds.width * scaleX,
+            height: box.height * pageBounds.height * scaleY
+        )
     }
 }
 

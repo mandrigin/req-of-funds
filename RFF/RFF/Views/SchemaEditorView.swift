@@ -542,6 +542,10 @@ struct DocumentPreviewWithSchema: View {
         }
 
         let pageBounds = page.bounds(for: .mediaBox)
+
+        // Vision coordinates: origin at bottom-left, normalized 0-1
+        // PDF coordinates: origin at bottom-left, in points
+        // The PDFViewer overlay will flip Y when drawing, so we pass PDF coords directly
         return CGRect(
             x: box.x * pageBounds.width,
             y: box.y * pageBounds.height,

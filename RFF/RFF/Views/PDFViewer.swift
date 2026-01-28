@@ -125,6 +125,7 @@ private class HighlightOverlayView: NSView {
     }
 
     /// Convert bounds from PDF page coordinates to view coordinates
+    /// PDF/Vision uses bottom-left origin, NSView overlay uses top-left origin (flipped)
     private func convert(_ rect: CGRect, from page: PDFPage) -> CGRect {
         let pageBounds = page.bounds(for: .mediaBox)
 
@@ -137,9 +138,13 @@ private class HighlightOverlayView: NSView {
         let scaleX = bounds.width / pageBounds.width
         let scaleY = bounds.height / pageBounds.height
 
+        // Flip Y coordinate: PDF origin is bottom-left, view origin is top-left
+        // rect.origin.y is distance from bottom, we need distance from top
+        let flippedY = pageBounds.height - rect.origin.y - rect.height
+
         return CGRect(
             x: rect.origin.x * scaleX,
-            y: rect.origin.y * scaleY,
+            y: flippedY * scaleY,
             width: rect.width * scaleX,
             height: rect.height * scaleY
         )
