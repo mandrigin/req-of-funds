@@ -787,6 +787,16 @@ struct ContentView: View {
             return .purple
         case .chf:
             return .red
+        case .jpy, .cny:
+            return .orange
+        case .sek, .nok, .dkk:
+            return .cyan
+        case .aud, .nzd:
+            return .teal
+        case .cad:
+            return .mint
+        default:
+            return .gray
         }
     }
 

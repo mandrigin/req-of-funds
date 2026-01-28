@@ -374,7 +374,8 @@ actor AIAnalysisService {
         let provider = getSelectedProvider()
         let apiKey = try getAPIKey(for: provider)
 
-        let prompt = buildAnalysisPrompt(for: text)
+        let favoriteCurrencies = loadFavoriteCurrencies()
+        let prompt = buildAnalysisPrompt(for: text, favoriteCurrencies: favoriteCurrencies)
         let response = try await callAI(prompt: prompt, apiKey: apiKey, provider: provider)
 
         return try parseAnalysisResponse(response)
@@ -385,10 +386,20 @@ actor AIAnalysisService {
     func analyzeDocument(text: String, using provider: AIProvider) async throws -> AIAnalysisResult {
         let apiKey = try getAPIKey(for: provider)
 
-        let prompt = buildAnalysisPrompt(for: text)
+        let favoriteCurrencies = loadFavoriteCurrencies()
+        let prompt = buildAnalysisPrompt(for: text, favoriteCurrencies: favoriteCurrencies)
         let response = try await callAI(prompt: prompt, apiKey: apiKey, provider: provider)
 
         return try parseAnalysisResponse(response)
+    }
+
+    /// Load user's favorite currencies from settings
+    private func loadFavoriteCurrencies() -> [String] {
+        guard let data = defaults.data(forKey: "favoriteCurrencies"),
+              let favorites = try? JSONDecoder().decode(Set<String>.self, from: data) else {
+            return ["USD", "EUR", "GBP"]  // Default favorites
+        }
+        return Array(favorites).sorted()
     }
 
     /// Suggest a schema for the document
@@ -421,8 +432,15 @@ actor AIAnalysisService {
 
     // MARK: - Private Implementation
 
-    private func buildAnalysisPrompt(for text: String) -> String {
+    private func buildAnalysisPrompt(for text: String, favoriteCurrencies: [String] = ["USD", "EUR", "GBP"]) -> String {
+        let currencyList = favoriteCurrencies.isEmpty ? "USD, EUR, GBP" : favoriteCurrencies.joined(separator: ", ")
+        let currencyHint = favoriteCurrencies.isEmpty ? "" : """
+
+        IMPORTANT: The user frequently works with these currencies: \(currencyList)
+        When identifying the currency, prioritize these if the invoice appears to use one of them.
+        For example, if you see "kr" or "SEK", and SEK is in the user's favorites, use SEK.
         """
+        return """
         You are an invoice data extraction assistant. Extract structured data from the invoice text below.
 
         ## STEP 1: Identify the key information
@@ -433,7 +451,7 @@ actor AIAnalysisService {
         - Vendor: The company SENDING the invoice (usually at top, with logo)
         - Recipient: The company/person RECEIVING the invoice (look for "Bill To:", "Ship To:", "Customer:")
         - Amounts: Look for "Subtotal", "Tax", "VAT", "Total", "Amount Due", "Balance Due", "Grand Total"
-        - Currency: USD ($), EUR (€), GBP (£), or stated currency
+        - Currency: Look for currency symbols or codes. Common ones include USD ($), EUR (€), GBP (£), SEK (kr), NOK (kr), DKK (kr), CHF, JPY (¥), CNY (¥), and many others.\(currencyHint)
         - PO number: Look for "PO #", "Purchase Order", "P.O.:"
 
         ## STEP 2: Format the values
@@ -857,10 +875,23 @@ actor AIAnalysisService {
     private func normalizeNumericValue(_ value: String) -> String {
         var cleaned = value
 
-        // Remove common currency symbols and prefixes
-        let currencyPatterns = ["$", "€", "£", "¥", "USD", "EUR", "GBP", "CHF"]
+        // Remove common currency symbols and prefixes (comprehensive list)
+        let currencyPatterns = [
+            // Symbols
+            "$", "€", "£", "¥", "₹", "₩", "₽", "₺", "₪", "₱", "฿",
+            // Codes
+            "USD", "EUR", "GBP", "CHF", "JPY", "CNY",
+            "SEK", "NOK", "DKK", "AUD", "CAD", "NZD",
+            "BRL", "HKD", "HUF", "IDR", "ILS", "INR",
+            "KRW", "MXN", "MYR", "PHP", "PLN", "RON",
+            "RUB", "SGD", "THB", "TRY", "TWD", "ZAR", "CZK",
+            // Common prefixes/suffixes
+            "kr", "Kr", "KR", "Kč", "zł", "Zł", "Ft", "lei", "Lei",
+            "R$", "A$", "C$", "S$", "HK$", "NZ$", "NT$", "MX$",
+            "RM", "Rp", "Rs"
+        ]
         for pattern in currencyPatterns {
-            cleaned = cleaned.replacingOccurrences(of: pattern, with: "")
+            cleaned = cleaned.replacingOccurrences(of: pattern, with: "", options: .caseInsensitive)
         }
 
         // Remove thousands separators and whitespace
@@ -949,26 +980,101 @@ actor AIAnalysisService {
     private func normalizeCurrency(_ value: String) -> String {
         let upper = value.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Map symbols and common variations to standard codes
+        // Map symbols and common variations to standard ISO 4217 codes
         let currencyMap: [String: String] = [
+            // USD
             "$": "USD",
             "US$": "USD",
             "US DOLLAR": "USD",
             "US DOLLARS": "USD",
             "DOLLAR": "USD",
             "DOLLARS": "USD",
+            // EUR
             "€": "EUR",
             "EURO": "EUR",
             "EUROS": "EUR",
+            // GBP
             "£": "GBP",
             "POUND": "GBP",
             "POUNDS": "GBP",
             "BRITISH POUND": "GBP",
+            "STERLING": "GBP",
+            // JPY
             "¥": "JPY",
             "YEN": "JPY",
-            "CHF": "CHF",
+            "JAPANESE YEN": "JPY",
+            // CNY
+            "YUAN": "CNY",
+            "RMB": "CNY",
+            "RENMINBI": "CNY",
+            "CHINESE YUAN": "CNY",
+            // CHF
             "SWISS FRANC": "CHF",
             "FRANC": "CHF",
+            "FR.": "CHF",
+            "SFR": "CHF",
+            // Scandinavian
+            "KR": "SEK",  // Default kr to SEK, but AI should specify
+            "KRONA": "SEK",
+            "KRONOR": "SEK",
+            "SWEDISH KRONA": "SEK",
+            "SWEDISH KRONOR": "SEK",
+            "KRONE": "NOK",
+            "KRONER": "NOK",
+            "NORWEGIAN KRONE": "NOK",
+            "DANISH KRONE": "DKK",
+            // AUD
+            "A$": "AUD",
+            "AU$": "AUD",
+            "AUSTRALIAN DOLLAR": "AUD",
+            // CAD
+            "C$": "CAD",
+            "CA$": "CAD",
+            "CANADIAN DOLLAR": "CAD",
+            // Other common
+            "R$": "BRL",
+            "REAL": "BRL",
+            "REAIS": "BRL",
+            "HK$": "HKD",
+            "HONG KONG DOLLAR": "HKD",
+            "₹": "INR",
+            "RS": "INR",
+            "RUPEE": "INR",
+            "RUPEES": "INR",
+            "₩": "KRW",
+            "WON": "KRW",
+            "MX$": "MXN",
+            "PESO": "MXN",
+            "NZ$": "NZD",
+            "NEW ZEALAND DOLLAR": "NZD",
+            "ZŁ": "PLN",
+            "ZLOTY": "PLN",
+            "₽": "RUB",
+            "RUBLE": "RUB",
+            "RUBLES": "RUB",
+            "S$": "SGD",
+            "SINGAPORE DOLLAR": "SGD",
+            "฿": "THB",
+            "BAHT": "THB",
+            "₺": "TRY",
+            "LIRA": "TRY",
+            "TURKISH LIRA": "TRY",
+            "NT$": "TWD",
+            "R": "ZAR",
+            "RAND": "ZAR",
+            "₪": "ILS",
+            "SHEKEL": "ILS",
+            "₱": "PHP",
+            "RM": "MYR",
+            "RINGGIT": "MYR",
+            "RP": "IDR",
+            "RUPIAH": "IDR",
+            "KČ": "CZK",
+            "KORUNA": "CZK",
+            "FT": "HUF",
+            "FORINT": "HUF",
+            "LEI": "RON",
+            "LEU": "RON",
         ]
 
         return currencyMap[upper] ?? upper

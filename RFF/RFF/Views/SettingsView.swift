@@ -43,8 +43,11 @@ struct SettingsView: View {
 struct GeneralSettingsView: View {
     @AppStorage("defaultDueDateDays") private var defaultDueDateDays = 7
     @AppStorage("defaultCurrency") private var defaultCurrency = "USD"
+    @AppStorage("favoriteCurrencies") private var favoriteCurrenciesData = Data()
     @AppStorage("autoSaveEnabled") private var autoSaveEnabled = true
     @AppStorage("autoSaveInterval") private var autoSaveInterval = 30
+
+    @State private var favoriteCurrencies: Set<String> = []
 
     var body: some View {
         Form {
@@ -57,13 +60,35 @@ struct GeneralSettingsView: View {
                     Text("90 days").tag(90)
                 }
 
-                Picker("Currency", selection: $defaultCurrency) {
-                    Text("USD ($)").tag("USD")
-                    Text("EUR (€)").tag("EUR")
-                    Text("GBP (£)").tag("GBP")
-                    Text("JPY (¥)").tag("JPY")
-                    Text("CAD (C$)").tag("CAD")
+                Picker("Default Currency", selection: $defaultCurrency) {
+                    ForEach(Currency.allCases) { currency in
+                        Text("\(currency.rawValue) (\(currency.symbol))")
+                            .tag(currency.rawValue)
+                    }
                 }
+            }
+
+            Section {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Select currencies you frequently work with. AI analysis will prioritize these when extracting invoice data.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    LazyVGrid(columns: [
+                        GridItem(.adaptive(minimum: 100), spacing: 8)
+                    ], spacing: 8) {
+                        ForEach(Currency.allCases) { currency in
+                            FavoriteCurrencyToggle(
+                                currency: currency,
+                                isSelected: favoriteCurrencies.contains(currency.rawValue),
+                                onToggle: { toggleFavorite(currency) }
+                            )
+                        }
+                    }
+                    .padding(.top, 4)
+                }
+            } header: {
+                Text("Favorite Currencies")
             }
 
             Section("Auto-Save") {
@@ -81,6 +106,61 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
+        .onAppear {
+            loadFavorites()
+        }
+    }
+
+    private func loadFavorites() {
+        if let decoded = try? JSONDecoder().decode(Set<String>.self, from: favoriteCurrenciesData) {
+            favoriteCurrencies = decoded
+        } else {
+            // Default favorites if none set
+            favoriteCurrencies = Set(["USD", "EUR", "GBP"])
+        }
+    }
+
+    private func toggleFavorite(_ currency: Currency) {
+        if favoriteCurrencies.contains(currency.rawValue) {
+            favoriteCurrencies.remove(currency.rawValue)
+        } else {
+            favoriteCurrencies.insert(currency.rawValue)
+        }
+        saveFavorites()
+    }
+
+    private func saveFavorites() {
+        if let encoded = try? JSONEncoder().encode(favoriteCurrencies) {
+            favoriteCurrenciesData = encoded
+        }
+    }
+}
+
+/// Toggle button for favorite currency selection
+private struct FavoriteCurrencyToggle: View {
+    let currency: Currency
+    let isSelected: Bool
+    let onToggle: () -> Void
+
+    var body: some View {
+        Button(action: onToggle) {
+            HStack(spacing: 4) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isSelected ? .blue : .secondary)
+                Text(currency.rawValue)
+                    .font(.caption)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(isSelected ? Color.blue.opacity(0.1) : Color.clear)
+            .cornerRadius(6)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(isSelected ? Color.blue : Color.secondary.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .help(currency.displayName)
     }
 }
 
