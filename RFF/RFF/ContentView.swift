@@ -779,14 +779,28 @@ struct ContentView: View {
 
     private func currencyColor(for currency: Currency) -> Color {
         switch currency {
-        case .usd:
+        case .usd, .cad, .aud, .nzd, .sgd, .hkd:
             return .green
-        case .eur:
+        case .eur, .pln, .czk, .huf, .ron, .bgn, .hrk:
             return .blue
         case .gbp:
             return .purple
         case .chf:
             return .red
+        case .sek, .nok, .dkk, .isk:
+            return .cyan
+        case .jpy, .cny, .krw, .twd:
+            return .orange
+        case .inr, .thb, .myr, .idr, .php, .vnd:
+            return .yellow
+        case .aed, .sar, .ils, .egp:
+            return .mint
+        case .zar, .ngn, .kes:
+            return .brown
+        case .mxn, .brl, .ars, .clp, .cop, .pen:
+            return .pink
+        case .rub, .try_:
+            return .gray
         }
     }
 

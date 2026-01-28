@@ -12,21 +12,100 @@ enum RFFStatus: String, Codable, CaseIterable {
 }
 
 /// Supported currencies for RFF documents
+/// Covers major world currencies - ISO 4217 codes
 enum Currency: String, Codable, CaseIterable, Identifiable {
+    // Major currencies
     case usd = "USD"
     case eur = "EUR"
     case gbp = "GBP"
+    case jpy = "JPY"
     case chf = "CHF"
+    case cad = "CAD"
+    case aud = "AUD"
+    case nzd = "NZD"
+
+    // European currencies (non-Euro)
+    case sek = "SEK"
+    case nok = "NOK"
+    case dkk = "DKK"
+    case pln = "PLN"
+    case czk = "CZK"
+    case huf = "HUF"
+    case ron = "RON"
+    case bgn = "BGN"
+    case hrk = "HRK"
+    case isk = "ISK"
+
+    // Asian currencies
+    case cny = "CNY"
+    case hkd = "HKD"
+    case sgd = "SGD"
+    case krw = "KRW"
+    case twd = "TWD"
+    case thb = "THB"
+    case myr = "MYR"
+    case idr = "IDR"
+    case php = "PHP"
+    case vnd = "VND"
+    case inr = "INR"
+
+    // Middle Eastern & African currencies
+    case aed = "AED"
+    case sar = "SAR"
+    case ils = "ILS"
+    case zar = "ZAR"
+    case egp = "EGP"
+    case ngn = "NGN"
+    case kes = "KES"
+
+    // Americas
+    case mxn = "MXN"
+    case brl = "BRL"
+    case ars = "ARS"
+    case clp = "CLP"
+    case cop = "COP"
+    case pen = "PEN"
+
+    // Other major currencies
+    case rub = "RUB"
+    case try_ = "TRY"  // Turkish Lira (try is reserved keyword)
 
     var id: String { rawValue }
 
     /// Currency symbol
     var symbol: String {
         switch self {
-        case .usd: return "$"
+        case .usd, .cad, .aud, .nzd, .sgd, .hkd, .mxn, .ars, .clp, .cop: return "$"
         case .eur: return "€"
         case .gbp: return "£"
+        case .jpy, .cny: return "¥"
         case .chf: return "CHF"
+        case .sek, .nok, .dkk, .isk: return "kr"
+        case .pln: return "zł"
+        case .czk: return "Kč"
+        case .huf: return "Ft"
+        case .ron: return "lei"
+        case .bgn: return "лв"
+        case .hrk: return "kn"
+        case .krw: return "₩"
+        case .twd: return "NT$"
+        case .thb: return "฿"
+        case .myr: return "RM"
+        case .idr: return "Rp"
+        case .php: return "₱"
+        case .vnd: return "₫"
+        case .inr: return "₹"
+        case .aed: return "د.إ"
+        case .sar: return "﷼"
+        case .ils: return "₪"
+        case .zar: return "R"
+        case .egp: return "E£"
+        case .ngn: return "₦"
+        case .kes: return "KSh"
+        case .brl: return "R$"
+        case .pen: return "S/"
+        case .rub: return "₽"
+        case .try_: return "₺"
         }
     }
 
@@ -36,12 +115,57 @@ enum Currency: String, Codable, CaseIterable, Identifiable {
         case .usd: return "US Dollar"
         case .eur: return "Euro"
         case .gbp: return "British Pound"
+        case .jpy: return "Japanese Yen"
         case .chf: return "Swiss Franc"
+        case .cad: return "Canadian Dollar"
+        case .aud: return "Australian Dollar"
+        case .nzd: return "New Zealand Dollar"
+        case .sek: return "Swedish Krona"
+        case .nok: return "Norwegian Krone"
+        case .dkk: return "Danish Krone"
+        case .pln: return "Polish Zloty"
+        case .czk: return "Czech Koruna"
+        case .huf: return "Hungarian Forint"
+        case .ron: return "Romanian Leu"
+        case .bgn: return "Bulgarian Lev"
+        case .hrk: return "Croatian Kuna"
+        case .isk: return "Icelandic Króna"
+        case .cny: return "Chinese Yuan"
+        case .hkd: return "Hong Kong Dollar"
+        case .sgd: return "Singapore Dollar"
+        case .krw: return "South Korean Won"
+        case .twd: return "Taiwan Dollar"
+        case .thb: return "Thai Baht"
+        case .myr: return "Malaysian Ringgit"
+        case .idr: return "Indonesian Rupiah"
+        case .php: return "Philippine Peso"
+        case .vnd: return "Vietnamese Dong"
+        case .inr: return "Indian Rupee"
+        case .aed: return "UAE Dirham"
+        case .sar: return "Saudi Riyal"
+        case .ils: return "Israeli Shekel"
+        case .zar: return "South African Rand"
+        case .egp: return "Egyptian Pound"
+        case .ngn: return "Nigerian Naira"
+        case .kes: return "Kenyan Shilling"
+        case .mxn: return "Mexican Peso"
+        case .brl: return "Brazilian Real"
+        case .ars: return "Argentine Peso"
+        case .clp: return "Chilean Peso"
+        case .cop: return "Colombian Peso"
+        case .pen: return "Peruvian Sol"
+        case .rub: return "Russian Ruble"
+        case .try_: return "Turkish Lira"
         }
     }
 
     /// Currency code for formatting
     var currencyCode: String { rawValue }
+
+    /// Common currencies for quick selection (most used globally)
+    static var common: [Currency] {
+        [.usd, .eur, .gbp, .jpy, .chf, .cad, .aud, .sek, .nok, .dkk, .cny, .inr]
+    }
 }
 
 /// Main document model for RFF (Request for Funding) documents

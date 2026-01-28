@@ -421,8 +421,27 @@ actor AIAnalysisService {
 
     // MARK: - Private Implementation
 
+    /// Get favorite currencies from user settings for AI hints
+    private func getFavoriteCurrencies() -> [Currency] {
+        let defaults = UserDefaults.standard
+        guard let data = defaults.data(forKey: "favoriteCurrencies"),
+              let codes = try? JSONDecoder().decode([String].self, from: data) else {
+            return []
+        }
+        return codes.compactMap { Currency(rawValue: $0) }
+    }
+
     private func buildAnalysisPrompt(for text: String) -> String {
-        """
+        let favorites = getFavoriteCurrencies()
+        let currencyHint: String
+        if favorites.isEmpty {
+            currencyHint = "- Currency: USD ($), EUR (€), GBP (£), CHF, SEK, NOK, DKK, JPY, or stated currency"
+        } else {
+            let favCodes = favorites.map { "\($0.rawValue) (\($0.symbol))" }.joined(separator: ", ")
+            currencyHint = "- Currency: Look especially for \(favCodes) as these are the user's preferred currencies. Also check for USD ($), EUR (€), GBP (£), or other stated currency codes."
+        }
+
+        return """
         You are an invoice data extraction assistant. Extract structured data from the invoice text below.
 
         ## STEP 1: Identify the key information
@@ -433,7 +452,7 @@ actor AIAnalysisService {
         - Vendor: The company SENDING the invoice (usually at top, with logo)
         - Recipient: The company/person RECEIVING the invoice (look for "Bill To:", "Ship To:", "Customer:")
         - Amounts: Look for "Subtotal", "Tax", "VAT", "Total", "Amount Due", "Balance Due", "Grand Total"
-        - Currency: USD ($), EUR (€), GBP (£), or stated currency
+        \(currencyHint)
         - PO number: Look for "PO #", "Purchase Order", "P.O.:"
 
         ## STEP 2: Format the values
@@ -951,24 +970,86 @@ actor AIAnalysisService {
 
         // Map symbols and common variations to standard codes
         let currencyMap: [String: String] = [
+            // USD
             "$": "USD",
             "US$": "USD",
             "US DOLLAR": "USD",
             "US DOLLARS": "USD",
             "DOLLAR": "USD",
             "DOLLARS": "USD",
+            // EUR
             "€": "EUR",
             "EURO": "EUR",
             "EUROS": "EUR",
+            // GBP
             "£": "GBP",
             "POUND": "GBP",
             "POUNDS": "GBP",
             "BRITISH POUND": "GBP",
+            "STERLING": "GBP",
+            // JPY
             "¥": "JPY",
             "YEN": "JPY",
-            "CHF": "CHF",
+            "円": "JPY",
+            // CHF
             "SWISS FRANC": "CHF",
             "FRANC": "CHF",
+            "FRANKEN": "CHF",
+            // SEK
+            "SWEDISH KRONA": "SEK",
+            "SWEDISH KRONOR": "SEK",
+            "KRONA": "SEK",
+            "KRONOR": "SEK",
+            // NOK
+            "NORWEGIAN KRONE": "NOK",
+            "NORWEGIAN KRONER": "NOK",
+            // DKK
+            "DANISH KRONE": "DKK",
+            "DANISH KRONER": "DKK",
+            // CAD
+            "C$": "CAD",
+            "CA$": "CAD",
+            "CANADIAN DOLLAR": "CAD",
+            "CANADIAN DOLLARS": "CAD",
+            // AUD
+            "A$": "AUD",
+            "AU$": "AUD",
+            "AUSTRALIAN DOLLAR": "AUD",
+            "AUSTRALIAN DOLLARS": "AUD",
+            // CNY/RMB
+            "元": "CNY",
+            "RMB": "CNY",
+            "YUAN": "CNY",
+            "RENMINBI": "CNY",
+            // INR
+            "₹": "INR",
+            "RUPEE": "INR",
+            "RUPEES": "INR",
+            "INDIAN RUPEE": "INR",
+            // PLN
+            "ZŁ": "PLN",
+            "ZLOTY": "PLN",
+            "ZLOTYCH": "PLN",
+            // BRL
+            "R$": "BRL",
+            "REAL": "BRL",
+            "REAIS": "BRL",
+            "BRAZILIAN REAL": "BRL",
+            // MXN
+            "MX$": "MXN",
+            "MEXICAN PESO": "MXN",
+            "PESOS": "MXN",
+            // KRW
+            "₩": "KRW",
+            "WON": "KRW",
+            // RUB
+            "₽": "RUB",
+            "RUBLE": "RUB",
+            "RUBLES": "RUB",
+            // TRY
+            "₺": "TRY",
+            "LIRA": "TRY",
+            "TURKISH LIRA": "TRY",
         ]
 
         return currencyMap[upper] ?? upper

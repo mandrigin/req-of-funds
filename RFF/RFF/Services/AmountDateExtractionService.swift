@@ -142,8 +142,156 @@ actor AmountDateExtractionService {
             }
         }
 
+        // SEK patterns (Swedish Krona)
+        // Swedish format: 1 234,56 kr or 1234,56 SEK
+        let sekPatterns = [
+            #"[\d\s]+[,.]?\d*\s*kr"#,              // 1 234,56 kr
+            #"[\d\s,]+[,.]?\d*\s*SEK"#,            // 1 234,56 SEK
+            #"SEK\s*[\d\s,]+[,.]?\d*"#,            // SEK 1 234,56
+            #"[\d\s,]+[,.]?\d*\s*kronor"#          // 1 234 kronor
+        ]
+        for pattern in sekPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .sek))
+            }
+        }
+
+        // NOK patterns (Norwegian Krone)
+        let nokPatterns = [
+            #"[\d\s]+[,.]?\d*\s*NOK"#,             // 1 234,56 NOK
+            #"NOK\s*[\d\s,]+[,.]?\d*"#,            // NOK 1 234,56
+            #"[\d\s,]+[,.]?\d*\s*kroner"#          // 1 234 kroner (Norwegian)
+        ]
+        for pattern in nokPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .nok))
+            }
+        }
+
+        // DKK patterns (Danish Krone)
+        let dkkPatterns = [
+            #"[\d\s.,]+[,.]?\d*\s*DKK"#,           // 1.234,56 DKK
+            #"DKK\s*[\d\s.,]+[,.]?\d*"#,           // DKK 1.234,56
+        ]
+        for pattern in dkkPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .dkk))
+            }
+        }
+
+        // JPY patterns (Japanese Yen)
+        let jpyPatterns = [
+            #"¥[\d,]+\.?\d*"#,                     // ¥1,234
+            #"[\d,]+\.?\d*\s*円"#,                 // 1,234円
+            #"[\d,]+\.?\d*\s*JPY"#,                // 1,234 JPY
+            #"JPY\s*[\d,]+\.?\d*"#,                // JPY 1,234
+            #"[\d,]+\.?\d*\s*yen"#                 // 1,234 yen
+        ]
+        for pattern in jpyPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .jpy))
+            }
+        }
+
+        // CAD patterns (Canadian Dollar)
+        let cadPatterns = [
+            #"C\$[\d,]+\.?\d*"#,                   // C$1,234.56
+            #"CAD\s*[\d,]+\.?\d*"#,                // CAD 1,234.56
+            #"[\d,]+\.?\d*\s*CAD"#                 // 1,234.56 CAD
+        ]
+        for pattern in cadPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .cad))
+            }
+        }
+
+        // AUD patterns (Australian Dollar)
+        let audPatterns = [
+            #"A\$[\d,]+\.?\d*"#,                   // A$1,234.56
+            #"AUD\s*[\d,]+\.?\d*"#,                // AUD 1,234.56
+            #"[\d,]+\.?\d*\s*AUD"#                 // 1,234.56 AUD
+        ]
+        for pattern in audPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .aud))
+            }
+        }
+
+        // CNY patterns (Chinese Yuan)
+        let cnyPatterns = [
+            #"[\d,]+\.?\d*\s*元"#,                 // 1,234.56元
+            #"[\d,]+\.?\d*\s*CNY"#,                // 1,234.56 CNY
+            #"CNY\s*[\d,]+\.?\d*"#,                // CNY 1,234.56
+            #"[\d,]+\.?\d*\s*RMB"#,                // 1,234.56 RMB
+            #"RMB\s*[\d,]+\.?\d*"#                 // RMB 1,234.56
+        ]
+        for pattern in cnyPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .cny))
+            }
+        }
+
+        // INR patterns (Indian Rupee)
+        let inrPatterns = [
+            #"₹[\d,]+\.?\d*"#,                     // ₹1,23,456.78
+            #"Rs\.?\s*[\d,]+\.?\d*"#,              // Rs. 1,23,456.78
+            #"[\d,]+\.?\d*\s*INR"#,                // 1,23,456.78 INR
+            #"INR\s*[\d,]+\.?\d*"#                 // INR 1,23,456.78
+        ]
+        for pattern in inrPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .inr))
+            }
+        }
+
+        // PLN patterns (Polish Zloty)
+        let plnPatterns = [
+            #"[\d\s]+[,.]?\d*\s*zł"#,              // 1 234,56 zł
+            #"[\d\s,]+[,.]?\d*\s*PLN"#,            // 1 234,56 PLN
+            #"PLN\s*[\d\s,]+[,.]?\d*"#             // PLN 1 234,56
+        ]
+        for pattern in plnPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .pln))
+            }
+        }
+
+        // BRL patterns (Brazilian Real)
+        let brlPatterns = [
+            #"R\$\s*[\d.,]+[,.]?\d*"#,             // R$ 1.234,56
+            #"[\d.,]+[,.]?\d*\s*BRL"#,             // 1.234,56 BRL
+            #"BRL\s*[\d.,]+[,.]?\d*"#              // BRL 1.234,56
+        ]
+        for pattern in brlPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .brl))
+            }
+        }
+
+        // MXN patterns (Mexican Peso)
+        let mxnPatterns = [
+            #"[\d,]+\.?\d*\s*MXN"#,                // 1,234.56 MXN
+            #"MXN\s*[\d,]+\.?\d*"#,                // MXN 1,234.56
+            #"MX\$[\d,]+\.?\d*"#                   // MX$1,234.56
+        ]
+        for pattern in mxnPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+                patterns.append(CurrencyPattern(regex: regex, currency: .mxn))
+            }
+        }
+
         return patterns
     }()
+
+    /// Get favorite currencies from user settings
+    private static func getFavoriteCurrencies() -> [Currency] {
+        let defaults = UserDefaults.standard
+        guard let data = defaults.data(forKey: "favoriteCurrencies"),
+              let codes = try? JSONDecoder().decode([String].self, from: data) else {
+            return []
+        }
+        return codes.compactMap { Currency(rawValue: $0) }
+    }
 
     // MARK: - Public API
 
@@ -239,13 +387,40 @@ actor AmountDateExtractionService {
             .replacingOccurrences(of: "$", with: "")
             .replacingOccurrences(of: "€", with: "")
             .replacingOccurrences(of: "£", with: "")
-            // Remove currency codes
-            .replacingOccurrences(of: "USD", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "¥", with: "")
+            .replacingOccurrences(of: "₹", with: "")
+            .replacingOccurrences(of: "₩", with: "")
+            .replacingOccurrences(of: "₽", with: "")
+            .replacingOccurrences(of: "₺", with: "")
+            .replacingOccurrences(of: "₱", with: "")
+            .replacingOccurrences(of: "₫", with: "")
+            .replacingOccurrences(of: "₦", with: "")
+            .replacingOccurrences(of: "₪", with: "")
+            // Remove currency codes (alphabetically)
+            .replacingOccurrences(of: "AUD", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "BRL", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "CAD", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "CHF", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "CNY", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "DKK", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "EUR", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "GBP", with: "", options: .caseInsensitive)
-            .replacingOccurrences(of: "CHF", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "INR", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "JPY", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "MXN", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "NOK", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "PLN", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "RMB", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "SEK", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "USD", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "SFr.", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "Fr.", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "Rs.", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "Rs", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "R$", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "C$", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "A$", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "MX$", with: "", options: .caseInsensitive)
             // Remove currency words
             .replacingOccurrences(of: "dollars", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "dollar", with: "", options: .caseInsensitive)
@@ -256,6 +431,13 @@ actor AmountDateExtractionService {
             .replacingOccurrences(of: "francs", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "franc", with: "", options: .caseInsensitive)
             .replacingOccurrences(of: "Franken", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "kronor", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "kroner", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "kr", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "yen", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "円", with: "")
+            .replacingOccurrences(of: "元", with: "")
+            .replacingOccurrences(of: "zł", with: "", options: .caseInsensitive)
             // Remove whitespace
             .replacingOccurrences(of: " ", with: "")
             .trimmingCharacters(in: .whitespaces)
@@ -265,8 +447,9 @@ actor AmountDateExtractionService {
             cleaned = cleaned.replacingOccurrences(of: "'", with: "")
             cleaned = cleaned.replacingOccurrences(of: ",", with: "")
         }
-        // Handle European number format (1.234,56) for EUR
-        else if currency == .eur && cleaned.contains(",") {
+        // Handle Nordic/European number format (1 234,56 or 1.234,56)
+        // SEK, NOK, DKK, PLN, EUR, BRL use comma as decimal separator
+        else if [.sek, .nok, .dkk, .pln, .eur, .brl].contains(currency) && cleaned.contains(",") {
             // Check if it's European format: has comma as decimal separator
             // European: 1.234,56 -> 1234.56
             // American: 1,234.56 -> 1234.56
@@ -285,12 +468,12 @@ actor AmountDateExtractionService {
                         cleaned = cleaned.replacingOccurrences(of: ",", with: "")
                     }
                 } else {
-                    // Only comma - assume it's decimal separator for EUR
+                    // Only comma - assume it's decimal separator for these currencies
                     cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
                 }
             }
         } else {
-            // USD/GBP use comma as thousand separator
+            // USD/GBP/CAD/AUD/JPY/CNY/INR use comma as thousand separator
             cleaned = cleaned.replacingOccurrences(of: ",", with: "")
         }
 
@@ -302,7 +485,10 @@ actor AmountDateExtractionService {
     }
 
     /// Deduplicate amounts keeping highest confidence for each value+currency combination
+    /// Prefers favorite currencies when the same amount is detected in multiple currencies
     private func deduplicateAmounts(_ amounts: [ExtractedAmount]) -> [ExtractedAmount] {
+        let favorites = Self.getFavoriteCurrencies()
+
         // Key by both value and currency to avoid deduplicating different currencies
         struct AmountKey: Hashable {
             let value: Decimal
@@ -322,7 +508,35 @@ actor AmountDateExtractionService {
             }
         }
 
-        return Array(seen.values)
+        // If the same numeric value appears with different currencies,
+        // prefer favorite currencies over non-favorites
+        var byValue: [Decimal: [ExtractedAmount]] = [:]
+        for amount in seen.values {
+            byValue[amount.value, default: []].append(amount)
+        }
+
+        var result: [ExtractedAmount] = []
+        for (_, amountsWithSameValue) in byValue {
+            if amountsWithSameValue.count == 1 {
+                result.append(amountsWithSameValue[0])
+            } else {
+                // Multiple currencies for same value - prefer favorites
+                let favoriteAmounts = amountsWithSameValue.filter { favorites.contains($0.currency) }
+                if !favoriteAmounts.isEmpty {
+                    // Use the favorite with highest confidence
+                    if let best = favoriteAmounts.max(by: { $0.confidence < $1.confidence }) {
+                        result.append(best)
+                    }
+                } else {
+                    // No favorites match - keep highest confidence
+                    if let best = amountsWithSameValue.max(by: { $0.confidence < $1.confidence }) {
+                        result.append(best)
+                    }
+                }
+            }
+        }
+
+        return result
     }
 
     // MARK: - Date Extraction

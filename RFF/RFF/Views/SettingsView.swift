@@ -45,6 +45,25 @@ struct GeneralSettingsView: View {
     @AppStorage("defaultCurrency") private var defaultCurrency = "USD"
     @AppStorage("autoSaveEnabled") private var autoSaveEnabled = true
     @AppStorage("autoSaveInterval") private var autoSaveInterval = 30
+    @AppStorage("favoriteCurrencies") private var favoriteCurrenciesData = Data()
+
+    @State private var showingCurrencyPicker = false
+
+    private var favoriteCurrencies: [Currency] {
+        get {
+            guard let codes = try? JSONDecoder().decode([String].self, from: favoriteCurrenciesData) else {
+                return []
+            }
+            return codes.compactMap { Currency(rawValue: $0) }
+        }
+    }
+
+    private func setFavoriteCurrencies(_ currencies: [Currency]) {
+        let codes = currencies.map { $0.rawValue }
+        if let data = try? JSONEncoder().encode(codes) {
+            favoriteCurrenciesData = data
+        }
+    }
 
     var body: some View {
         Form {
@@ -57,13 +76,44 @@ struct GeneralSettingsView: View {
                     Text("90 days").tag(90)
                 }
 
-                Picker("Currency", selection: $defaultCurrency) {
-                    Text("USD ($)").tag("USD")
-                    Text("EUR (€)").tag("EUR")
-                    Text("GBP (£)").tag("GBP")
-                    Text("JPY (¥)").tag("JPY")
-                    Text("CAD (C$)").tag("CAD")
+                Picker("Default Currency", selection: $defaultCurrency) {
+                    ForEach(Currency.allCases) { currency in
+                        Text("\(currency.rawValue) (\(currency.symbol))").tag(currency.rawValue)
+                    }
                 }
+            }
+
+            Section("Favorite Currencies") {
+                if favoriteCurrencies.isEmpty {
+                    Text("No favorite currencies selected")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(favoriteCurrencies) { currency in
+                        HStack {
+                            Text(currency.symbol)
+                                .frame(width: 30, alignment: .leading)
+                            Text(currency.displayName)
+                            Spacer()
+                            Text(currency.rawValue)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .onDelete { indexSet in
+                        var currencies = favoriteCurrencies
+                        currencies.remove(atOffsets: indexSet)
+                        setFavoriteCurrencies(currencies)
+                    }
+                }
+
+                Button {
+                    showingCurrencyPicker = true
+                } label: {
+                    Label("Add Favorite Currency", systemImage: "plus.circle")
+                }
+
+                Text("Favorite currencies are prioritized when extracting amounts from invoices.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("Auto-Save") {
@@ -81,6 +131,100 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
+        .sheet(isPresented: $showingCurrencyPicker) {
+            FavoriteCurrencyPickerView(
+                selectedCurrencies: favoriteCurrencies,
+                onSave: { currencies in
+                    setFavoriteCurrencies(currencies)
+                }
+            )
+        }
+    }
+}
+
+/// View for selecting favorite currencies
+struct FavoriteCurrencyPickerView: View {
+    @Environment(\.dismiss) private var dismiss
+    let selectedCurrencies: [Currency]
+    let onSave: ([Currency]) -> Void
+
+    @State private var selected: Set<Currency> = []
+    @State private var searchText = ""
+
+    private var filteredCurrencies: [Currency] {
+        if searchText.isEmpty {
+            return Currency.allCases
+        }
+        return Currency.allCases.filter { currency in
+            currency.rawValue.localizedCaseInsensitiveContains(searchText) ||
+            currency.displayName.localizedCaseInsensitiveContains(searchText) ||
+            currency.symbol.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Common Currencies") {
+                    ForEach(Currency.common) { currency in
+                        currencyRow(currency)
+                    }
+                }
+
+                Section("All Currencies") {
+                    ForEach(filteredCurrencies) { currency in
+                        currencyRow(currency)
+                    }
+                }
+            }
+            .searchable(text: $searchText, prompt: "Search currencies")
+            .navigationTitle("Select Currencies")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        onSave(Array(selected))
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .frame(minWidth: 400, minHeight: 500)
+        .onAppear {
+            selected = Set(selectedCurrencies)
+        }
+    }
+
+    private func currencyRow(_ currency: Currency) -> some View {
+        Button {
+            if selected.contains(currency) {
+                selected.remove(currency)
+            } else {
+                selected.insert(currency)
+            }
+        } label: {
+            HStack {
+                Text(currency.symbol)
+                    .frame(width: 40, alignment: .leading)
+                    .font(.headline)
+                VStack(alignment: .leading) {
+                    Text(currency.displayName)
+                    Text(currency.rawValue)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                if selected.contains(currency) {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.blue)
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 }
 
