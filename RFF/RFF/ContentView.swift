@@ -1511,6 +1511,10 @@ struct DocumentDetailView: View {
             loadSchemaName()
             loadAvailableSchemas()
             checkForAIResults()
+            // Auto-expand preview for confirmed invoices (ready to pay)
+            if document.status == .approved {
+                isPreviewExpanded = true
+            }
         }
         .onChange(of: AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id)) { _, isAnalyzing in
             // Check for results when analysis completes
