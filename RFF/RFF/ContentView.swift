@@ -1031,6 +1031,7 @@ struct DocumentDetailView: View {
     @Bindable var document: RFFDocument
     @Environment(\.modelContext) private var modelContext
     @State private var pdfDocument: PDFDocument?
+    @State private var documentImage: NSImage?  // For non-PDF images (screenshots, etc.)
     @State private var highlights: [HighlightRegion] = []
     @State private var selectedHighlight: HighlightRegion?
     @State private var isDetectingFields = false
@@ -1071,6 +1072,12 @@ struct DocumentDetailView: View {
 
     private let textFinder = PDFTextFinder()
     private let schemaExtractionService = SchemaExtractionService.shared
+
+    /// Whether the document is a PDF (vs an image like PNG, JPEG, etc.)
+    private var isPDF: Bool {
+        guard let path = document.documentPath else { return false }
+        return URL(fileURLWithPath: path).pathExtension.lowercased() == "pdf"
+    }
 
     /// Check if document can be confirmed (is in inbox state)
     private var canConfirm: Bool {
@@ -1249,22 +1256,37 @@ struct DocumentDetailView: View {
                             // Preview content (collapsible)
                             if isPreviewExpanded {
                                 VStack(spacing: 0) {
-                                    // Fixed legend header
-                                    if !highlights.isEmpty {
+                                    // Fixed legend header (only for PDFs with detected fields)
+                                    if isPDF && !highlights.isEmpty {
                                         HighlightLegendView()
                                         Divider()
                                     }
 
-                                    PDFViewer(
-                                        document: pdfDocument,
-                                        highlights: highlights,
-                                        selectedHighlightId: selectedHighlight?.id,
-                                        onHighlightTapped: { highlight in
-                                            withAnimation {
-                                                selectedHighlight = highlight
+                                    if isPDF {
+                                        PDFViewer(
+                                            document: pdfDocument,
+                                            highlights: highlights,
+                                            selectedHighlightId: selectedHighlight?.id,
+                                            onHighlightTapped: { highlight in
+                                                withAnimation {
+                                                    selectedHighlight = highlight
+                                                }
                                             }
+                                        )
+                                    } else if let image = documentImage {
+                                        // Image preview for non-PDF documents (screenshots, etc.)
+                                        ScrollView([.horizontal, .vertical]) {
+                                            Image(nsImage: image)
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
                                         }
-                                    )
+                                    } else {
+                                        ContentUnavailableView(
+                                            "Unable to Load Document",
+                                            systemImage: "doc.questionmark",
+                                            description: Text("The document could not be loaded")
+                                        )
+                                    }
                                 }
                                 .frame(minHeight: 300, maxHeight: 400)
 
@@ -1291,8 +1313,17 @@ struct DocumentDetailView: View {
                                 // Collapsed preview - show thumbnail
                                 HStack {
                                     if let pdf = pdfDocument, let page = pdf.page(at: 0) {
+                                        // PDF thumbnail
                                         let thumb = page.thumbnail(of: CGSize(width: 120, height: 160), for: .mediaBox)
                                         Image(nsImage: thumb)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(height: 80)
+                                            .cornerRadius(4)
+                                            .shadow(radius: 2)
+                                    } else if let image = documentImage {
+                                        // Image thumbnail (screenshots, etc.)
+                                        Image(nsImage: image)
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
                                             .frame(height: 80)
@@ -1466,7 +1497,7 @@ struct DocumentDetailView: View {
             Text(schemaExtractionError ?? "Unknown error")
         }
         .onAppear {
-            loadPDF()
+            loadDocument()
             loadSchemaName()
             loadAvailableSchemas()
             checkForAIResults()
@@ -1479,13 +1510,21 @@ struct DocumentDetailView: View {
         }
     }
 
-    private func loadPDF() {
+    private func loadDocument() {
         guard let path = document.documentPath else { return }
         let url = URL(fileURLWithPath: path)
-        pdfDocument = PDFDocument(url: url)
 
-        // Auto-detect fields when PDF loads
-        detectAllFields()
+        if isPDF {
+            pdfDocument = PDFDocument(url: url)
+            documentImage = nil
+            // Auto-detect fields when PDF loads
+            detectAllFields()
+        } else {
+            // Load as image (PNG, JPEG, TIFF, etc.)
+            documentImage = NSImage(contentsOf: url)
+            pdfDocument = nil
+            highlights = []  // Image field detection not yet supported
+        }
     }
 
     /// Apply a detected field value to the document
