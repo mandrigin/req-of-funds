@@ -1,0 +1,498 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A1000001234567890000001 /* RFFApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000001 /* RFFApp.swift */; };
+		A1000001234567890000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000002 /* ContentView.swift */; };
+		A1000001234567890000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000003 /* Assets.xcassets */; };
+		A1000001234567890000004 /* LineItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000004 /* LineItem.swift */; };
+		A1000001234567890000005 /* RFFDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000005 /* RFFDocument.swift */; };
+		A1000001234567890000006 /* RFFSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000006 /* RFFSchema.swift */; };
+		A1000001234567890000007 /* DocumentOCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000007 /* DocumentOCRService.swift */; };
+		A1000001234567890000008 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000010 /* AppDelegate.swift */; };
+		A1000001234567890000009 /* RFFFileDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000011 /* RFFFileDocument.swift */; };
+		A1000001234567890000010 /* RFFTransferable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000012 /* RFFTransferable.swift */; };
+		A1000001234567890000011 /* CalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000013 /* CalendarService.swift */; };
+		A1000001234567890000012 /* EntityExtractionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000014 /* EntityExtractionService.swift */; };
+		A1000001234567890000013 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000015 /* NotificationService.swift */; };
+		A1000001234567890000014 /* PDFService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000016 /* PDFService.swift */; };
+		A1000001234567890000015 /* PDFTextFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000017 /* PDFTextFinder.swift */; };
+		A1000001234567890000016 /* DocumentEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000018 /* DocumentEditorView.swift */; };
+		A1000001234567890000017 /* PDFViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000019 /* PDFViewer.swift */; };
+		A10000013456789000000CA /* TableColumnConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000023456789000000CC /* TableColumnConfiguration.swift */; };
+		A1000001234567890000018 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000020 /* SettingsView.swift */; };
+		A1000001234567890000019 /* DocumentCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000021 /* DocumentCategory.swift */; };
+		A1000001234567890000020 /* DocumentClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000022 /* DocumentClassifier.swift */; };
+		A1000001234567890000021 /* TrainingData.json in Resources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000023 /* TrainingData.json */; };
+		A1000001234567890000022 /* AmountDateExtractionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000024 /* AmountDateExtractionService.swift */; };
+		A1000001234567890000023 /* ConfirmationFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000025 /* ConfirmationFormView.swift */; };
+		A1000001234567890000024 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000026 /* KeychainManager.swift */; };
+		A1000001234567890000025 /* DocumentPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000027 /* DocumentPreviewView.swift */; };
+		A1000001234567890000026 /* InvoiceSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000028 /* InvoiceSchema.swift */; };
+		A1000001234567890000027 /* SchemaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000029 /* SchemaStore.swift */; };
+		A1000001234567890000028 /* AIAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000030 /* AIAnalysisService.swift */; };
+		A1000001234567890000029 /* CorrectionHistoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000031 /* CorrectionHistoryService.swift */; };
+		A1000001234567890000030 /* FieldClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000032 /* FieldClassifier.swift */; };
+		A1000001234567890000031 /* SchemaEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000033 /* SchemaEditorView.swift */; };
+		9988A733A775D52B5FD710A6 /* InlineSchemaEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1B8A62045FD1D2DCCE9B69 /* InlineSchemaEditorView.swift */; };
+		A1000001234567890000032 /* SchemaExtractionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000034 /* SchemaExtractionService.swift */; };
+		A1000001234567890000033 /* DateParsingUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000035 /* DateParsingUtility.swift */; };
+		A1000001234567890000034 /* AIAnalysisProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002234567890000036 /* AIAnalysisProgressManager.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A1000002234567890000001 /* RFFApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFFApp.swift; sourceTree = "<group>"; };
+		A1000002234567890000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A1000002234567890000003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1000002234567890000004 /* LineItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineItem.swift; sourceTree = "<group>"; };
+		A1000002234567890000005 /* RFFDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFFDocument.swift; sourceTree = "<group>"; };
+		A1000002234567890000006 /* RFFSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFFSchema.swift; sourceTree = "<group>"; };
+		A1000002234567890000007 /* DocumentOCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentOCRService.swift; sourceTree = "<group>"; };
+		A1000002234567890000009 /* RFF.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RFF.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000002234567890000010 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A1000002234567890000011 /* RFFFileDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFFFileDocument.swift; sourceTree = "<group>"; };
+		A1000002234567890000012 /* RFFTransferable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFFTransferable.swift; sourceTree = "<group>"; };
+		A1000002234567890000013 /* CalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarService.swift; sourceTree = "<group>"; };
+		A1000002234567890000014 /* EntityExtractionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityExtractionService.swift; sourceTree = "<group>"; };
+		A1000002234567890000015 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		A1000002234567890000016 /* PDFService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFService.swift; sourceTree = "<group>"; };
+		A1000002234567890000017 /* PDFTextFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFTextFinder.swift; sourceTree = "<group>"; };
+		A1000002234567890000018 /* DocumentEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentEditorView.swift; sourceTree = "<group>"; };
+		A1000002234567890000019 /* PDFViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFViewer.swift; sourceTree = "<group>"; };
+		A10000023456789000000CC /* TableColumnConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableColumnConfiguration.swift; sourceTree = "<group>"; };
+		A1000002234567890000020 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A1000002234567890000021 /* DocumentCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentCategory.swift; sourceTree = "<group>"; };
+		A1000002234567890000022 /* DocumentClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentClassifier.swift; sourceTree = "<group>"; };
+		A1000002234567890000023 /* TrainingData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = TrainingData.json; sourceTree = "<group>"; };
+		A1000002234567890000024 /* AmountDateExtractionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountDateExtractionService.swift; sourceTree = "<group>"; };
+		A1000002234567890000025 /* ConfirmationFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmationFormView.swift; sourceTree = "<group>"; };
+		A1000002234567890000026 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
+		A1000002234567890000027 /* DocumentPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPreviewView.swift; sourceTree = "<group>"; };
+		A1000002234567890000028 /* InvoiceSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceSchema.swift; sourceTree = "<group>"; };
+		A1000002234567890000029 /* SchemaStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaStore.swift; sourceTree = "<group>"; };
+		A1000002234567890000030 /* AIAnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAnalysisService.swift; sourceTree = "<group>"; };
+		A1000002234567890000031 /* CorrectionHistoryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CorrectionHistoryService.swift; sourceTree = "<group>"; };
+		A1000002234567890000032 /* FieldClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldClassifier.swift; sourceTree = "<group>"; };
+		A1000002234567890000033 /* SchemaEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaEditorView.swift; sourceTree = "<group>"; };
+		DD1B8A62045FD1D2DCCE9B69 /* InlineSchemaEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineSchemaEditorView.swift; sourceTree = "<group>"; };
+		A1000002234567890000034 /* SchemaExtractionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaExtractionService.swift; sourceTree = "<group>"; };
+		A1000002234567890000035 /* DateParsingUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateParsingUtility.swift; sourceTree = "<group>"; };
+		A1000002234567890000036 /* AIAnalysisProgressManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAnalysisProgressManager.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A1000003234567890000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A1000004234567890000001 = {
+			isa = PBXGroup;
+			children = (
+				A1000004234567890000002 /* RFF */,
+				A1000004234567890000005 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A1000004234567890000002 /* RFF */ = {
+			isa = PBXGroup;
+			children = (
+				A1000002234567890000010 /* AppDelegate.swift */,
+				A1000002234567890000001 /* RFFApp.swift */,
+				A1000002234567890000002 /* ContentView.swift */,
+				A1000004234567890000003 /* Models */,
+				A1000004234567890000004 /* Services */,
+				A1000004234567890000006 /* Views */,
+				A1000004234567890000007 /* ML */,
+				A1000004234567890000008 /* Resources */,
+				A1000002234567890000003 /* Assets.xcassets */,
+			);
+			path = RFF;
+			sourceTree = "<group>";
+		};
+		A1000004234567890000003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A1000002234567890000028 /* InvoiceSchema.swift */,
+				A1000002234567890000004 /* LineItem.swift */,
+				A1000002234567890000005 /* RFFDocument.swift */,
+				A1000002234567890000011 /* RFFFileDocument.swift */,
+				A1000002234567890000006 /* RFFSchema.swift */,
+				A1000002234567890000012 /* RFFTransferable.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A1000004234567890000004 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A1000002234567890000036 /* AIAnalysisProgressManager.swift */,
+				A1000002234567890000030 /* AIAnalysisService.swift */,
+				A1000002234567890000024 /* AmountDateExtractionService.swift */,
+				A1000002234567890000013 /* CalendarService.swift */,
+				A1000002234567890000031 /* CorrectionHistoryService.swift */,
+				A1000002234567890000035 /* DateParsingUtility.swift */,
+				A1000002234567890000007 /* DocumentOCRService.swift */,
+				A1000002234567890000014 /* EntityExtractionService.swift */,
+				A1000002234567890000026 /* KeychainManager.swift */,
+				A1000002234567890000015 /* NotificationService.swift */,
+				A1000002234567890000016 /* PDFService.swift */,
+				A1000002234567890000017 /* PDFTextFinder.swift */,
+				A1000002234567890000034 /* SchemaExtractionService.swift */,
+				A1000002234567890000029 /* SchemaStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A1000004234567890000005 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1000002234567890000009 /* RFF.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A1000004234567890000006 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A10000023456789000000CC /* TableColumnConfiguration.swift */,
+				A1000002234567890000025 /* ConfirmationFormView.swift */,
+				A1000002234567890000018 /* DocumentEditorView.swift */,
+				A1000002234567890000027 /* DocumentPreviewView.swift */,
+				A1000002234567890000019 /* PDFViewer.swift */,
+				A1000002234567890000033 /* SchemaEditorView.swift */,
+				DD1B8A62045FD1D2DCCE9B69 /* InlineSchemaEditorView.swift */,
+				A1000002234567890000020 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A1000004234567890000007 /* ML */ = {
+			isa = PBXGroup;
+			children = (
+				A1000002234567890000021 /* DocumentCategory.swift */,
+				A1000002234567890000022 /* DocumentClassifier.swift */,
+				A1000002234567890000032 /* FieldClassifier.swift */,
+			);
+			path = ML;
+			sourceTree = "<group>";
+		};
+		A1000004234567890000008 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A1000002234567890000023 /* TrainingData.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1000005234567890000001 /* RFF */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1000007234567890000001 /* Build configuration list for PBXNativeTarget "RFF" */;
+			buildPhases = (
+				A1000006234567890000001 /* Sources */,
+				A1000003234567890000001 /* Frameworks */,
+				A1000006234567890000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RFF;
+			productName = RFF;
+			productReference = A1000002234567890000009 /* RFF.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A1000008234567890000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					A1000005234567890000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = A1000007234567890000002 /* Build configuration list for PBXProject "RFF" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A1000004234567890000001;
+			productRefGroup = A1000004234567890000005 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1000005234567890000001 /* RFF */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A1000006234567890000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000001234567890000003 /* Assets.xcassets in Resources */,
+				A1000001234567890000021 /* TrainingData.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A1000006234567890000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000001234567890000008 /* AppDelegate.swift in Sources */,
+				A1000001234567890000001 /* RFFApp.swift in Sources */,
+				A1000001234567890000002 /* ContentView.swift in Sources */,
+				A1000001234567890000004 /* LineItem.swift in Sources */,
+				A1000001234567890000005 /* RFFDocument.swift in Sources */,
+				A1000001234567890000009 /* RFFFileDocument.swift in Sources */,
+				A1000001234567890000006 /* RFFSchema.swift in Sources */,
+				A1000001234567890000010 /* RFFTransferable.swift in Sources */,
+				A1000001234567890000011 /* CalendarService.swift in Sources */,
+				A1000001234567890000007 /* DocumentOCRService.swift in Sources */,
+				A1000001234567890000012 /* EntityExtractionService.swift in Sources */,
+				A1000001234567890000013 /* NotificationService.swift in Sources */,
+				A1000001234567890000014 /* PDFService.swift in Sources */,
+				A1000001234567890000015 /* PDFTextFinder.swift in Sources */,
+				A1000001234567890000016 /* DocumentEditorView.swift in Sources */,
+				A1000001234567890000017 /* PDFViewer.swift in Sources */,
+				A10000013456789000000CA /* TableColumnConfiguration.swift in Sources */,
+				A1000001234567890000018 /* SettingsView.swift in Sources */,
+				A1000001234567890000019 /* DocumentCategory.swift in Sources */,
+				A1000001234567890000020 /* DocumentClassifier.swift in Sources */,
+				A1000001234567890000022 /* AmountDateExtractionService.swift in Sources */,
+				A1000001234567890000023 /* ConfirmationFormView.swift in Sources */,
+				A1000001234567890000024 /* KeychainManager.swift in Sources */,
+				A1000001234567890000025 /* DocumentPreviewView.swift in Sources */,
+				A1000001234567890000026 /* InvoiceSchema.swift in Sources */,
+				A1000001234567890000027 /* SchemaStore.swift in Sources */,
+				A1000001234567890000034 /* AIAnalysisProgressManager.swift in Sources */,
+				A1000001234567890000028 /* AIAnalysisService.swift in Sources */,
+				A1000001234567890000029 /* CorrectionHistoryService.swift in Sources */,
+				A1000001234567890000030 /* FieldClassifier.swift in Sources */,
+				A1000001234567890000031 /* SchemaEditorView.swift in Sources */,
+				9988A733A775D52B5FD710A6 /* InlineSchemaEditorView.swift in Sources */,
+				A1000001234567890000032 /* SchemaExtractionService.swift in Sources */,
+				A1000001234567890000033 /* DateParsingUtility.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A1000009234567890000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A1000009234567890000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		A1000009234567890000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rff.RFF;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A1000009234567890000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rff.RFF;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1000007234567890000001 /* Build configuration list for PBXNativeTarget "RFF" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000009234567890000003 /* Debug */,
+				A1000009234567890000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1000007234567890000002 /* Build configuration list for PBXProject "RFF" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000009234567890000001 /* Debug */,
+				A1000009234567890000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1000008234567890000001 /* Project object */;
+}

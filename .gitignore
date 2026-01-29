@@ -29,6 +29,11 @@
 # Runtime state directories (gitignored ephemeral data)
 # =============================================================================
 **/.runtime/
+.runtime/
+.claude/
+.logs/
+.build/
+.swiftpm/
 
 # =============================================================================
 # Rig .beads symlinks (point to ignored mayor/rig/.beads, recreated on setup)

@@ -1,0 +1,322 @@
+[
+  {
+    "text": "INVOICE #12345 Date: January 15, 2026 Bill To: Acme Corporation For services rendered: Software development consulting - 40 hours at $150/hour. Total Amount Due: $6,000.00. Payment terms: Net 30. Please remit payment to the address above.",
+    "label": "invoice"
+  },
+  {
+    "text": "Invoice Number: INV-2026-0042 Vendor: Tech Solutions Inc. Description: Annual software license renewal for enterprise suite. Quantity: 50 seats. Unit Price: $299.00. Subtotal: $14,950.00. Tax: $1,196.00. Total: $16,146.00. Due Date: February 1, 2026",
+    "label": "invoice"
+  },
+  {
+    "text": "TAX INVOICE From: Global Supplies Ltd. Invoice Date: 01/20/2026. Items: Office furniture - 10 desks @ $500 each = $5,000. Delivery charges: $200. Grand Total: $5,200. Payment due upon receipt. Bank details enclosed for wire transfer.",
+    "label": "invoice"
+  },
+  {
+    "text": "COMMERCIAL INVOICE Export documentation. Shipper: International Trading Co. Consignee: US Distribution Center. Goods: Electronic components, 500 units. FOB Value: $25,000. Freight: $1,500. Insurance: $250. CIF Total: $26,750.",
+    "label": "invoice"
+  },
+  {
+    "text": "Invoice for Professional Services. Client: Healthcare Partners. Period: December 2025. Medical billing consultation: $8,500. Claims processing support: $3,200. Total professional fees: $11,700. Please pay within 45 days.",
+    "label": "invoice"
+  },
+  {
+    "text": "PROFORMA INVOICE Reference: PI-2026-089. Prepared for: Manufacturing Corp. Quoted items: Industrial machinery parts. Part A: $12,000. Part B: $8,500. Installation: $2,500. Total Quote: $23,000. Valid for 30 days.",
+    "label": "invoice"
+  },
+  {
+    "text": "Service Invoice #SI-445 From: IT Support Services. Monthly IT maintenance contract - January 2026. Help desk support: $2,000. Network monitoring: $1,500. Security updates: $800. Monthly total: $4,300.",
+    "label": "invoice"
+  },
+  {
+    "text": "Invoice Statement Account: ACC-78901 Customer: Retail Outlets Inc. Previous balance: $5,000. New charges this period: $3,500. Payments received: -$5,000. Current balance due: $3,500. Minimum payment: $500.",
+    "label": "invoice"
+  },
+  {
+    "text": "Contractor Invoice. Project: Building Renovation Phase 2. Labor: 120 hours @ $75/hr = $9,000. Materials: $4,500. Equipment rental: $1,200. Total invoice amount: $14,700. Lien waiver included.",
+    "label": "invoice"
+  },
+  {
+    "text": "BILLING STATEMENT Law Offices of Smith & Associates. Client matter: Corporate merger review. Attorney hours: 45 @ $400/hr = $18,000. Paralegal hours: 20 @ $150/hr = $3,000. Filing fees: $500. Total: $21,500.",
+    "label": "invoice"
+  },
+  {
+    "text": "Invoice for Goods Sold. Seller: Wholesale Distributors. Buyer: Local Retailer. Products shipped: 200 cases assorted merchandise. Unit cost: $45. Total merchandise: $9,000. Shipping: $350. Invoice total: $9,350.",
+    "label": "invoice"
+  },
+  {
+    "text": "Recurring Invoice #R-2026-01. Subscription: Cloud Storage Premium Plan. Monthly fee: $499. Data overage charges: $75. API calls overage: $25. This month's total: $599. Auto-pay scheduled for 2/1/2026.",
+    "label": "invoice"
+  },
+  {
+    "text": "Catering Invoice Event: Annual Company Meeting Date: January 10, 2026 Attendees: 150 Menu: Lunch buffet + beverages Cost per person: $45 Subtotal: $6,750 Service charge: $675 Total: $7,425",
+    "label": "invoice"
+  },
+  {
+    "text": "Medical Invoice Patient: John Smith Account #: MED-55443 Services: Office visit - $150, Lab work - $275, Imaging - $800 Insurance adjustment: -$400 Patient responsibility: $825 Payment plan available.",
+    "label": "invoice"
+  },
+  {
+    "text": "Freelance Invoice From: Creative Design Studio To: Marketing Agency Project: Brand identity redesign Logo design: $2,500 Brand guidelines: $1,500 Social media templates: $800 Total project fee: $4,800",
+    "label": "invoice"
+  },
+  {
+    "text": "Utility Invoice Account: UTIL-998877 Service address: 123 Business Park Service period: 12/15/25 - 1/15/26 Electricity usage: 5,200 kWh @ $0.12 = $624 Demand charge: $150 Total current charges: $774",
+    "label": "invoice"
+  },
+  {
+    "text": "Commission Invoice Sales Representative: Jane Doe Period: Q4 2025 Total sales: $450,000 Commission rate: 8% Gross commission: $36,000 Less advances: -$10,000 Net commission due: $26,000",
+    "label": "invoice"
+  },
+  {
+    "text": "Equipment Lease Invoice Lessor: Capital Equipment Leasing Lessee: Production Company Equipment: CNC Machine Model X500 Monthly lease payment: $2,800 Maintenance fee: $200 Monthly total: $3,000",
+    "label": "invoice"
+  },
+  {
+    "text": "Training Services Invoice Provider: Professional Development Inc. Client: Corporate Training Dept. Workshop: Leadership Excellence Duration: 2 days, 30 participants Materials: $1,500 Instructor fees: $5,000 Total: $6,500",
+    "label": "invoice"
+  },
+  {
+    "text": "Final Invoice Project completion billing. Project: Website Redesign Remaining balance due: $7,500 Previous payments: $15,000 Total project value: $22,500 This final payment releases all deliverables.",
+    "label": "invoice"
+  },
+  {
+    "text": "PURCHASE ORDER PO Number: PO-2026-0158 Date: January 18, 2026 Ship To: Main Warehouse Vendor: Office Supplies Co. Items: 100 reams copy paper @ $5.00 = $500.00, 50 ink cartridges @ $25.00 = $1,250.00. Total: $1,750.00. Required delivery: February 1, 2026",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Purchase Order Request Department: Engineering Requested by: Tom Wilson PO#: ENG-2026-042 Supplier: Industrial Equipment Inc. Item: Precision measurement tools Quantity: 5 sets Unit price: $850 Total: $4,250 Justification: Required for quality control",
+    "label": "purchase_order"
+  },
+  {
+    "text": "OFFICIAL PURCHASE ORDER Organization: State University Order Number: UNI-PO-8899 Vendor: Scientific Supplies Description: Laboratory equipment and consumables Reagents: $3,500 Glassware: $1,200 Safety equipment: $800 Order total: $5,500",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Blanket Purchase Order Agreement BPO Number: BPO-2026-015 Vendor: Maintenance Supplies Corp Valid: 01/01/2026 - 12/31/2026 Authorized spend: $50,000 Categories: Janitorial supplies, safety equipment, tools Releases against this BPO require department approval",
+    "label": "purchase_order"
+  },
+  {
+    "text": "IT Purchase Order Request Requestor: IT Department PO: IT-2026-0033 Vendor: Tech Hardware Distributors Items requested: 25 laptop computers @ $1,200 each Docking stations: 25 @ $200 each Monitors: 50 @ $300 each Total order value: $50,000",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Emergency Purchase Order Priority: URGENT PO#: EMRG-2026-005 Reason: Equipment failure - production line down Vendor: Rapid Parts Supply Item: Replacement motor assembly Quantity: 1 Price: $8,500 Approved by: Plant Manager",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Standing Purchase Order SPO Number: SPO-CAFE-2026 Vendor: Food Service Distributors Purpose: Weekly cafeteria supplies Estimated weekly spend: $2,500 Annual authorization: $130,000 Delivery: Every Monday Auto-renewal: Yes",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Capital Equipment Purchase Order PO: CAP-2026-0012 Department: Manufacturing Asset type: Production machinery Vendor: Industrial Machines Ltd Description: Automated assembly system Unit cost: $175,000 Installation: $15,000 Total capital expenditure: $190,000",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Purchase Order Amendment Original PO: PO-2025-0892 Amendment #: 1 Change description: Increase quantity from 100 to 150 units Original value: $10,000 Revised value: $15,000 Change amount: $5,000 Approved by: Procurement Manager",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Service Purchase Order PO Number: SVC-2026-0077 Vendor: Consulting Partners LLC Service: Business process improvement Duration: 3 months Consultant rate: $200/hour Estimated hours: 400 Not-to-exceed amount: $80,000",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Sole Source Purchase Order PO: SS-2026-0003 Justification: Proprietary technology, single manufacturer Vendor: Specialized Systems Inc Equipment: Custom control module Price: $45,000 Sole source documentation attached Approval: VP Operations",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Purchase Order for Temporary Staff Staffing Agency: Professional Temps Inc PO Number: TEMP-2026-022 Position: Administrative Assistant Duration: 3 months Hourly rate: $25 Estimated hours: 480 Total authorization: $12,000",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Software Purchase Order PO: SW-2026-0055 Vendor: Enterprise Software Corp Product: Project Management Suite License type: Annual subscription Users: 200 Price per user: $150 Total: $30,000 Includes support and updates",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Construction Purchase Order Project: Facility Expansion PO: CONST-2026-008 Contractor: ABC Builders Scope: Phase 1 foundation work Materials: $85,000 Labor: $45,000 Total PO value: $130,000 Subject to change orders",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Purchase Order - Marketing Materials PO Number: MKT-2026-0101 Vendor: PrintPlus Graphics Items: Trade show displays: $3,500 Brochures (5000): $2,000 Business cards (10000): $500 Total: $6,000 Event date: March 15",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Fleet Purchase Order Department: Transportation PO: FLT-2026-004 Dealer: Auto Fleet Sales Vehicles: 10 delivery vans Base price each: $35,000 Fleet discount: -$2,000 each Net per vehicle: $33,000 Total fleet purchase: $330,000",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Pharmaceutical Purchase Order Healthcare Facility: City Hospital PO: PHARM-2026-0234 Distributor: Medical Supplies Inc Category: Prescription medications Estimated monthly value: $75,000 Contract pricing applies DEA license verification required",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Purchase Order Cancellation Notice Original PO: PO-2026-0089 Status: CANCELLED Reason: Project scope changed Vendor notified: Yes Restocking fee: $500 Cancellation approved by: Department Head Date: January 20, 2026",
+    "label": "purchase_order"
+  },
+  {
+    "text": "International Purchase Order PO: INTL-2026-0015 Supplier: Global Manufacturing (China) Incoterm: FOB Shanghai Products: Electronic components Quantity: 10,000 units Unit cost: $5.50 Total: $55,000 Lead time: 45 days",
+    "label": "purchase_order"
+  },
+  {
+    "text": "Recurring Purchase Order Schedule PO: REC-SUPPLIES-2026 Vendor: Office Essentials Delivery schedule: 1st of each month Standard order: Paper, toner, general supplies Monthly budget: $1,500 Annual authorization: $18,000",
+    "label": "purchase_order"
+  },
+  {
+    "text": "GRANT APPLICATION Request for Funding Organization: Community Health Initiative Project Title: Rural Healthcare Access Program Funding Requested: $250,000 Duration: 24 months Purpose: Establish mobile health clinics to serve underserved rural communities",
+    "label": "grant_request"
+  },
+  {
+    "text": "Grant Proposal Submitted to: National Science Foundation Principal Investigator: Dr. Sarah Chen Project: Advanced Materials Research for Sustainable Energy Amount Requested: $1,500,000 Period: 3 years Institutional support: University Research Center",
+    "label": "grant_request"
+  },
+  {
+    "text": "Foundation Grant Request Applicant: Youth Education Alliance Foundation: Smith Family Foundation Project: After-School STEM Program Budget requested: $75,000 Beneficiaries: 500 students annually Geographic area: Metropolitan school district",
+    "label": "grant_request"
+  },
+  {
+    "text": "Federal Grant Application Agency: Department of Education Program: Title I School Improvement Applicant: Local School District Funding request: $2,000,000 Purpose: Implement evidence-based literacy intervention Program year: 2026-2027",
+    "label": "grant_request"
+  },
+  {
+    "text": "Research Grant Proposal Title: Climate Change Impact on Coastal Ecosystems Submitted by: Marine Biology Institute Funding agency: Environmental Protection Agency Requested amount: $450,000 Research duration: 36 months Team size: 8 researchers",
+    "label": "grant_request"
+  },
+  {
+    "text": "Corporate Foundation Grant Request Organization: Arts Council Foundation: Corporate Giving Program Project: Public Art Installation Series Request: $50,000 Matching funds: $25,000 secured Timeline: 18 months Community impact: Downtown revitalization",
+    "label": "grant_request"
+  },
+  {
+    "text": "Government Grant Application Program: Small Business Innovation Research (SBIR) Phase: I Company: BioTech Innovations LLC Project: Novel Drug Delivery System Funding requested: $275,000 Duration: 12 months Commercialization potential: High",
+    "label": "grant_request"
+  },
+  {
+    "text": "Grant Request for Equipment Applicant: Regional Hospital Foundation: Healthcare Equipment Fund Purpose: Purchase MRI machine Amount requested: $1,200,000 Patient impact: 5,000 annually Justification: Nearest MRI 50 miles away",
+    "label": "grant_request"
+  },
+  {
+    "text": "Capacity Building Grant Proposal Organization: Nonprofit Resource Center Funder: Community Foundation Project: Technology Infrastructure Upgrade Request: $85,000 Outcomes: Serve 40% more clients Sustainability plan: Included",
+    "label": "grant_request"
+  },
+  {
+    "text": "Emergency Relief Grant Application Disaster: Hurricane recovery Applicant: Regional Food Bank Amount needed: $150,000 Use of funds: Food distribution, temporary storage Purpose: Support 10,000 displaced families Timeline: Immediate - 6 months",
+    "label": "grant_request"
+  },
+  {
+    "text": "Arts and Culture Grant Request Submitted to: National Endowment for the Arts Applicant: City Symphony Orchestra Project: Community Concert Series Funding: $100,000 Performances: 24 free concerts Target audience: Underserved neighborhoods",
+    "label": "grant_request"
+  },
+  {
+    "text": "Environmental Grant Proposal Foundation: Green Future Initiative Applicant: Conservation Land Trust Project: Wetland Restoration Budget: $325,000 Acres to restore: 500 Species protected: 12 endangered Carbon offset: 2,000 tons annually",
+    "label": "grant_request"
+  },
+  {
+    "text": "Technology Grant Application Program: Digital Equity Initiative Applicant: Public Library System Request: $200,000 Purpose: Expand broadband access and digital literacy Beneficiaries: 15,000 residents Equipment: 100 public computers, WiFi hotspots",
+    "label": "grant_request"
+  },
+  {
+    "text": "Housing Grant Request Agency: Department of Housing Applicant: Affordable Housing Coalition Project: Low-income housing development Units: 50 affordable apartments Funding requested: $3,500,000 Leverage: $7,000,000 private investment",
+    "label": "grant_request"
+  },
+  {
+    "text": "Workforce Development Grant Submitted to: Department of Labor Organization: Job Training Center Project: Advanced Manufacturing Skills Program Request: $400,000 Participants: 200 annually Job placement goal: 85% Industry partners: 15 manufacturers",
+    "label": "grant_request"
+  },
+  {
+    "text": "Mental Health Services Grant Application Funder: State Health Department Applicant: Community Counseling Center Program: Crisis intervention services Amount: $175,000 Staff to hire: 3 counselors Clients served: 1,000 annually 24/7 hotline included",
+    "label": "grant_request"
+  },
+  {
+    "text": "Agricultural Grant Proposal Agency: USDA Applicant: Family Farmers Cooperative Project: Sustainable farming practices transition Funding: $500,000 Farms participating: 25 Outcomes: Reduce water usage 30%, increase yields 15%",
+    "label": "grant_request"
+  },
+  {
+    "text": "Scholarship Fund Grant Request Organization: Education Foundation Purpose: STEM scholarships for underrepresented students Foundation: Tech Industry Giving Circle Amount: $250,000 Scholarships: 50 @ $5,000 each Selection criteria: Need-based, merit considered",
+    "label": "grant_request"
+  },
+  {
+    "text": "Infrastructure Grant Application Program: Community Development Block Grant Municipality: City of Riverside Project: Downtown street improvements Funding: $750,000 Scope: ADA compliance, lighting, sidewalks Jobs created: 45 temporary construction",
+    "label": "grant_request"
+  },
+  {
+    "text": "Public Health Grant Proposal Funder: Centers for Disease Control Applicant: County Health Department Program: Childhood vaccination outreach Request: $180,000 Target: Increase vaccination rates 20% Population served: 50,000 children Partners: 30 pediatric practices",
+    "label": "grant_request"
+  },
+  {
+    "text": "EXPENSE REIMBURSEMENT REQUEST Employee: John Smith Employee ID: EMP-12345 Department: Sales Date: January 20, 2026 Purpose: Client meeting travel Expenses: Airfare $450, Hotel $180, Meals $75, Ground transport $45 Total: $750.00 Receipts attached",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Reimbursement Claim Form Claimant: Marketing Department Event: Trade show attendance Conference: Tech Expo 2026 Registration fee: $500 Booth materials: $1,200 Team meals: $350 Total reimbursement requested: $2,050",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Mileage Reimbursement Request Employee: Sarah Johnson Period: January 1-15, 2026 Business trips: 12 Total miles driven: 485 Rate: $0.67/mile Amount due: $324.95 Destinations and purposes documented Vehicle: Personal",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Medical Expense Reimbursement Employee: Michael Brown Claim type: Out-of-pocket medical Provider: City Medical Center Service date: January 5, 2026 Total paid: $450 Insurance paid: $300 Employee reimbursement: $150 EOB attached",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Training Expense Reimbursement Submitted by: IT Department staff Course: AWS Certification Training Provider: Cloud Training Academy Tuition: $2,500 Study materials: $200 Exam fee: $300 Total: $3,000 Pre-approved: Yes",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Relocation Expense Reimbursement Employee: New Hire - Jennifer Lee From: Chicago, IL To: San Francisco, CA Moving company: $8,500 Temporary housing: $3,000 Travel: $600 Total relocation costs: $12,100 Per policy maximum: $15,000",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Office Supply Reimbursement Request Department: Accounting Purchased by: Team Lead Items: Printer paper, ink cartridges, file folders Store: Office Depot Receipt total: $127.45 Reason: Urgent need, corporate card unavailable",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Cell Phone Reimbursement Monthly Claim Employee: Field Service Rep Plan cost: $85/month Business use: 70% Reimbursement amount: $59.50 Period: January 2026 Supporting documentation: Call log summary showing client calls",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Travel Reimbursement - International Trip Employee: VP Sales Destination: London, UK Purpose: Client negotiations Dates: January 8-12, 2026 Flights: $2,800 Hotel (4 nights): $1,200 Meals & incidentals: $400 Total: $4,400",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Equipment Reimbursement Home Office Setup Employee: Remote Worker Equipment purchased: Monitor $350, Keyboard $80, Webcam $120 Total: $550 Per remote work policy allowance: $500 Overage paid by employee: $50 Reimbursable: $500",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Professional Membership Reimbursement Employee: Senior Engineer Organization: IEEE Annual dues: $250 Approved professional development expense Company reimburses: 100% Membership benefits work-related Renewal date: January 2026",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Entertainment Expense Reimbursement Submitted by: Account Manager Client: ABC Corporation Event: Client dinner Date: January 15, 2026 Restaurant: Fine Dining Establishment Attendees: 4 (2 employees, 2 clients) Total bill: $485 Tip: $97 Total: $582",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Parking Expense Reimbursement Employee: Downtown Office Staff Period: January 2026 Parking garage monthly pass: $250 Public transit not viable for role Company parking not available Supervisor approved Consistent with policy",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Conference Attendance Reimbursement Event: Annual Industry Summit Attendee: Product Manager Registration: $800 Hotel: $600 Flights: $400 Per diem meals: $150 Ground transport: $75 Total claim: $2,025",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Petty Cash Reimbursement Department: Reception Amount: $150 Purpose: Replenish petty cash fund Items purchased: Coffee supplies $45, Visitor parking validation $60, Emergency office supplies $45 Receipts attached: 8",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Work From Home Internet Reimbursement Employee: Full-time remote staff Monthly internet bill: $80 Company reimbursement rate: 50% Monthly reimbursement: $40 Period: Q4 2025 Total claim: $120 (3 months) Policy: Remote Work Agreement",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Health and Wellness Reimbursement Program: Employee Wellness Benefit Employee: HR Coordinator Expense: Gym membership Annual cost: $600 Reimbursement allowance: $500/year Amount requested: $500 Receipt and proof of membership attached",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Emergency Expense Reimbursement Situation: Flight cancellation stranded employee Employee: Business Traveler Unplanned hotel: $225 Change fee for new flight: $150 Meals during delay: $75 Total emergency expenses: $450 Documentation: Airline cancellation notice",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Tuition Reimbursement Request Employee: Part-time student Institution: State University Course: MBA Program - Finance Semester: Spring 2026 Tuition: $4,500 Books: $350 Total: $4,850 Grade requirement: B or higher Pre-approval: Obtained",
+    "label": "reimbursement"
+  },
+  {
+    "text": "Safety Equipment Reimbursement Employee: Field Technician Items: Steel-toe boots $175, Safety glasses $45, High-vis vest $30 Total: $250 Required PPE for job site work Per safety policy: 100% reimbursable Annual allowance: $300 Receipts attached",
+    "label": "reimbursement"
+  }
+]
