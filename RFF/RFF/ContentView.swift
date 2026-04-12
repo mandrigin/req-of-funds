@@ -688,16 +688,15 @@ struct ContentView: View {
 
             isProcessingDrop = true
 
-            // Copy to persistent location while we have access
-            let tempCopy = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension("pdf")
-
+            // Copy into managed storage while we still have security-scoped access
+            let documentId = UUID()
+            let storedURL: URL
             do {
-                try FileManager.default.copyItem(at: url, to: tempCopy)
+                let storedPath = try DocumentStorageService.copyFile(from: url, documentId: documentId)
+                storedURL = URL(fileURLWithPath: storedPath)
             } catch {
                 url.stopAccessingSecurityScopedResource()
-                importError = "Failed to access file: \(error.localizedDescription)"
+                importError = "Failed to copy file: \(error.localizedDescription)"
                 showingImportError = true
                 isProcessingDrop = false
                 return
@@ -706,7 +705,7 @@ struct ContentView: View {
             url.stopAccessingSecurityScopedResource()
 
             Task {
-                await processDroppedPDF(at: tempCopy)
+                await processDroppedPDF(at: storedURL, documentId: documentId)
             }
 
         case .failure(let error):
@@ -774,7 +773,7 @@ struct ContentView: View {
         }
     }
 
-    private func processDroppedPDF(at url: URL) async {
+    private func processDroppedPDF(at url: URL, documentId: UUID? = nil) async {
         do {
             // Step 1: Run OCR on the PDF
             let ocrResult = try await ocrService.processDocument(at: url)
@@ -785,18 +784,22 @@ struct ContentView: View {
             // Step 3: Create RFFDocument with extracted data
             await MainActor.run {
                 withAnimation {
-                    let documentId = UUID()
+                    let docId = documentId ?? UUID()
 
-                    // Copy file into app storage so we don't depend on the original location
+                    // Copy file into app storage (skip if already there, e.g. from file import)
                     let storedPath: String
-                    do {
-                        storedPath = try DocumentStorageService.copyFile(from: url, documentId: documentId)
-                    } catch {
-                        storedPath = url.path // fallback to original if copy fails
+                    if DocumentStorageService.isManagedPath(url.path) {
+                        storedPath = url.path
+                    } else {
+                        do {
+                            storedPath = try DocumentStorageService.copyFile(from: url, documentId: docId)
+                        } catch {
+                            storedPath = url.path // fallback to original if copy fails
+                        }
                     }
 
                     let newDocument = RFFDocument(
-                        id: documentId,
+                        id: docId,
                         title: generateTitle(from: entities, url: url),
                         requestingOrganization: entities.organizationName ?? "Unknown Organization",
                         amount: entities.amount ?? Decimal(0),
