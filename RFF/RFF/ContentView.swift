@@ -58,9 +58,13 @@ struct MigrationResult {
     }
 }
 
-/// Shows the document file path with a Reveal / Copy button
+/// Shows the document file path with a Reveal / Copy / Replace button
 struct DocumentPathBar: View {
     let path: String
+    let documentId: UUID
+    var onFileReplaced: ((String) -> Void)?
+
+    @State private var isPickingReplacement = false
 
     private var fileExists: Bool {
         FileManager.default.fileExists(atPath: path)
@@ -89,9 +93,8 @@ struct DocumentPathBar: View {
                 Text("File missing")
                     .font(.caption)
                     .foregroundColor(.orange)
-                Button("Copy Path") {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(path, forType: .string)
+                Button("Replace File...") {
+                    isPickingReplacement = true
                 }
                 .font(.caption)
                 .buttonStyle(.borderless)
@@ -100,6 +103,18 @@ struct DocumentPathBar: View {
         .padding(.horizontal)
         .padding(.vertical, 4)
         .background(fileExists ? Color.clear : Color.orange.opacity(0.08))
+        .fileImporter(
+            isPresented: $isPickingReplacement,
+            allowedContentTypes: [.pdf, .png, .jpeg, .tiff],
+            allowsMultipleSelection: false
+        ) { result in
+            guard case .success(let urls) = result, let url = urls.first else { return }
+            guard url.startAccessingSecurityScopedResource() else { return }
+            defer { url.stopAccessingSecurityScopedResource() }
+            if let newPath = try? DocumentStorageService.copyFile(from: url, documentId: documentId) {
+                onFileReplaced?(newPath)
+            }
+        }
     }
 }
 
@@ -663,7 +678,8 @@ struct ContentView: View {
                     doc.updatedAt = Date()
                     migrated += 1
                 }
-            } else {
+            } else if doc.status != .paid {
+                // Don't nag about missing files for paid/archived invoices
                 missing += 1
             }
         }
@@ -1392,7 +1408,12 @@ struct DocumentDetailView: View {
 
                             // File path bar — always visible
                             if let path = document.documentPath {
-                                DocumentPathBar(path: path)
+                                DocumentPathBar(path: path, documentId: document.id) { newPath in
+                                    document.documentPath = newPath
+                                    document.updatedAt = Date()
+                                    missingFilePath = nil
+                                    loadDocument()
+                                }
                                 Divider()
                             }
 
