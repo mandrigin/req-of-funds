@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// Settings view for the RFF application
 struct SettingsView: View {
@@ -594,7 +595,25 @@ struct AdvancedSettingsView: View {
                 }
             }
 
-            Section("Storage") {
+            Section("Document Storage") {
+                LabeledContent("Location") {
+                    Text(DocumentStorageService.documentsDirectory.path)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                }
+
+                Button("Open in Finder") {
+                    try? DocumentStorageService.ensureDirectory()
+                    NSWorkspace.shared.open(DocumentStorageService.documentsDirectory)
+                }
+
+                Text("Invoice files are copied here on import so they remain accessible even if the originals are moved or deleted.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("Cache") {
                 Toggle("Clear Cache on Quit", isOn: $clearCacheOnQuit)
 
                 Button("Clear OCR Cache Now") {

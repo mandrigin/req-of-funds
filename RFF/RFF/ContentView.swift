@@ -675,14 +675,25 @@ struct ContentView: View {
             // Step 3: Create RFFDocument with extracted data
             await MainActor.run {
                 withAnimation {
+                    let documentId = UUID()
+
+                    // Copy file into app storage so we don't depend on the original location
+                    let storedPath: String
+                    do {
+                        storedPath = try DocumentStorageService.copyFile(from: url, documentId: documentId)
+                    } catch {
+                        storedPath = url.path // fallback to original if copy fails
+                    }
+
                     let newDocument = RFFDocument(
+                        id: documentId,
                         title: generateTitle(from: entities, url: url),
                         requestingOrganization: entities.organizationName ?? "Unknown Organization",
                         amount: entities.amount ?? Decimal(0),
                         currency: entities.currency ?? .usd,
                         dueDate: entities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
                         extractedText: ocrResult.fullText,
-                        documentPath: url.path
+                        documentPath: storedPath
                     )
                     modelContext.insert(newDocument)
                     newlyDroppedDocumentIDs.append(newDocument.id)
@@ -1525,7 +1536,20 @@ struct DocumentDetailView: View {
     }
 
     private func loadDocument() {
-        guard let path = document.documentPath else { return }
+        guard var path = document.documentPath else { return }
+
+        // Migrate: if file is not in managed storage, try to copy it in
+        if !DocumentStorageService.isManagedPath(path) {
+            let sourceURL = URL(fileURLWithPath: path)
+            if FileManager.default.fileExists(atPath: path) {
+                if let newPath = try? DocumentStorageService.copyFile(from: sourceURL, documentId: document.id) {
+                    document.documentPath = newPath
+                    document.updatedAt = Date()
+                    path = newPath
+                }
+            }
+        }
+
         let url = URL(fileURLWithPath: path)
 
         if isPDF {
