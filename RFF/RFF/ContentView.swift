@@ -41,6 +41,23 @@ enum RecipientFilter: Hashable {
     }
 }
 
+/// Result of migrating legacy document paths into managed storage
+struct MigrationResult {
+    let migrated: Int
+    let missing: Int
+
+    var summary: String {
+        var parts: [String] = []
+        if migrated > 0 {
+            parts.append("\(migrated) document\(migrated == 1 ? "" : "s") copied into app storage.")
+        }
+        if missing > 0 {
+            parts.append("\(missing) document\(missing == 1 ? "'s" : "s'") original file\(missing == 1 ? " was" : "s were") not found — the original path is shown in the preview.")
+        }
+        return parts.joined(separator: "\n")
+    }
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
 
@@ -136,6 +153,10 @@ struct ContentView: View {
     @State private var isProcessingDrop = false
     @State private var pendingDropCount = 0
     @State private var newlyDroppedDocumentIDs: [RFFDocument.ID] = []
+
+    // Migration state
+    @State private var migrationResult: MigrationResult?
+    @State private var showingMigrationResult = false
 
     // Column visibility configuration
     @StateObject private var columnConfiguration = LibraryColumnConfiguration.shared
@@ -561,6 +582,50 @@ struct ContentView: View {
                     )
                 }
             }
+        }
+        .task {
+            migrateExternalDocuments()
+        }
+        .alert("Document Storage Migration", isPresented: $showingMigrationResult) {
+            Button("OK") { }
+        } message: {
+            if let result = migrationResult {
+                Text(result.summary)
+            }
+        }
+    }
+
+    /// On first launch, copy any externally-referenced files into managed storage
+    /// so we don't lose them if the originals are moved later.
+    private func migrateExternalDocuments() {
+        let docsToMigrate = allDocuments.filter { doc in
+            guard let path = doc.documentPath else { return false }
+            return !DocumentStorageService.isManagedPath(path)
+        }
+
+        guard !docsToMigrate.isEmpty else { return }
+
+        var migrated = 0
+        var missing = 0
+
+        for doc in docsToMigrate {
+            guard let path = doc.documentPath else { continue }
+
+            if FileManager.default.fileExists(atPath: path) {
+                let sourceURL = URL(fileURLWithPath: path)
+                if let newPath = try? DocumentStorageService.copyFile(from: sourceURL, documentId: doc.id) {
+                    doc.documentPath = newPath
+                    doc.updatedAt = Date()
+                    migrated += 1
+                }
+            } else {
+                missing += 1
+            }
+        }
+
+        if migrated > 0 || missing > 0 {
+            migrationResult = MigrationResult(migrated: migrated, missing: missing)
+            showingMigrationResult = true
         }
     }
 
@@ -1091,6 +1156,9 @@ struct DocumentDetailView: View {
     @State private var availableSchemas: [InvoiceSchema] = []
     @State private var documentSchemaName: String?
 
+    /// Original path shown when the file is missing (moved/deleted)
+    @State private var missingFilePath: String?
+
     private let textFinder = PDFTextFinder()
     private let schemaExtractionService = SchemaExtractionService.shared
 
@@ -1300,6 +1368,17 @@ struct DocumentDetailView: View {
                                             Image(nsImage: image)
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fit)
+                                        }
+                                    } else if let missing = missingFilePath {
+                                        ContentUnavailableView {
+                                            Label("File Not Found", systemImage: "questionmark.folder")
+                                        } description: {
+                                            Text("The original file has been moved or deleted.\n\(missing)")
+                                        } actions: {
+                                            Button("Copy Path") {
+                                                NSPasteboard.general.clearContents()
+                                                NSPasteboard.general.setString(missing, forType: .string)
+                                            }
                                         }
                                     } else {
                                         ContentUnavailableView(
@@ -1547,7 +1626,17 @@ struct DocumentDetailView: View {
                     document.updatedAt = Date()
                     path = newPath
                 }
+            } else {
+                // Original file is gone — show its path so the user knows where it was
+                missingFilePath = path
+                return
             }
+        }
+
+        // Check managed file still exists (shouldn't happen, but be safe)
+        guard FileManager.default.fileExists(atPath: path) else {
+            missingFilePath = path
+            return
         }
 
         let url = URL(fileURLWithPath: path)
