@@ -58,6 +58,51 @@ struct MigrationResult {
     }
 }
 
+/// Shows the document file path with a Reveal / Copy button
+struct DocumentPathBar: View {
+    let path: String
+
+    private var fileExists: Bool {
+        FileManager.default.fileExists(atPath: path)
+    }
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: fileExists ? "doc.fill" : "exclamationmark.triangle.fill")
+                .foregroundColor(fileExists ? .secondary : .orange)
+                .font(.caption)
+            Text(path)
+                .font(.caption)
+                .foregroundColor(fileExists ? .secondary : .orange)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .textSelection(.enabled)
+                .help(path)
+            Spacer()
+            if fileExists {
+                Button("Reveal in Finder") {
+                    NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: path)])
+                }
+                .font(.caption)
+                .buttonStyle(.borderless)
+            } else {
+                Text("File missing")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                Button("Copy Path") {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(path, forType: .string)
+                }
+                .font(.caption)
+                .buttonStyle(.borderless)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 4)
+        .background(fileExists ? Color.clear : Color.orange.opacity(0.08))
+    }
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
 
@@ -1341,6 +1386,12 @@ struct DocumentDetailView: View {
                             .padding(.vertical, 8)
 
                             Divider()
+
+                            // File path bar — always visible
+                            if let path = document.documentPath {
+                                DocumentPathBar(path: path)
+                                Divider()
+                            }
 
                             // Preview content (collapsible)
                             if isPreviewExpanded {
