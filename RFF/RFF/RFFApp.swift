@@ -1,6 +1,13 @@
 import SwiftUI
 import SwiftData
 
+extension Bundle {
+    /// "v-2.1" - marketing version in the TE label style
+    var rffVersion: String {
+        "v-" + ((infoDictionary?["CFBundleShortVersionString"] as? String) ?? "?")
+    }
+}
+
 @main
 struct RFFApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
@@ -77,7 +84,7 @@ struct RFFApp: App {
     }
 
     private func openLibraryWindow() {
-        if let window = NSApp.windows.first(where: { $0.title == "RFF" }) {
+        if let window = NSApp.windows.first(where: { $0.title.hasPrefix("RFF") }) {
             window.makeKeyAndOrderFront(nil)
         } else {
             // Open new library window

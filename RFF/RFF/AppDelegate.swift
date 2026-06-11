@@ -31,7 +31,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     /// Open the Library window
     private func openLibraryWindow() {
         // Check if library window already exists
-        if let existingWindow = NSApp.windows.first(where: { $0.title == "RFF" }) {
+        if let existingWindow = NSApp.windows.first(where: { $0.title.hasPrefix("RFF") }) {
             existingWindow.makeKeyAndOrderFront(nil)
         } else {
             // Dispatch to allow SwiftUI scene to initialize, then open via menu action

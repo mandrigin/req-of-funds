@@ -312,34 +312,57 @@ struct ContentView: View {
         return "\(prefix): \(parts.joined(separator: ", "))"
     }
 
+    /// TE-style model plate: dark mono label at the foot of the sidebar
+    private var versionPlate: some View {
+        HStack(spacing: 5) {
+            Circle().fill(Signal.green).frame(width: 5, height: 5)
+            Text("RFF")
+                .font(.system(size: 10, weight: .heavy, design: .monospaced))
+                .foregroundStyle(KOII.text)
+            Text("[\(Bundle.main.rffVersion.uppercased())]")
+                .font(.system(size: 10, weight: .heavy, design: .monospaced))
+                .foregroundStyle(KOII.amber)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+        .background(KOII.bg, in: RoundedRectangle(cornerRadius: 6))
+        .padding(.horizontal, 10)
+        .padding(.bottom, 8)
+        .help("RFF \(Bundle.main.rffVersion)")
+    }
+
     /// Sidebar source list: every part of the app, one click away
     private var sourceList: some View {
-        List(selection: $selectedFilter) {
-            Section("Money Out") {
-                Label("Inbox", systemImage: DocumentFilter.inbox.systemImage)
-                    .badge(inboxDocuments.count)
-                    .tag(DocumentFilter.inbox)
-                Label("Confirmed", systemImage: DocumentFilter.confirmed.systemImage)
-                    .tag(DocumentFilter.confirmed)
-                Label("Paid", systemImage: DocumentFilter.paid.systemImage)
-                    .tag(DocumentFilter.paid)
+        VStack(spacing: 0) {
+            List(selection: $selectedFilter) {
+                Section("Money Out") {
+                    Label("Inbox", systemImage: DocumentFilter.inbox.systemImage)
+                        .badge(inboxDocuments.count)
+                        .tag(DocumentFilter.inbox)
+                    Label("Confirmed", systemImage: DocumentFilter.confirmed.systemImage)
+                        .tag(DocumentFilter.confirmed)
+                    Label("Paid", systemImage: DocumentFilter.paid.systemImage)
+                        .tag(DocumentFilter.paid)
+                }
+                Section("Money In") {
+                    Label("Templates", systemImage: DocumentFilter.templates.systemImage)
+                        .tag(DocumentFilter.templates)
+                    Label("Drafts", systemImage: DocumentFilter.drafts.systemImage)
+                        .badge(unsentDraftCount)
+                        .tag(DocumentFilter.drafts)
+                }
+                Section {
+                    Label("Review", systemImage: DocumentFilter.review.systemImage)
+                        .badge(reviewQueue.pendingCount)
+                        .tag(DocumentFilter.review)
+                    Label("Reporting", systemImage: DocumentFilter.reporting.systemImage)
+                        .tag(DocumentFilter.reporting)
+                }
             }
-            Section("Money In") {
-                Label("Templates", systemImage: DocumentFilter.templates.systemImage)
-                    .tag(DocumentFilter.templates)
-                Label("Drafts", systemImage: DocumentFilter.drafts.systemImage)
-                    .badge(unsentDraftCount)
-                    .tag(DocumentFilter.drafts)
-            }
-            Section {
-                Label("Review", systemImage: DocumentFilter.review.systemImage)
-                    .badge(reviewQueue.pendingCount)
-                    .tag(DocumentFilter.review)
-                Label("Reporting", systemImage: DocumentFilter.reporting.systemImage)
-                    .tag(DocumentFilter.reporting)
-            }
+            .listStyle(.sidebar)
+
+            versionPlate
         }
-        .listStyle(.sidebar)
     }
 
     /// Outbound drafts that still need sending (pending or approved, not sent)
@@ -717,7 +740,7 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .openLibrary)) { _ in
             // Bring the library window to front when notification is received
-            if let window = NSApp.windows.first(where: { $0.title == "RFF" }) {
+            if let window = NSApp.windows.first(where: { $0.title.hasPrefix("RFF") }) {
                 window.makeKeyAndOrderFront(nil)
                 NSApp.activate(ignoringOtherApps: true)
             }
