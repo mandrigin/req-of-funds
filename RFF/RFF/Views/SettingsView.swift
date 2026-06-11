@@ -57,6 +57,14 @@ struct GeneralSettingsView: View {
 
     var body: some View {
         Form {
+            Section("About RFF") {
+                LabeledContent("Version") {
+                    Text(appVersion)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                }
+            }
+
             Section("Defaults") {
                 Picker("Default Due Date", selection: $defaultDueDateDays) {
                     Text("7 days").tag(7)
@@ -139,6 +147,16 @@ struct GeneralSettingsView: View {
         if let encoded = try? JSONEncoder().encode(favoriteCurrencies) {
             favoriteCurrenciesData = encoded
         }
+    }
+
+    private var appVersion: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+
+        if let build, !build.isEmpty {
+            return "\(version) (\(build))"
+        }
+        return version
     }
 }
 
