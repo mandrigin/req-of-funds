@@ -202,6 +202,17 @@ final class RFFDocument {
     /// ID of the schema used for field extraction (nil = no schema assigned)
     var schemaId: UUID?
 
+    /// How many days past the due date this document was paid (nil unless paid; 0 = on time)
+    var paidDaysLate: Int? {
+        guard status == .paid, let paidDate else { return nil }
+        let days = Calendar.current.dateComponents(
+            [.day],
+            from: Calendar.current.startOfDay(for: dueDate),
+            to: Calendar.current.startOfDay(for: paidDate)
+        ).day ?? 0
+        return max(0, days)
+    }
+
     /// Returns true if the document is in a read-only state (approved, completed, or paid)
     var isReadOnly: Bool {
         switch status {

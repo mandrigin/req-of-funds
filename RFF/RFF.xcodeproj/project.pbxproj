@@ -7,6 +7,41 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B50000000000000000000000 /* ReportingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000000 /* ReportingService.swift */; };
+		B50000000000000000000001 /* InvoicePDFRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000001 /* InvoicePDFRenderer.swift */; };
+		B50000000000000000000002 /* ReportingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000002 /* ReportingView.swift */; };
+		B20000000000000000000000 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000000 /* Config.swift */; };
+		B20000000000000000000001 /* InvoiceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* InvoiceModels.swift */; };
+		B20000000000000000000002 /* AIInvoiceClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* AIInvoiceClassifier.swift */; };
+		B20000000000000000000003 /* AccountantReportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000003 /* AccountantReportService.swift */; };
+		B20000000000000000000004 /* BankHolidayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004 /* BankHolidayService.swift */; };
+		B20000000000000000000005 /* CompanyMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000005 /* CompanyMatcher.swift */; };
+		B20000000000000000000006 /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000006 /* ConfigManager.swift */; };
+		B20000000000000000000007 /* ContentExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000007 /* ContentExtractor.swift */; };
+		B20000000000000000000008 /* DateExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008 /* DateExtractor.swift */; };
+		B20000000000000000000009 /* Debouncer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000009 /* Debouncer.swift */; };
+		B2000000000000000000000A /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000A /* FileWatcher.swift */; };
+		B2000000000000000000000B /* FilingLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000B /* FilingLogger.swift */; };
+		B2000000000000000000000C /* InvoiceClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000C /* InvoiceClassifier.swift */; };
+		B2000000000000000000000D /* InvoiceProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000D /* InvoiceProcessor.swift */; };
+		B2000000000000000000000E /* InvoiceScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000E /* InvoiceScheduler.swift */; };
+		B2000000000000000000000F /* LaunchAtLoginManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000F /* LaunchAtLoginManager.swift */; };
+		B20000000000000000000010 /* MonitoringCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* MonitoringCoordinator.swift */; };
+		B20000000000000000000011 /* Mover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* Mover.swift */; };
+		B20000000000000000000012 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000012 /* NotificationManager.swift */; };
+		B20000000000000000000013 /* OCRExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000013 /* OCRExtractor.swift */; };
+		B20000000000000000000014 /* Organizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000014 /* Organizer.swift */; };
+		B20000000000000000000015 /* PDFExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000015 /* PDFExtractor.swift */; };
+		B20000000000000000000016 /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000016 /* PermissionManager.swift */; };
+		B20000000000000000000017 /* ProcessingQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* ProcessingQueue.swift */; };
+		B20000000000000000000018 /* ReviewQueueStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000018 /* ReviewQueueStore.swift */; };
+		B20000000000000000000019 /* WorkingDayCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000019 /* WorkingDayCalculator.swift */; };
+		B2000000000000000000001A /* DraftInvoiceEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001A /* DraftInvoiceEditorView.swift */; };
+		B2000000000000000000001B /* InvoiceTemplateEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001B /* InvoiceTemplateEditorView.swift */; };
+		B2000000000000000000001C /* InvoicingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001C /* InvoicingView.swift */; };
+		B2000000000000000000001D /* MenuBarDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001D /* MenuBarDashboard.swift */; };
+		B2000000000000000000001E /* MonitoringSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001E /* MonitoringSettingsView.swift */; };
+		B2000000000000000000001F /* ReviewQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001F /* ReviewQueueView.swift */; };
 		6C894D7CA244663C4D1C36BC /* DocumentStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0464A6EBD365E002817A696 /* DocumentStorageService.swift */; };
 		9988A733A775D52B5FD710A6 /* InlineSchemaEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1B8A62045FD1D2DCCE9B69 /* InlineSchemaEditorView.swift */; };
 		'A1000001234567890000001' = {isa = PBXBuildFile; fileRef = A1000002234567890000001; };
@@ -47,6 +82,41 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B40000000000000000000000 /* ReportingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportingService.swift; sourceTree = "<group>"; };
+		B40000000000000000000001 /* InvoicePDFRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoicePDFRenderer.swift; sourceTree = "<group>"; };
+		B40000000000000000000002 /* ReportingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportingView.swift; sourceTree = "<group>"; };
+		B10000000000000000000000 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		B10000000000000000000001 /* InvoiceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceModels.swift; sourceTree = "<group>"; };
+		B10000000000000000000002 /* AIInvoiceClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIInvoiceClassifier.swift; sourceTree = "<group>"; };
+		B10000000000000000000003 /* AccountantReportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountantReportService.swift; sourceTree = "<group>"; };
+		B10000000000000000000004 /* BankHolidayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankHolidayService.swift; sourceTree = "<group>"; };
+		B10000000000000000000005 /* CompanyMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyMatcher.swift; sourceTree = "<group>"; };
+		B10000000000000000000006 /* ConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
+		B10000000000000000000007 /* ContentExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentExtractor.swift; sourceTree = "<group>"; };
+		B10000000000000000000008 /* DateExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtractor.swift; sourceTree = "<group>"; };
+		B10000000000000000000009 /* Debouncer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Debouncer.swift; sourceTree = "<group>"; };
+		B1000000000000000000000A /* FileWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileWatcher.swift; sourceTree = "<group>"; };
+		B1000000000000000000000B /* FilingLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilingLogger.swift; sourceTree = "<group>"; };
+		B1000000000000000000000C /* InvoiceClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceClassifier.swift; sourceTree = "<group>"; };
+		B1000000000000000000000D /* InvoiceProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceProcessor.swift; sourceTree = "<group>"; };
+		B1000000000000000000000E /* InvoiceScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceScheduler.swift; sourceTree = "<group>"; };
+		B1000000000000000000000F /* LaunchAtLoginManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginManager.swift; sourceTree = "<group>"; };
+		B10000000000000000000010 /* MonitoringCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringCoordinator.swift; sourceTree = "<group>"; };
+		B10000000000000000000011 /* Mover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mover.swift; sourceTree = "<group>"; };
+		B10000000000000000000012 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		B10000000000000000000013 /* OCRExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRExtractor.swift; sourceTree = "<group>"; };
+		B10000000000000000000014 /* Organizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Organizer.swift; sourceTree = "<group>"; };
+		B10000000000000000000015 /* PDFExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFExtractor.swift; sourceTree = "<group>"; };
+		B10000000000000000000016 /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
+		B10000000000000000000017 /* ProcessingQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessingQueue.swift; sourceTree = "<group>"; };
+		B10000000000000000000018 /* ReviewQueueStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewQueueStore.swift; sourceTree = "<group>"; };
+		B10000000000000000000019 /* WorkingDayCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkingDayCalculator.swift; sourceTree = "<group>"; };
+		B1000000000000000000001A /* DraftInvoiceEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftInvoiceEditorView.swift; sourceTree = "<group>"; };
+		B1000000000000000000001B /* InvoiceTemplateEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceTemplateEditorView.swift; sourceTree = "<group>"; };
+		B1000000000000000000001C /* InvoicingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoicingView.swift; sourceTree = "<group>"; };
+		B1000000000000000000001D /* MenuBarDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarDashboard.swift; sourceTree = "<group>"; };
+		B1000000000000000000001E /* MonitoringSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringSettingsView.swift; sourceTree = "<group>"; };
+		B1000000000000000000001F /* ReviewQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewQueueView.swift; sourceTree = "<group>"; };
 		'A1000002234567890000001' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFFApp.swift; sourceTree = "<group>"; };
 		'A1000002234567890000002' = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		'A1000002234567890000003' = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -110,6 +180,7 @@
 		'A1000004234567890000002' = {
 			isa = PBXGroup;
 			children = (
+				B3000000000000000000000D /* Monitoring */,
 				A1000002234567890000010,
 				A1000002234567890000001,
 				A1000002234567890000002,
@@ -198,6 +269,72 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		B3000000000000000000000D /* Monitoring */ = {
+			isa = PBXGroup;
+			children = (
+				B3000000000000000000000A /* Models */,
+				B3000000000000000000000B /* Services */,
+				B3000000000000000000000C /* Views */,
+			);
+			path = Monitoring;
+			sourceTree = "<group>";
+		};
+		B3000000000000000000000A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000000 /* Config.swift */,
+				B10000000000000000000001 /* InvoiceModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B3000000000000000000000B /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B40000000000000000000001 /* InvoicePDFRenderer.swift */,
+				B40000000000000000000000 /* ReportingService.swift */,
+				B10000000000000000000002 /* AIInvoiceClassifier.swift */,
+				B10000000000000000000003 /* AccountantReportService.swift */,
+				B10000000000000000000004 /* BankHolidayService.swift */,
+				B10000000000000000000005 /* CompanyMatcher.swift */,
+				B10000000000000000000006 /* ConfigManager.swift */,
+				B10000000000000000000007 /* ContentExtractor.swift */,
+				B10000000000000000000008 /* DateExtractor.swift */,
+				B10000000000000000000009 /* Debouncer.swift */,
+				B1000000000000000000000A /* FileWatcher.swift */,
+				B1000000000000000000000B /* FilingLogger.swift */,
+				B1000000000000000000000C /* InvoiceClassifier.swift */,
+				B1000000000000000000000D /* InvoiceProcessor.swift */,
+				B1000000000000000000000E /* InvoiceScheduler.swift */,
+				B1000000000000000000000F /* LaunchAtLoginManager.swift */,
+				B10000000000000000000010 /* MonitoringCoordinator.swift */,
+				B10000000000000000000011 /* Mover.swift */,
+				B10000000000000000000012 /* NotificationManager.swift */,
+				B10000000000000000000013 /* OCRExtractor.swift */,
+				B10000000000000000000014 /* Organizer.swift */,
+				B10000000000000000000015 /* PDFExtractor.swift */,
+				B10000000000000000000016 /* PermissionManager.swift */,
+				B10000000000000000000017 /* ProcessingQueue.swift */,
+				B10000000000000000000018 /* ReviewQueueStore.swift */,
+				B10000000000000000000019 /* WorkingDayCalculator.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B3000000000000000000000C /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B40000000000000000000002 /* ReportingView.swift */,
+				B1000000000000000000001A /* DraftInvoiceEditorView.swift */,
+				B1000000000000000000001B /* InvoiceTemplateEditorView.swift */,
+				B1000000000000000000001C /* InvoicingView.swift */,
+				B1000000000000000000001D /* MenuBarDashboard.swift */,
+				B1000000000000000000001E /* MonitoringSettingsView.swift */,
+				B1000000000000000000001F /* ReviewQueueView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -268,6 +405,41 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B50000000000000000000000 /* ReportingService.swift in Sources */,
+				B50000000000000000000001 /* InvoicePDFRenderer.swift in Sources */,
+				B50000000000000000000002 /* ReportingView.swift in Sources */,
+				B20000000000000000000000 /* Config.swift in Sources */,
+				B20000000000000000000001 /* InvoiceModels.swift in Sources */,
+				B20000000000000000000002 /* AIInvoiceClassifier.swift in Sources */,
+				B20000000000000000000003 /* AccountantReportService.swift in Sources */,
+				B20000000000000000000004 /* BankHolidayService.swift in Sources */,
+				B20000000000000000000005 /* CompanyMatcher.swift in Sources */,
+				B20000000000000000000006 /* ConfigManager.swift in Sources */,
+				B20000000000000000000007 /* ContentExtractor.swift in Sources */,
+				B20000000000000000000008 /* DateExtractor.swift in Sources */,
+				B20000000000000000000009 /* Debouncer.swift in Sources */,
+				B2000000000000000000000A /* FileWatcher.swift in Sources */,
+				B2000000000000000000000B /* FilingLogger.swift in Sources */,
+				B2000000000000000000000C /* InvoiceClassifier.swift in Sources */,
+				B2000000000000000000000D /* InvoiceProcessor.swift in Sources */,
+				B2000000000000000000000E /* InvoiceScheduler.swift in Sources */,
+				B2000000000000000000000F /* LaunchAtLoginManager.swift in Sources */,
+				B20000000000000000000010 /* MonitoringCoordinator.swift in Sources */,
+				B20000000000000000000011 /* Mover.swift in Sources */,
+				B20000000000000000000012 /* NotificationManager.swift in Sources */,
+				B20000000000000000000013 /* OCRExtractor.swift in Sources */,
+				B20000000000000000000014 /* Organizer.swift in Sources */,
+				B20000000000000000000015 /* PDFExtractor.swift in Sources */,
+				B20000000000000000000016 /* PermissionManager.swift in Sources */,
+				B20000000000000000000017 /* ProcessingQueue.swift in Sources */,
+				B20000000000000000000018 /* ReviewQueueStore.swift in Sources */,
+				B20000000000000000000019 /* WorkingDayCalculator.swift in Sources */,
+				B2000000000000000000001A /* DraftInvoiceEditorView.swift in Sources */,
+				B2000000000000000000001B /* InvoiceTemplateEditorView.swift in Sources */,
+				B2000000000000000000001C /* InvoicingView.swift in Sources */,
+				B2000000000000000000001D /* MenuBarDashboard.swift in Sources */,
+				B2000000000000000000001E /* MonitoringSettingsView.swift in Sources */,
+				B2000000000000000000001F /* ReviewQueueView.swift in Sources */,
 				A1000001234567890000008,
 				A1000001234567890000001,
 				A1000001234567890000002,

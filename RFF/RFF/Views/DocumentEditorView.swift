@@ -71,11 +71,23 @@ struct DocumentEditorView: View {
                             ProgressView()
                                 .controlSize(.small)
                         } else {
-                            Label("AI Analyze (Local)", systemImage: "desktopcomputer")
+                            Label("AI Analyze (Apple Intelligence)", systemImage: "desktopcomputer")
                         }
                     }
                     .disabled(isAnalyzingWithAI || (document.data.extractedText ?? "").isEmpty)
                 }
+
+                Button {
+                    performAIAnalysis(provider: .ollama)
+                } label: {
+                    if isAnalyzingWithAI {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Label("AI Analyze (Ollama)", systemImage: "cpu")
+                    }
+                }
+                .disabled(isAnalyzingWithAI || (document.data.extractedText ?? "").isEmpty)
             }
         }
         .sheet(isPresented: $showingAddLineItem) {

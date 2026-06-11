@@ -9,6 +9,7 @@ enum DocumentFilter: String, CaseIterable {
     case inbox = "Inbox"
     case confirmed = "Confirmed"
     case paid = "Paid"
+    case reporting = "Reporting"
 }
 
 /// Currency filter for document list
@@ -139,7 +140,7 @@ struct ContentView: View {
         allDocuments.filter { $0.status == .paid }
     }
 
-    @State private var selectedFilter: DocumentFilter = .inbox
+    @State private var selectedFilter: DocumentFilter = .confirmed
     @State private var selectedCurrencyFilter: CurrencyFilter = .all
     @State private var selectedRecipientFilter: RecipientFilter = .all
 
@@ -153,6 +154,8 @@ struct ContentView: View {
             statusFiltered = confirmedDocuments
         case .paid:
             statusFiltered = paidDocuments
+        case .reporting:
+            statusFiltered = []  // Reporting renders its own view
         }
 
         // Apply currency filter
@@ -183,6 +186,8 @@ struct ContentView: View {
             statusFiltered = confirmedDocuments
         case .paid:
             statusFiltered = paidDocuments
+        case .reporting:
+            statusFiltered = []  // Reporting renders its own view
         }
         let currencies = Set(statusFiltered.map { $0.currency })
         return Currency.allCases.filter { currencies.contains($0) }
@@ -198,6 +203,8 @@ struct ContentView: View {
             statusFiltered = confirmedDocuments
         case .paid:
             statusFiltered = paidDocuments
+        case .reporting:
+            statusFiltered = []  // Reporting renders its own view
         }
         let recipients = Set(statusFiltered.compactMap { $0.recipient })
         return recipients.sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
@@ -277,24 +284,130 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             VStack(spacing: 0) {
+                // Filters live directly above the list they control
+                HStack(spacing: 6) {
+                    Picker("Filter", selection: $selectedFilter) {
+                        ForEach(DocumentFilter.allCases, id: \.self) { filter in
+                            Text(filterLabel(for: filter)).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .controlSize(.small)
+                    .fixedSize()
+
+                    Spacer(minLength: 4)
+
+                    // Currency filter menu
+                    Menu {
+                        Button {
+                            selectedCurrencyFilter = .all
+                        } label: {
+                            if case .all = selectedCurrencyFilter {
+                                Label("All Currencies", systemImage: "checkmark")
+                            } else {
+                                Text("All Currencies")
+                            }
+                        }
+
+                        Divider()
+
+                        ForEach(Currency.allCases) { currency in
+                            Button {
+                                selectedCurrencyFilter = .specific(currency)
+                            } label: {
+                                if case .specific(let selected) = selectedCurrencyFilter, selected == currency {
+                                    Label("\(currency.symbol) \(currency.displayName)", systemImage: "checkmark")
+                                } else {
+                                    Text("\(currency.symbol) \(currency.displayName)")
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(currencyFilterLabel, systemImage: "dollarsign.circle")
+                    }
+                    .controlSize(.small)
+                    .fixedSize()
+
+                    // Recipient filter menu (always visible for consistent UI)
+                    Menu {
+                        Button {
+                            selectedRecipientFilter = .all
+                        } label: {
+                            if case .all = selectedRecipientFilter {
+                                Label("All Recipients", systemImage: "checkmark")
+                            } else {
+                                Text("All Recipients")
+                            }
+                        }
+
+                        if !availableRecipients.isEmpty {
+                            Divider()
+
+                            ForEach(availableRecipients, id: \.self) { recipient in
+                                Button {
+                                    selectedRecipientFilter = .specific(recipient)
+                                } label: {
+                                    if case .specific(let selected) = selectedRecipientFilter, selected == recipient {
+                                        Label(recipient, systemImage: "checkmark")
+                                    } else {
+                                        Text(recipient)
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(recipientFilterLabel, systemImage: "person.crop.circle")
+                    }
+                    .controlSize(.small)
+                    .fixedSize()
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+
+                Divider()
+
+                // Content area: table (or the Reporting overlay), tabs stay visible above
+                VStack(spacing: 0) {
                 // Table view with columns
                 Table(documents, selection: $selectedDocuments, sortOrder: $sortOrder) {
-                TableColumn("Recipient") { document in
-                    Text(document.recipient ?? "—")
-                        .foregroundStyle(document.recipient == nil ? .secondary : .primary)
+                TableColumn("Due Date", value: \.dueDate) { document in
+                    HStack {
+                        Text(document.dueDate, format: .dateTime.month().day().year())
+                        // Overdue warning only matters while money is still owed
+                        if document.dueDate < Date()
+                            && document.status != .completed
+                            && document.status != .paid {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.red)
+                        }
+                    }
                 }
-                .width(min: 100, ideal: 150)
-
-                TableColumn("From", value: \.requestingOrganization) { document in
-                    Text(document.requestingOrganization)
-                }
-                .width(min: 120, ideal: 180)
+                .width(120)
 
                 TableColumn("Amount") { document in
                     Text(document.amount, format: .currency(code: document.currency.currencyCode))
                         .monospacedDigit()
                 }
                 .width(100)
+
+                TableColumn("From", value: \.requestingOrganization) { document in
+                    Text(document.requestingOrganization)
+                }
+                .width(min: 120, ideal: 180)
+
+                TableColumn("Status") { document in
+                    HStack(spacing: 6) {
+                        StatusBadge(status: document.status, paidDaysLate: document.paidDaysLate)
+                        // Show AI analysis progress indicator
+                        if AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) {
+                            ProgressView()
+                                .controlSize(.small)
+                                .help("AI analysis in progress...")
+                        }
+                    }
+                }
+                .width(120)
 
                 TableColumn("Currency") { document in
                     Text(document.currency.rawValue)
@@ -305,29 +418,11 @@ struct ContentView: View {
                 }
                 .width(60)
 
-                TableColumn("Due Date", value: \.dueDate) { document in
-                    HStack {
-                        Text(document.dueDate, format: .dateTime.month().day().year())
-                        if document.dueDate < Date() && document.status != .completed {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.red)
-                        }
-                    }
+                TableColumn("Recipient") { document in
+                    Text(document.recipient ?? "—")
+                        .foregroundStyle(document.recipient == nil ? .secondary : .primary)
                 }
-                .width(120)
-
-                TableColumn("Status") { document in
-                    HStack(spacing: 6) {
-                        StatusBadge(status: document.status)
-                        // Show AI analysis progress indicator
-                        if AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) {
-                            ProgressView()
-                                .controlSize(.small)
-                                .help("AI analysis in progress...")
-                        }
-                    }
-                }
-                .width(120)
+                .width(min: 100, ideal: 150)
             }
             .onChange(of: sortOrder) { _, newOrder in
                 // Sorting is handled by the Table
@@ -406,10 +501,18 @@ struct ContentView: View {
                         Button {
                             performBatchAIAnalysis(documentIds: ids, provider: .foundation)
                         } label: {
-                            Label("Analyze On-Device\(countSuffix)", systemImage: "desktopcomputer")
+                            Label("Analyze with Apple Intelligence\(countSuffix)", systemImage: "desktopcomputer")
                         }
                         .disabled(docsWithText.isEmpty || anyAnalyzing)
                     }
+
+                    // Local Ollama server option
+                    Button {
+                        performBatchAIAnalysis(documentIds: ids, provider: .ollama)
+                    } label: {
+                        Label("Analyze with Ollama\(countSuffix)", systemImage: "cpu")
+                    }
+                    .disabled(docsWithText.isEmpty || anyAnalyzing)
 
                     Divider()
 
@@ -427,76 +530,6 @@ struct ContentView: View {
             }
             .tableColumnVisibility(configuration: columnConfiguration)
             .toolbar {
-                ToolbarItemGroup(placement: .navigation) {
-                    Picker("Filter", selection: $selectedFilter) {
-                        ForEach(DocumentFilter.allCases, id: \.self) { filter in
-                            Text(filter.rawValue).tag(filter)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 270)
-
-                    // Currency filter menu
-                    Menu {
-                        Button {
-                            selectedCurrencyFilter = .all
-                        } label: {
-                            if case .all = selectedCurrencyFilter {
-                                Label("All Currencies", systemImage: "checkmark")
-                            } else {
-                                Text("All Currencies")
-                            }
-                        }
-
-                        Divider()
-
-                        ForEach(Currency.allCases) { currency in
-                            Button {
-                                selectedCurrencyFilter = .specific(currency)
-                            } label: {
-                                if case .specific(let selected) = selectedCurrencyFilter, selected == currency {
-                                    Label("\(currency.symbol) \(currency.displayName)", systemImage: "checkmark")
-                                } else {
-                                    Text("\(currency.symbol) \(currency.displayName)")
-                                }
-                            }
-                        }
-                    } label: {
-                        Label(currencyFilterLabel, systemImage: "dollarsign.circle")
-                    }
-
-                    // Recipient filter menu (always visible for consistent UI)
-                    Menu {
-                        Button {
-                            selectedRecipientFilter = .all
-                        } label: {
-                            if case .all = selectedRecipientFilter {
-                                Label("All Recipients", systemImage: "checkmark")
-                            } else {
-                                Text("All Recipients")
-                            }
-                        }
-
-                        if !availableRecipients.isEmpty {
-                            Divider()
-
-                            ForEach(availableRecipients, id: \.self) { recipient in
-                                Button {
-                                    selectedRecipientFilter = .specific(recipient)
-                                } label: {
-                                    if case .specific(let selected) = selectedRecipientFilter, selected == recipient {
-                                        Label(recipient, systemImage: "checkmark")
-                                    } else {
-                                        Text(recipient)
-                                    }
-                                }
-                            }
-                        }
-                    } label: {
-                        Label(recipientFilterLabel, systemImage: "person.crop.circle")
-                    }
-                }
-
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button(action: { isImportingPDF = true }) {
                         Label("Import PDF", systemImage: "doc.badge.plus")
@@ -536,6 +569,16 @@ struct ContentView: View {
                     .padding(.vertical, 8)
                     .background(.bar)
                 }
+                }
+                .overlay {
+                    if selectedFilter == .reporting {
+                        ReportingView()
+                            .background(Color(nsColor: .windowBackgroundColor))
+                    }
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .rffOpenReporting)) { _ in
+                selectedFilter = .reporting
             }
         } detail: {
             if let document = selectedDocument {
@@ -884,6 +927,14 @@ struct ContentView: View {
         }
     }
 
+    /// Segment label with a live badge on Inbox when documents wait there
+    private func filterLabel(for filter: DocumentFilter) -> String {
+        if filter == .inbox && !inboxDocuments.isEmpty {
+            return "● Inbox \(inboxDocuments.count)"
+        }
+        return filter.rawValue
+    }
+
     private var emptyStateTitle: String {
         switch selectedFilter {
         case .inbox:
@@ -892,6 +943,8 @@ struct ContentView: View {
             return "No Confirmed Documents"
         case .paid:
             return "No Paid Documents"
+        case .reporting:
+            return ""  // Reporting overlay covers the empty state
         }
     }
 
@@ -903,6 +956,8 @@ struct ContentView: View {
             return "checkmark.circle"
         case .paid:
             return "banknote"
+        case .reporting:
+            return "chart.bar.doc.horizontal"
         }
     }
 
@@ -914,6 +969,8 @@ struct ContentView: View {
             return "Approved and completed documents will appear here."
         case .paid:
             return "Paid documents will appear here as an archive."
+        case .reporting:
+            return ""
         }
     }
 
@@ -1131,6 +1188,8 @@ struct AIBatchProgressBar: View {
 
 struct StatusBadge: View {
     let status: RFFStatus
+    /// Days the payment was late (0 = on time); tints the Paid badge green -> orange
+    var paidDaysLate: Int? = nil
 
     var body: some View {
         Text(status.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
@@ -1140,6 +1199,22 @@ struct StatusBadge: View {
             .padding(.vertical, 4)
             .background(backgroundColor, in: Capsule())
             .foregroundStyle(foregroundColor)
+            .help(paidHelp)
+    }
+
+    /// Green when paid on time, sliding through yellow to orange the later it was paid
+    /// (30+ days late = full orange). Unknown payment date reads as on time.
+    private var paidColor: Color {
+        let daysLate = paidDaysLate ?? 0
+        guard daysLate > 0 else { return .green }
+        let lateness = min(Double(daysLate) / 30.0, 1.0)
+        return Color(hue: 0.33 - 0.25 * lateness, saturation: 0.85, brightness: 0.85)
+    }
+
+    private var paidHelp: String {
+        guard status == .paid else { return "" }
+        guard let daysLate = paidDaysLate, daysLate > 0 else { return "Paid on time" }
+        return "Paid \(daysLate) day\(daysLate == 1 ? "" : "s") after the due date"
     }
 
     private var backgroundColor: Color {
@@ -1155,7 +1230,7 @@ struct StatusBadge: View {
         case .completed:
             return .purple.opacity(0.2)
         case .paid:
-            return .orange.opacity(0.2)
+            return paidColor.opacity(0.2)
         }
     }
 
@@ -1172,7 +1247,7 @@ struct StatusBadge: View {
         case .completed:
             return .purple
         case .paid:
-            return .orange
+            return paidColor
         }
     }
 }
@@ -1386,8 +1461,14 @@ struct DocumentDetailView: View {
                                         Button {
                                             performAIAnalysis(using: .foundation)
                                         } label: {
-                                            Label("Analyze On-Device", systemImage: "desktopcomputer")
+                                            Label("Analyze with Apple Intelligence", systemImage: "desktopcomputer")
                                         }
+                                    }
+
+                                    Button {
+                                        performAIAnalysis(using: .ollama)
+                                    } label: {
+                                        Label("Analyze with Ollama", systemImage: "cpu")
                                     }
                                 } label: {
                                     if AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) {

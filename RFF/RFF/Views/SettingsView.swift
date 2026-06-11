@@ -15,6 +15,11 @@ struct SettingsView: View {
                     Label("Notifications", systemImage: "bell")
                 }
 
+            MonitoringSettingsView()
+                .tabItem {
+                    Label("Monitoring", systemImage: "eye")
+                }
+
             OCRSettingsView()
                 .tabItem {
                     Label("OCR", systemImage: "doc.text.viewfinder")
@@ -35,7 +40,7 @@ struct SettingsView: View {
                     Label("Advanced", systemImage: "gearshape.2")
                 }
         }
-        .frame(width: 500, height: 450)
+        .frame(width: 560, height: 520)
     }
 }
 
@@ -263,32 +268,36 @@ struct OCRSettingsView: View {
 // MARK: - AI Settings
 
 struct AISettingsView: View {
-    @State private var selectedProvider: AIProvider = .claudeCode
-    @State private var openAIKey = ""
+    @State private var selectedProvider: AIProvider = .anthropic
     @State private var anthropicKey = ""
     @State private var isClaudeCodeAvailable = false
     @State private var isFoundationModelsAvailable = false
-    @State private var isOpenAIKeyConfigured = false
+    @State private var isOllamaAvailable = false
+    @State private var ollamaModels: [OllamaModel] = []
+    @State private var selectedOllamaModel = ""  // Empty = auto-pick best
     @State private var isAnthropicKeyConfigured = false
-    @State private var showingOpenAIKey = false
     @State private var showingAnthropicKey = false
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var successMessage: String?
 
+    private var bestOllamaModelName: String? {
+        AIAnalysisService.bestOllamaModel(among: ollamaModels)?.name
+    }
+
     var body: some View {
         Form {
             Section("AI Provider") {
                 Picker("Provider", selection: $selectedProvider) {
-                    ForEach(AIProvider.allCases, id: \.self) { provider in
+                    ForEach(AIProvider.selectableCases, id: \.self) { provider in
                         HStack {
                             Text(provider.displayName)
-                            if provider == .claudeCode && !isClaudeCodeAvailable {
-                                Text("(Not installed)")
-                                    .foregroundStyle(.secondary)
-                            }
                             if provider == .foundation && !isFoundationModelsAvailable {
                                 Text("(macOS 26+)")
+                                    .foregroundStyle(.secondary)
+                            }
+                            if provider == .ollama && !isOllamaAvailable {
+                                Text("(Not running)")
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -297,15 +306,7 @@ struct AISettingsView: View {
                 }
                 .pickerStyle(.menu)
                 .onChange(of: selectedProvider) { _, newValue in
-                    // Don't allow selecting Claude Code if not available
-                    if newValue == .claudeCode && !isClaudeCodeAvailable {
-                        // Revert to previous or default
-                        Task {
-                            selectedProvider = await AIAnalysisService.shared.detectAvailableProvider() ?? .anthropic
-                        }
-                        return
-                    }
-                    // Don't allow selecting Foundation Models if not available
+                    // Don't allow selecting Apple Intelligence if not available
                     if newValue == .foundation && !isFoundationModelsAvailable {
                         Task {
                             selectedProvider = await AIAnalysisService.shared.detectAvailableProvider() ?? .anthropic
@@ -317,19 +318,9 @@ struct AISettingsView: View {
                     }
                 }
 
-                if selectedProvider == .claudeCode {
-                    if isClaudeCodeAvailable {
-                        Label("Using local Claude Code CLI - no API key needed!", systemImage: "checkmark.circle.fill")
-                            .font(.caption)
-                            .foregroundStyle(.green)
-                    } else {
-                        Label("Claude Code not installed", systemImage: "xmark.circle")
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                    }
-                } else if selectedProvider == .foundation {
+                if selectedProvider == .foundation {
                     if isFoundationModelsAvailable {
-                        Label("Using on-device AI - no API key needed, fully private!", systemImage: "checkmark.circle.fill")
+                        Label("Using Apple Intelligence - no API key needed, fully private!", systemImage: "checkmark.circle.fill")
                             .font(.caption)
                             .foregroundStyle(.green)
                     } else {
@@ -337,52 +328,109 @@ struct AISettingsView: View {
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
-                } else if let envVar = selectedProvider.apiKeyEnvVar, hasEnvKey(for: selectedProvider) {
-                    Label("Using \(envVar) environment variable", systemImage: "terminal")
-                        .font(.caption)
-                        .foregroundStyle(.blue)
+                } else if selectedProvider == .ollama {
+                    if isOllamaAvailable {
+                        Label("Using local Ollama - no API key needed, fully private!", systemImage: "checkmark.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                    } else {
+                        Label("Ollama is not running", systemImage: "xmark.circle")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+                } else if selectedProvider == .anthropic {
+                    if hasEnvKey(for: .anthropic) {
+                        Label("Using ANTHROPIC_API_KEY environment variable", systemImage: "terminal")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    } else if isAnthropicKeyConfigured {
+                        Label("Using Anthropic API key", systemImage: "checkmark.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                    } else if isClaudeCodeAvailable {
+                        Label("Using local Claude Code CLI - no API key needed!", systemImage: "checkmark.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                    } else {
+                        Label("Requires an API key or Claude Code", systemImage: "xmark.circle")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
                 }
             }
 
-            // On-Device AI section (macOS 26+)
+            // Apple Intelligence section (macOS 26+)
             if isFoundationModelsAvailable {
-                Section("On-Device AI (Recommended)") {
-                    Label("Apple Foundation Models available", systemImage: "checkmark.circle.fill")
+                Section("Apple Intelligence") {
+                    Label("Apple Intelligence available", systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
                     Text("Runs entirely on your Mac. No API key required, fully private - your data never leaves your device.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             } else {
-                Section("On-Device AI") {
+                Section("Apple Intelligence") {
                     Label("Requires macOS 26+", systemImage: "desktopcomputer")
                         .foregroundStyle(.secondary)
-                    Text("On-device AI analysis will be available when you upgrade to macOS 26 or later.")
+                    Text("Apple Intelligence analysis will be available when you upgrade to macOS 26 or later.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
 
-            if isClaudeCodeAvailable {
-                Section("Claude Code") {
+            // Ollama section
+            Section("Ollama") {
+                if isOllamaAvailable {
+                    Label("Ollama running - \(ollamaModels.count) model\(ollamaModels.count == 1 ? "" : "s") installed", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+
+                    Picker("Model", selection: $selectedOllamaModel) {
+                        Text("Auto (best installed)").tag("")
+                        ForEach(ollamaModels) { model in
+                            Text(model.name).tag(model.name)
+                        }
+                    }
+                    .onChange(of: selectedOllamaModel) { _, newValue in
+                        Task {
+                            await AIAnalysisService.shared.setOllamaModel(newValue)
+                        }
+                    }
+
+                    if selectedOllamaModel.isEmpty, let best = bestOllamaModelName {
+                        Text("Auto currently picks \(best) - the largest installed model. Bigger models extract more accurately but respond slower.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Text("Runs entirely on your Mac via the local Ollama server. No API key required, fully private.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Label("Not running", systemImage: "xmark.circle")
+                        .foregroundStyle(.secondary)
+                    Text("Start the Ollama app (or run 'ollama serve') and pull a model, e.g. 'ollama pull qwen3:32b'.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Link("Get Ollama", destination: URL(string: "https://ollama.com")!)
+                }
+            }
+
+            // Claude section
+            Section("Claude") {
+                if isClaudeCodeAvailable {
                     Label("Claude Code CLI detected", systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
-                    Text("Uses your existing Claude Code authentication. No API key required.")
+                    Text("Uses your existing Claude Code authentication when no API key is set. No API key required.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                }
-            } else {
-                Section("Claude Code") {
-                    Label("Not installed", systemImage: "xmark.circle")
-                        .foregroundStyle(.secondary)
-                    Text("Install Claude Code to use AI without an API key.")
+                } else {
+                    Text("Add an Anthropic API key, or install Claude Code to use Claude without one.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    Link("Get an Anthropic API key", destination: URL(string: "https://console.anthropic.com/settings/keys")!)
                     Link("Install Claude Code", destination: URL(string: "https://claude.ai/download")!)
                 }
-            }
 
-            Section("Anthropic API Key") {
                 APIKeyInputView(
                     apiKey: $anthropicKey,
                     isConfigured: $isAnthropicKeyConfigured,
@@ -395,32 +443,8 @@ struct AISettingsView: View {
                 )
             }
 
-            Section("OpenAI API Key") {
-                APIKeyInputView(
-                    apiKey: $openAIKey,
-                    isConfigured: $isOpenAIKeyConfigured,
-                    showingKey: $showingOpenAIKey,
-                    provider: .openai,
-                    isSaving: $isSaving,
-                    errorMessage: $errorMessage,
-                    successMessage: $successMessage,
-                    hasEnvKey: hasEnvKey(for: .openai)
-                )
-            }
-
             Section("Privacy") {
-                Text("API keys are stored in UserDefaults. Document text is only sent when you explicitly tap 'AI Analyze'.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Section("API Keys (Alternative)") {
-                if !isFoundationModelsAvailable && !isClaudeCodeAvailable {
-                    Link("Get an Anthropic API key", destination: URL(string: "https://console.anthropic.com/settings/keys")!)
-                    Link("Get an OpenAI API key", destination: URL(string: "https://platform.openai.com/api-keys")!)
-                }
-
-                Text("On-device AI (macOS 26+) or Claude Code are recommended. API keys are only needed if neither is available. Anthropic uses Claude Sonnet, OpenAI uses GPT-4o-mini.")
+                Text("API keys are stored in UserDefaults. Document text is only sent when you explicitly tap 'AI Analyze'. Apple Intelligence and Ollama keep everything on your Mac.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -434,7 +458,7 @@ struct AISettingsView: View {
 
     private func hasEnvKey(for provider: AIProvider) -> Bool {
         guard let envVar = provider.apiKeyEnvVar else {
-            return false  // Claude Code doesn't use env var
+            return false  // Local providers don't use env vars
         }
         if let envKey = ProcessInfo.processInfo.environment[envVar],
            !envKey.isEmpty {
@@ -447,8 +471,14 @@ struct AISettingsView: View {
         isClaudeCodeAvailable = await AIAnalysisService.shared.isClaudeCodeAvailable()
         isFoundationModelsAvailable = await AIAnalysisService.shared.isFoundationModelsAvailable()
         selectedProvider = await AIAnalysisService.shared.getSelectedProvider()
-        isOpenAIKeyConfigured = await AIAnalysisService.shared.isAPIKeyConfigured(for: .openai)
         isAnthropicKeyConfigured = await AIAnalysisService.shared.isAPIKeyConfigured(for: .anthropic)
+        selectedOllamaModel = await AIAnalysisService.shared.getOllamaModel()
+        ollamaModels = await AIAnalysisService.shared.fetchOllamaModels()
+        isOllamaAvailable = !ollamaModels.isEmpty
+        // A previously chosen model may have been removed - fall back to auto
+        if !selectedOllamaModel.isEmpty && !ollamaModels.contains(where: { $0.name == selectedOllamaModel }) {
+            selectedOllamaModel = ""
+        }
     }
 }
 

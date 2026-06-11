@@ -10,13 +10,22 @@ enum AIProvider: String, CaseIterable, Codable {
     case openai = "openai"
     case anthropic = "anthropic"
     case foundation = "foundation"  // Apple Foundation Models (macOS 26+)
+    case ollama = "ollama"          // Local Ollama server
+
+    /// Providers offered in the Settings picker. Legacy cases (claudeCode, openai)
+    /// stay in the enum so stored selections still decode, but are folded into
+    /// the three user-facing options.
+    static var selectableCases: [AIProvider] {
+        [.foundation, .ollama, .anthropic]
+    }
 
     var displayName: String {
         switch self {
         case .claudeCode: return "Claude Code (Local)"
         case .openai: return "OpenAI"
-        case .anthropic: return "Claude (Anthropic)"
-        case .foundation: return "On-Device (Apple)"
+        case .anthropic: return "Claude"
+        case .foundation: return "Apple Intelligence"
+        case .ollama: return "Ollama"
         }
     }
 
@@ -24,19 +33,29 @@ enum AIProvider: String, CaseIterable, Codable {
         switch self {
         case .claudeCode: return nil  // No API key needed
         case .foundation: return nil  // No API key needed - on-device
+        case .ollama: return nil      // Local server - no API key needed
         case .openai: return "OPENAI_API_KEY"
         case .anthropic: return "ANTHROPIC_API_KEY"
         }
     }
 
     var requiresAPIKey: Bool {
-        self != .claudeCode && self != .foundation
+        self == .openai || self == .anthropic
     }
 
-    /// Whether this provider runs entirely on-device (no network)
+    /// Whether this provider runs entirely on-device (no external network)
     var isOnDevice: Bool {
-        self == .foundation
+        self == .foundation || self == .ollama
     }
+}
+
+/// A model installed in the local Ollama server
+struct OllamaModel: Identifiable, Sendable, Hashable {
+    let name: String
+    /// Approximate parameter count in billions, parsed from Ollama's "32.8B" style strings
+    let parameterBillions: Double
+
+    var id: String { name }
 }
 
 /// A single option value for an AI field suggestion with its own confidence
@@ -138,6 +157,8 @@ enum AIAnalysisError: Error, LocalizedError {
     case claudeCodeError(String)
     case foundationModelsNotAvailable
     case foundationModelsError(String)
+    case ollamaNotAvailable
+    case ollamaError(String)
     case networkError(String)
     case invalidResponse
     case rateLimited
@@ -151,6 +172,10 @@ enum AIAnalysisError: Error, LocalizedError {
             return "Claude Code CLI not found. Install Claude Code or configure an API key."
         case .claudeCodeError(let message):
             return "Claude Code error: \(message)"
+        case .ollamaNotAvailable:
+            return "Ollama is not running or has no models installed. Start Ollama and pull a model first."
+        case .ollamaError(let message):
+            return "Ollama error: \(message)"
         case .foundationModelsNotAvailable:
             return "On-device AI requires macOS 26 or later."
         case .foundationModelsError(let message):
@@ -174,11 +199,17 @@ actor AIAnalysisService {
     private static let openAIKeyDefaultsKey = "ai_openai_api_key"
     private static let anthropicKeyDefaultsKey = "ai_anthropic_api_key"
     private static let selectedProviderDefaultsKey = "ai_selected_provider"
+    private static let ollamaModelDefaultsKey = "ai_ollama_model"
+
+    /// Local Ollama server (default install)
+    static let ollamaBaseURL = URL(string: "http://127.0.0.1:11434")!
 
     /// Shared instance
     static let shared = AIAnalysisService()
 
     private let session: URLSession
+    /// Separate session for Ollama: local models can take minutes to generate
+    private let ollamaSession: URLSession
     private let defaults = UserDefaults.standard
 
     init() {
@@ -186,6 +217,11 @@ actor AIAnalysisService {
         config.timeoutIntervalForRequest = 60
         config.timeoutIntervalForResource = 120
         self.session = URLSession(configuration: config)
+
+        let ollamaConfig = URLSessionConfiguration.default
+        ollamaConfig.timeoutIntervalForRequest = 600
+        ollamaConfig.timeoutIntervalForResource = 600
+        self.ollamaSession = URLSession(configuration: ollamaConfig)
     }
 
     // MARK: - Claude Code CLI Detection
@@ -233,15 +269,82 @@ actor AIAnalysisService {
         return false
     }
 
+    // MARK: - Ollama Detection
+
+    /// Fetch the models installed in the local Ollama server (empty if Ollama isn't running)
+    func fetchOllamaModels() async -> [OllamaModel] {
+        var request = URLRequest(url: Self.ollamaBaseURL.appendingPathComponent("api/tags"))
+        request.timeoutInterval = 3
+
+        guard let (data, response) = try? await session.data(for: request),
+              (response as? HTTPURLResponse)?.statusCode == 200,
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let models = json["models"] as? [[String: Any]] else {
+            return []
+        }
+
+        return models.compactMap { item in
+            guard let name = item["name"] as? String else { return nil }
+            // Embedding models can't generate text
+            if name.localizedCaseInsensitiveContains("embed") { return nil }
+            let details = item["details"] as? [String: Any]
+            let parameterSize = details?["parameter_size"] as? String ?? ""
+            return OllamaModel(name: name, parameterBillions: Self.parseParameterBillions(parameterSize))
+        }
+    }
+
+    /// Check if the local Ollama server is running with at least one usable model
+    func isOllamaAvailable() async -> Bool {
+        !(await fetchOllamaModels()).isEmpty
+    }
+
+    /// Parse Ollama parameter size strings like "32.8B" or "700M" into billions
+    private static func parseParameterBillions(_ string: String) -> Double {
+        let trimmed = string.trimmingCharacters(in: .whitespaces).uppercased()
+        guard let value = Double(trimmed.filter { $0.isNumber || $0 == "." }) else {
+            return 0
+        }
+        return trimmed.hasSuffix("M") ? value / 1000 : value
+    }
+
+    /// Pick the best installed model: the one with the most parameters
+    static func bestOllamaModel(among models: [OllamaModel]) -> OllamaModel? {
+        models.max { $0.parameterBillions < $1.parameterBillions }
+    }
+
+    /// Get the user's preferred Ollama model (empty string means auto-pick the best)
+    func getOllamaModel() -> String {
+        defaults.string(forKey: Self.ollamaModelDefaultsKey) ?? ""
+    }
+
+    /// Set the preferred Ollama model (empty string means auto-pick the best)
+    func setOllamaModel(_ model: String) {
+        defaults.set(model, forKey: Self.ollamaModelDefaultsKey)
+    }
+
+    /// Resolve which Ollama model to use: user preference if still installed, otherwise the best installed one
+    private func resolveOllamaModel() async throws -> String {
+        let models = await fetchOllamaModels()
+        guard !models.isEmpty else {
+            throw AIAnalysisError.ollamaNotAvailable
+        }
+        let preferred = getOllamaModel()
+        if !preferred.isEmpty, models.contains(where: { $0.name == preferred }) {
+            return preferred
+        }
+        return Self.bestOllamaModel(among: models)!.name
+    }
+
     // MARK: - Provider Management
 
     /// Get the currently selected provider
     func getSelectedProvider() -> AIProvider {
         if let rawValue = defaults.string(forKey: Self.selectedProviderDefaultsKey),
            let provider = AIProvider(rawValue: rawValue) {
-            // Validate that Claude Code is still available if selected
-            if provider == .claudeCode && !isClaudeCodeAvailable() {
-                return detectAvailableProvider() ?? .anthropic
+            // Legacy selections fold into Claude, which prefers the CLI and
+            // falls back to the Anthropic API key
+            if provider == .claudeCode || provider == .openai {
+                return .anthropic
             }
             return provider
         }
@@ -256,17 +359,12 @@ actor AIAnalysisService {
 
     /// Auto-detect available provider based on CLI availability and API keys
     func detectAvailableProvider() -> AIProvider? {
-        // Priority: Claude Code CLI first (no API key needed!)
-        if isClaudeCodeAvailable() {
-            return .claudeCode
-        }
-        // Then Anthropic API
-        if isAPIKeyConfigured(for: .anthropic) {
+        // Claude works without a key via the Claude Code CLI, or with an API key
+        if isClaudeCodeAvailable() || isAPIKeyConfigured(for: .anthropic) {
             return .anthropic
         }
-        // Then OpenAI API
-        if isAPIKeyConfigured(for: .openai) {
-            return .openai
+        if isFoundationModelsAvailable() {
+            return .foundation
         }
         return nil
     }
@@ -282,6 +380,10 @@ actor AIAnalysisService {
         // Foundation Models doesn't need an API key - just macOS 26+
         if provider == .foundation {
             return isFoundationModelsAvailable()
+        }
+        // Ollama is a local server - no key; availability is checked at call time
+        if provider == .ollama {
+            return true
         }
         // Check environment variable first
         if let envVar = provider.apiKeyEnvVar,
@@ -318,6 +420,10 @@ actor AIAnalysisService {
             }
             throw AIAnalysisError.foundationModelsNotAvailable
         }
+        // Ollama is a local server - no key needed
+        if provider == .ollama {
+            return ""
+        }
         // Check environment variable first
         if let envVar = provider.apiKeyEnvVar,
            let envKey = ProcessInfo.processInfo.environment[envVar],
@@ -328,6 +434,10 @@ actor AIAnalysisService {
         let defaultsKey = provider == .openai ? Self.openAIKeyDefaultsKey : Self.anthropicKeyDefaultsKey
         if let storedKey = defaults.string(forKey: defaultsKey), !storedKey.isEmpty {
             return storedKey
+        }
+        // Claude can fall back to the local Claude Code CLI when no key is set
+        if provider == .anthropic && isClaudeCodeAvailable() {
+            return ""  // Empty key signals callAI to use the CLI
         }
         throw AIAnalysisError.apiKeyNotConfigured
     }
@@ -564,11 +674,67 @@ actor AIAnalysisService {
             return try await callClaudeCode(prompt: prompt)
         case .foundation:
             return try await callFoundationModels(prompt: prompt)
+        case .ollama:
+            return try await callOllama(prompt: prompt)
         case .openai:
             return try await callOpenAI(prompt: prompt, apiKey: apiKey)
         case .anthropic:
+            // Empty key means no API key configured but Claude Code CLI is available
+            if apiKey.isEmpty {
+                return try await callClaudeCode(prompt: prompt)
+            }
             return try await callAnthropic(prompt: prompt, apiKey: apiKey)
         }
+    }
+
+    private func callOllama(prompt: String) async throws -> String {
+        let model = try await resolveOllamaModel()
+
+        var request = URLRequest(url: Self.ollamaBaseURL.appendingPathComponent("api/chat"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "model": model,
+            "messages": [
+                ["role": "user", "content": prompt]
+            ],
+            "stream": false,
+            // Constrain output to valid JSON - also suppresses reasoning preambles
+            "format": "json",
+            "options": [
+                "temperature": 0.2,
+                // The extraction prompt plus invoice text exceeds Ollama's default context
+                "num_ctx": 8192
+            ]
+        ]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await ollamaSession.data(for: request)
+        } catch {
+            throw AIAnalysisError.ollamaNotAvailable
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AIAnalysisError.networkError("Invalid response")
+        }
+
+        guard httpResponse.statusCode == 200 else {
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
+            throw AIAnalysisError.ollamaError("HTTP \(httpResponse.statusCode): \(errorMessage)")
+        }
+
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let message = json["message"] as? [String: Any],
+              let content = message["content"] as? String else {
+            throw AIAnalysisError.invalidResponse
+        }
+
+        return content
     }
 
     private func callClaudeCode(prompt: String) async throws -> String {
@@ -814,8 +980,15 @@ actor AIAnalysisService {
         let cleanResponse = extractJSON(from: response)
 
         guard let data = cleanResponse.data(using: .utf8),
-              let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+              var json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             throw AIAnalysisError.invalidResponse
+        }
+
+        // Local models sometimes wrap the result in an extra object
+        // (e.g. {"invoiceData": {"suggestions": [...]}}) - unwrap one level
+        if json["suggestions"] == nil,
+           let nested = json.values.compactMap({ $0 as? [String: Any] }).first(where: { $0["suggestions"] != nil }) {
+            json = nested
         }
 
         var suggestions: [AIFieldSuggestion] = []
