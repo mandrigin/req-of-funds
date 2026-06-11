@@ -17,12 +17,7 @@ struct SettingsView: View {
 
             MonitoringSettingsView()
                 .tabItem {
-                    Label("Monitoring", systemImage: "eye")
-                }
-
-            OCRSettingsView()
-                .tabItem {
-                    Label("OCR", systemImage: "doc.text.viewfinder")
+                    Label("Pipeline", systemImage: "eye")
                 }
 
             AISettingsView()

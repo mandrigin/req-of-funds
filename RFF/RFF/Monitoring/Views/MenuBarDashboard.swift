@@ -1,16 +1,196 @@
 import SwiftUI
 import AppKit
 
+// MARK: - Signal Palette (app-wide)
+
+/// One signal system, one meaning per color, everywhere in the app:
+/// green = ok/done · amber = needs you · red = overdue/error · teal = outbound · gray = inert.
+/// These are tuned for light chrome; the KOII variants below are the same signals
+/// tuned for the dark display surfaces.
+enum Signal {
+    static let green = Color(red: 0.13, green: 0.62, blue: 0.30)
+    static let amber = Color(red: 0.85, green: 0.50, blue: 0.02)
+    static let red = Color(red: 0.83, green: 0.21, blue: 0.18)
+    static let teal = Color(red: 0.05, green: 0.52, blue: 0.62)
+    static let gray = Color.secondary
+}
+
+// MARK: - KO-II Palette
+
+/// Teenage-engineering-ish palette: near-black panel, mono type, signal colors
+enum KOII {
+    static let bg = Color(red: 0.10, green: 0.10, blue: 0.11)
+    static let cell = Color(red: 0.16, green: 0.16, blue: 0.17)
+    static let line = Color(red: 0.26, green: 0.26, blue: 0.28)
+    static let text = Color(red: 0.92, green: 0.91, blue: 0.88)
+    static let dim = Color(red: 0.55, green: 0.55, blue: 0.55)
+    static let amber = Color(red: 1.00, green: 0.62, blue: 0.10)
+    static let green = Color(red: 0.30, green: 0.85, blue: 0.39)
+    static let red = Color(red: 1.00, green: 0.27, blue: 0.23)
+    static let teal = Color(red: 0.35, green: 0.78, blue: 0.98)
+
+    static func mono(_ size: CGFloat, weight: Font.Weight = .semibold) -> Font {
+        .system(size: size, weight: weight, design: .monospaced)
+    }
+}
+
 extension Notification.Name {
-    /// Posted by the menu bar [REPORT] button; ContentView switches to the Reporting tab
+    /// Legacy name kept for any external scripts; the app uses rffOpenSection
     static let rffOpenReporting = Notification.Name("rff.openReporting")
+}
+
+// MARK: - Badge State
+
+/// Urgency of the "send your invoice" signal
+enum SendUrgency {
+    case none       // nothing to send
+    case normal     // drafts exist, due is far
+    case soon       // due within 7 days
+    case overdue    // past due
+
+    var koColor: Color {
+        switch self {
+        case .none, .normal: return KOII.teal
+        case .soon: return KOII.amber
+        case .overdue: return KOII.red
+        }
+    }
+
+    var nsColor: NSColor {
+        switch self {
+        case .none, .normal: return NSColor(red: 0.35, green: 0.78, blue: 0.98, alpha: 1)
+        case .soon: return NSColor(red: 1.00, green: 0.62, blue: 0.10, alpha: 1)
+        case .overdue: return NSColor(red: 1.00, green: 0.27, blue: 0.23, alpha: 1)
+        }
+    }
+}
+
+/// Everything the badge and panel need, computed in one place so they always agree
+struct BadgeState {
+    let status: MonitoringStatus
+    let queueCount: Int
+    let sendCount: Int
+    let sendUrgency: SendUrgency
+    let earliestSendDue: Date?
+    let daysToReport: Int
+
+    @MainActor
+    static func current(
+        coordinator: MonitoringCoordinator,
+        reviewQueue: ReviewQueueStore,
+        scheduler: InvoiceScheduler
+    ) -> BadgeState {
+        let unsent = scheduler.draftInvoices.filter {
+            $0.status == .pending || $0.status == .approved
+        }
+        let earliest = unsent.map(\.dueDate).min()
+
+        let urgency: SendUrgency
+        if unsent.isEmpty {
+            urgency = .none
+        } else if let earliest, earliest < Date() {
+            urgency = .overdue
+        } else if let earliest, earliest.timeIntervalSinceNow < 7 * 24 * 3600 {
+            urgency = .soon
+        } else {
+            urgency = .normal
+        }
+
+        return BadgeState(
+            status: coordinator.status,
+            queueCount: reviewQueue.pendingCount,
+            sendCount: unsent.count,
+            sendUrgency: urgency,
+            earliestSendDue: earliest,
+            daysToReport: AccountantReportService.daysUntilReport()
+        )
+    }
+}
+
+// MARK: - Menu Bar Icon (quiet by default, characters mean "you have a job")
+
+enum MenuBarBadgeRenderer {
+    static let amber = NSColor(red: 1.00, green: 0.62, blue: 0.10, alpha: 1)
+    static let green = NSColor(red: 0.30, green: 0.85, blue: 0.39, alpha: 1)
+    static let red = NSColor(red: 1.00, green: 0.27, blue: 0.23, alpha: 1)
+
+    static func dotColor(for status: MonitoringStatus) -> NSColor {
+        switch status {
+        case .idle: return green
+        case .processing: return amber
+        case .error: return red
+        case .stopped: return .systemGray
+        }
+    }
+
+    static func render(state: BadgeState) -> NSImage {
+        // Actionable segments only - an idle day is just the dot
+        var segments: [(String, NSColor)] = []
+        if state.queueCount > 0 {
+            segments.append(("?\(state.queueCount)", amber))
+        }
+        if state.sendCount > 0 {
+            segments.append(("S\(state.sendCount)", state.sendUrgency.nsColor))
+        }
+        if state.daysToReport <= 3 {
+            segments.append(("R\(state.daysToReport)", state.daysToReport <= 1 ? red : amber))
+        }
+
+        let font = NSFont.monospacedSystemFont(ofSize: 11, weight: .heavy)
+        let text = NSMutableAttributedString()
+        for (index, segment) in segments.enumerated() {
+            if index > 0 {
+                text.append(NSAttributedString(string: " ", attributes: [.font: font]))
+            }
+            text.append(NSAttributedString(
+                string: segment.0,
+                attributes: [.font: font, .foregroundColor: segment.1]
+            ))
+        }
+
+        let dotDiameter: CGFloat = 7
+        let spacing: CGFloat = segments.isEmpty ? 0 : 4
+        let height: CGFloat = 16
+        let textSize = text.size()
+        let width = dotDiameter + spacing + ceil(textSize.width) + 2
+        let dot = dotColor(for: state.status)
+
+        let image = NSImage(size: NSSize(width: width, height: height), flipped: false) { _ in
+            dot.setFill()
+            NSBezierPath(ovalIn: NSRect(
+                x: 1, y: (height - dotDiameter) / 2, width: dotDiameter, height: dotDiameter
+            )).fill()
+            if !segments.isEmpty {
+                text.draw(at: NSPoint(
+                    x: dotDiameter + spacing,
+                    y: (height - textSize.height) / 2
+                ))
+            }
+            return true
+        }
+        image.isTemplate = false
+        return image
+    }
+}
+
+/// SwiftUI wrapper used as the MenuBarExtra label
+struct MenuBarBadgeLabel: View {
+    @ObservedObject var coordinator = MonitoringCoordinator.shared
+    @ObservedObject var reviewQueue = ReviewQueueStore.shared
+    @ObservedObject var scheduler = InvoiceScheduler.shared
+
+    var body: some View {
+        Image(nsImage: MenuBarBadgeRenderer.render(
+            state: .current(coordinator: coordinator, reviewQueue: reviewQueue, scheduler: scheduler)
+        ))
+    }
 }
 
 // MARK: - Badge Callout Plumbing
 
 /// The badge's information segments, in display order
 enum BadgeSegmentID: Hashable, CaseIterable {
-    case status, filed, queue, drafts, report
+    case status, queue, send, report
 }
 
 /// Anchor identity for connector lines: a badge segment or its callout text
@@ -29,132 +209,10 @@ struct BadgeAnchorsKey: PreferenceKey {
     }
 }
 
-// MARK: - KO-II Palette
-
-/// Teenage-engineering-ish palette: near-black panel, mono type, signal colors
-enum KOII {
-    static let bg = Color(red: 0.10, green: 0.10, blue: 0.11)
-    static let cell = Color(red: 0.16, green: 0.16, blue: 0.17)
-    static let line = Color(red: 0.26, green: 0.26, blue: 0.28)
-    static let text = Color(red: 0.92, green: 0.91, blue: 0.88)
-    static let dim = Color(red: 0.55, green: 0.55, blue: 0.55)
-    static let amber = Color(red: 1.00, green: 0.62, blue: 0.10)
-    static let green = Color(red: 0.30, green: 0.85, blue: 0.39)
-    static let red = Color(red: 1.00, green: 0.27, blue: 0.23)
-
-    static func mono(_ size: CGFloat, weight: Font.Weight = .semibold) -> Font {
-        .system(size: size, weight: weight, design: .monospaced)
-    }
-}
-
-// MARK: - Menu Bar Icon (dense, colored)
-
-/// Renders the menu bar "icon": a tiny colored status strip with live numbers.
-/// Drawn as a non-template NSImage so colors survive in the menu bar.
-enum MenuBarBadgeRenderer {
-    static let amber = NSColor(red: 1.00, green: 0.62, blue: 0.10, alpha: 1)
-    static let green = NSColor(red: 0.30, green: 0.85, blue: 0.39, alpha: 1)
-    static let red = NSColor(red: 1.00, green: 0.27, blue: 0.23, alpha: 1)
-
-    static func dotColor(for status: MonitoringStatus) -> NSColor {
-        switch status {
-        case .idle: return green
-        case .processing: return amber
-        case .error: return red
-        case .stopped: return .systemGray
-        }
-    }
-
-    static func render(
-        status: MonitoringStatus,
-        filedToday: Int,
-        queueCount: Int,
-        draftCount: Int,
-        daysToReport: Int
-    ) -> NSImage {
-        let fg = NSColor.labelColor
-
-        // Two stacked micro-rows next to the dot: half the horizontal footprint
-        var topRow: [(String, NSColor)] = [("\(filedToday)", fg)]
-        if queueCount > 0 {
-            topRow.append(("?\(queueCount)", amber))
-        }
-        var bottomRow: [(String, NSColor)] = []
-        if draftCount > 0 {
-            bottomRow.append(("D\(draftCount)", .systemTeal))
-        }
-        if daysToReport <= 3 {
-            bottomRow.append(("R\(daysToReport)", daysToReport <= 1 ? red : amber))
-        }
-
-        // Single row: bigger type; two rows: stacked micro type
-        let singleRow = bottomRow.isEmpty
-        let font = NSFont.monospacedSystemFont(ofSize: singleRow ? 11 : 8, weight: .heavy)
-
-        func line(_ segments: [(String, NSColor)]) -> NSAttributedString {
-            let text = NSMutableAttributedString()
-            for (index, segment) in segments.enumerated() {
-                if index > 0 {
-                    text.append(NSAttributedString(string: " ", attributes: [.font: font]))
-                }
-                text.append(NSAttributedString(
-                    string: segment.0,
-                    attributes: [.font: font, .foregroundColor: segment.1]
-                ))
-            }
-            return text
-        }
-
-        let top = line(topRow)
-        let bottom = line(bottomRow)
-
-        let dotDiameter: CGFloat = 6
-        let spacing: CGFloat = 3
-        let height: CGFloat = 16
-        let textWidth = max(top.size().width, bottom.size().width)
-        let width = dotDiameter + spacing + ceil(textWidth) + 2
-        let dot = dotColor(for: status)
-
-        let image = NSImage(size: NSSize(width: width, height: height), flipped: false) { _ in
-            dot.setFill()
-            NSBezierPath(ovalIn: NSRect(
-                x: 0, y: (height - dotDiameter) / 2, width: dotDiameter, height: dotDiameter
-            )).fill()
-
-            let x = dotDiameter + spacing
-            if singleRow {
-                top.draw(at: NSPoint(x: x, y: (height - top.size().height) / 2))
-            } else {
-                top.draw(at: NSPoint(x: x, y: height - top.size().height + 1))
-                bottom.draw(at: NSPoint(x: x, y: -1))
-            }
-            return true
-        }
-        image.isTemplate = false
-        return image
-    }
-}
-
-/// SwiftUI wrapper used as the MenuBarExtra label
-struct MenuBarBadgeLabel: View {
-    @ObservedObject var coordinator = MonitoringCoordinator.shared
-    @ObservedObject var reviewQueue = ReviewQueueStore.shared
-    @ObservedObject var scheduler = InvoiceScheduler.shared
-
-    var body: some View {
-        Image(nsImage: MenuBarBadgeRenderer.render(
-            status: coordinator.status,
-            filedToday: coordinator.stats.filedToday,
-            queueCount: reviewQueue.pendingCount,
-            draftCount: scheduler.draftInvoices.filter { $0.status == .pending }.count,
-            daysToReport: AccountantReportService.daysUntilReport()
-        ))
-    }
-}
-
 // MARK: - Dashboard Panel
 
-/// The dense at-a-glance dashboard shown when clicking the menu bar item
+/// The dense at-a-glance dashboard shown when clicking the menu bar item.
+/// The annotated badge replica IS the header - every number lives exactly once.
 struct MenuBarDashboardView: View {
     @ObservedObject var coordinator = MonitoringCoordinator.shared
     @ObservedObject var reviewQueue = ReviewQueueStore.shared
@@ -166,28 +224,28 @@ struct MenuBarDashboardView: View {
     @State private var ollamaUp = false
     @State private var appleIntelligenceUp = false
 
+    private var state: BadgeState {
+        .current(coordinator: coordinator, reviewQueue: reviewQueue, scheduler: scheduler)
+    }
+
     private var pendingDrafts: [DraftInvoice] {
-        scheduler.draftInvoices.filter { $0.status == .pending }
+        scheduler.draftInvoices.filter { $0.status == .pending || $0.status == .approved }
     }
 
     var body: some View {
         VStack(spacing: 1) {
-            badgeLegend
-            header
-            counterGrid
-            reportRow
+            badgeBoard
             aiRow
             if !reviewQueue.items.isEmpty {
                 queueSection
             }
             if !pendingDrafts.isEmpty {
-                draftsSection
+                sendSection
             }
-            lastFiledRow
             footer
         }
         .background(KOII.line)
-        .frame(width: 460)
+        .frame(width: 530)
         .background(KOII.bg)
         .task {
             coordinator.refreshStats()
@@ -196,30 +254,35 @@ struct MenuBarDashboardView: View {
         }
     }
 
-    // MARK: Badge Callouts (the menu bar icon itself, magnified, with trace lines
-    // to live explanations - TE-style self-explanation on the device)
+    // MARK: Segments
 
-    private var daysToReport: Int { AccountantReportService.daysUntilReport() }
+    private var statusColor: Color {
+        switch coordinator.status {
+        case .idle: return KOII.green
+        case .processing: return KOII.amber
+        case .error: return KOII.red
+        case .stopped: return KOII.dim
+        }
+    }
 
     private var reportColor: Color {
-        daysToReport <= 1 ? KOII.red : (daysToReport <= 3 ? KOII.amber : KOII.dim)
+        state.daysToReport <= 1 ? KOII.red : (state.daysToReport <= 3 ? KOII.amber : KOII.dim)
     }
 
     /// Segments currently visible in the menu bar badge, in badge order
     private var visibleSegments: [BadgeSegmentID] {
-        var segments: [BadgeSegmentID] = [.status, .filed]
-        if reviewQueue.pendingCount > 0 { segments.append(.queue) }
-        if !pendingDrafts.isEmpty { segments.append(.drafts) }
-        if daysToReport <= 3 { segments.append(.report) }
+        var segments: [BadgeSegmentID] = [.status]
+        if state.queueCount > 0 { segments.append(.queue) }
+        if state.sendCount > 0 { segments.append(.send) }
+        if state.daysToReport <= 3 { segments.append(.report) }
         return segments
     }
 
     private func segmentColor(_ segment: BadgeSegmentID) -> Color {
         switch segment {
         case .status: return statusColor
-        case .filed: return KOII.text
         case .queue: return KOII.amber
-        case .drafts: return Color.teal
+        case .send: return state.sendUrgency.koColor
         case .report: return reportColor
         }
     }
@@ -227,10 +290,9 @@ struct MenuBarDashboardView: View {
     private func segmentGlyph(_ segment: BadgeSegmentID) -> String {
         switch segment {
         case .status: return "●"
-        case .filed: return "\(coordinator.stats.filedToday)"
-        case .queue: return "?\(reviewQueue.pendingCount)"
-        case .drafts: return "D\(pendingDrafts.count)"
-        case .report: return "R\(daysToReport)"
+        case .queue: return "?\(state.queueCount)"
+        case .send: return "S\(state.sendCount)"
+        case .report: return "R\(state.daysToReport)"
         }
     }
 
@@ -239,7 +301,8 @@ struct MenuBarDashboardView: View {
         case .status:
             switch coordinator.status {
             case .idle:
-                return "WATCHING \(configManager.config.monitoredPaths.count) FOLDER\(configManager.config.monitoredPaths.count == 1 ? "" : "S")"
+                let count = configManager.config.monitoredPaths.count
+                return "WATCHING \(count) FOLDER\(count == 1 ? "" : "S")"
             case .processing(let file):
                 return "PROCESSING \(file.prefix(16))"
             case .error(let message):
@@ -247,78 +310,83 @@ struct MenuBarDashboardView: View {
             case .stopped:
                 return "STOPPED · START BELOW"
             }
-        case .filed:
-            if coordinator.stats.filedToday == 0 {
-                return "NOTHING FILED YET TODAY"
-            }
-            if let last = coordinator.stats.lastFiledName {
-                return "\(coordinator.stats.filedToday) FILED TODAY · \(last.prefix(12))"
-            }
-            return "\(coordinator.stats.filedToday) FILED TODAY"
         case .queue:
-            return "\(reviewQueue.pendingCount) AWAIT YOUR CONFIRM → REVIEW"
-        case .drafts:
-            return "\(pendingDrafts.count) DRAFT\(pendingDrafts.count == 1 ? "" : "S") TO APPROVE → OUTBOUND"
+            return state.queueCount > 0
+                ? "\(state.queueCount) AWAIT YOUR CONFIRM → REVIEW"
+                : "REVIEW CLEAR"
+        case .send:
+            if state.sendCount == 0 { return "NOTHING TO SEND" }
+            if let due = state.earliestSendDue {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "dd.MM"
+                let prefix = state.sendUrgency == .overdue ? "OVERDUE" : "DUE \(formatter.string(from: due))"
+                return "\(state.sendCount) INVOICE\(state.sendCount == 1 ? "" : "S") TO SEND · \(prefix)"
+            }
+            return "\(state.sendCount) INVOICE\(state.sendCount == 1 ? "" : "S") TO SEND"
         case .report:
-            return "RPT IN \(daysToReport)D · IN:\(coordinator.stats.reportInbound) OUT:\(coordinator.stats.reportOutbound)"
+            return "RPT IN \(state.daysToReport)D · IN:\(coordinator.stats.reportInbound) OUT:\(coordinator.stats.reportOutbound)"
         }
     }
 
-    private var badgeTopRow: [BadgeSegmentID] {
-        visibleSegments.filter { $0 == .filed || $0 == .queue }
+    // MARK: Badge Board (centered replica, callouts on four sides, traces never cross)
+
+    private enum CalloutSide {
+        case left, top, right, bottom
     }
 
-    private var badgeBottomRow: [BadgeSegmentID] {
-        visibleSegments.filter { $0 == .drafts || $0 == .report }
+    /// Each visible segment gets its own side, matched to its position in the
+    /// replica: dot exits left, last glyph exits right, middle ones up/down.
+    private var sideAssignment: [BadgeSegmentID: CalloutSide] {
+        let segments = visibleSegments
+        var map: [BadgeSegmentID: CalloutSide] = [:]
+        guard let first = segments.first else { return map }
+        map[first] = .left
+        if segments.count >= 2 { map[segments[segments.count - 1]] = .right }
+        if segments.count >= 3 { map[segments[1]] = .top }
+        if segments.count == 4 { map[segments[2]] = .bottom }
+        return map
     }
 
-    /// Callouts ordered to match the replica's vertical geometry, so trace lines
-    /// run parallel and never cross: top row first, then the dot, then bottom row
-    private var calloutOrder: [BadgeSegmentID] {
-        badgeBottomRow.isEmpty
-            ? [.status] + badgeTopRow
-            : badgeTopRow + [.status] + badgeBottomRow
+    private func segmentAnchor(for side: CalloutSide) -> Anchor<CGPoint>.Source {
+        switch side {
+        case .left: return .leading
+        case .top: return .top
+        case .right: return .trailing
+        case .bottom: return .bottom
+        }
     }
 
-    /// Exact replica of the menu bar badge layout (dot + stacked micro rows), magnified
+    private func calloutAnchor(for side: CalloutSide) -> Anchor<CGPoint>.Source {
+        switch side {
+        case .left: return .trailing   // callout sits left of replica, trace enters its right edge
+        case .top: return .bottom
+        case .right: return .leading
+        case .bottom: return .top
+        }
+    }
+
+    private func segment(on side: CalloutSide) -> BadgeSegmentID? {
+        sideAssignment.first { $0.value == side }?.key
+    }
+
+    /// Exact replica of the menu bar badge (dot + actionable glyphs), magnified
     private var badgeReplica: some View {
         HStack(spacing: 12) {
-            Circle()
-                .fill(statusColor)
-                .frame(width: 22, height: 22)
-                .anchorPreference(key: BadgeAnchorsKey.self, value: .trailing) {
-                    [BadgeMark.segment(.status): $0]
-                }
-            VStack(alignment: .leading, spacing: badgeBottomRow.isEmpty ? 0 : 6) {
-                HStack(spacing: 12) {
-                    ForEach(badgeTopRow, id: \.self) { segment in
+            ForEach(visibleSegments, id: \.self) { segment in
+                let side = sideAssignment[segment] ?? .left
+                Group {
+                    if segment == .status {
+                        Circle()
+                            .fill(statusColor)
+                            .frame(width: 18, height: 18)
+                    } else {
                         Text(segmentGlyph(segment))
-                            .font(KOII.mono(badgeBottomRow.isEmpty ? 34 : 27, weight: .heavy))
+                            .font(KOII.mono(30, weight: .heavy))
                             .foregroundStyle(segmentColor(segment))
-                            // Last glyph in a row exits from its centerline (clean
-                            // horizontal trace); earlier ones exit over the top edge
-                            .anchorPreference(
-                                key: BadgeAnchorsKey.self,
-                                value: segment == badgeTopRow.last ? .trailing : .topTrailing
-                            ) {
-                                [BadgeMark.segment(segment): $0]
-                            }
                     }
                 }
-                if !badgeBottomRow.isEmpty {
-                    HStack(spacing: 12) {
-                        ForEach(badgeBottomRow, id: \.self) { segment in
-                            Text(segmentGlyph(segment))
-                                .font(KOII.mono(27, weight: .heavy))
-                                .foregroundStyle(segmentColor(segment))
-                                .anchorPreference(
-                                    key: BadgeAnchorsKey.self,
-                                    value: segment == badgeBottomRow.last ? .trailing : .bottomTrailing
-                                ) {
-                                    [BadgeMark.segment(segment): $0]
-                                }
-                        }
-                    }
+                .anchorPreference(key: BadgeAnchorsKey.self, value: segmentAnchor(for: side)) {
+                    [BadgeMark.segment(segment): $0]
                 }
             }
         }
@@ -326,10 +394,10 @@ struct MenuBarDashboardView: View {
 
     /// Callout capsule: Liquid Glass on macOS 26, flat cell before that
     @ViewBuilder
-    private func calloutLabel(_ segment: BadgeSegmentID) -> some View {
-        let label = Text(segmentExplanation(segment))
+    private func calloutCapsule(_ text: String, color: Color, dimmed: Bool = false) -> some View {
+        let label = Text(text)
             .font(KOII.mono(10, weight: .semibold))
-            .foregroundStyle(segmentColor(segment))
+            .foregroundStyle(dimmed ? KOII.dim : color)
             .lineLimit(1)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
@@ -341,42 +409,102 @@ struct MenuBarDashboardView: View {
                 label.background(KOII.cell, in: Capsule())
             }
         }
-        .overlay(Capsule().stroke(segmentColor(segment).opacity(0.45), lineWidth: 1))
+        .overlay(Capsule().stroke((dimmed ? KOII.dim : color).opacity(dimmed ? 0.2 : 0.45), lineWidth: 1))
+        .opacity(dimmed ? 0.75 : 1)
     }
 
-    private var badgeLegend: some View {
-        HStack(alignment: .center, spacing: 64) {
-            badgeReplica
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(calloutOrder, id: \.self) { segment in
-                    calloutLabel(segment)
-                        .anchorPreference(key: BadgeAnchorsKey.self, value: .leading) {
-                            [BadgeMark.callout(segment): $0]
-                        }
+    /// Facts that aren't badge segments right now - shown once, dimmed, below the callouts
+    private var quietFacts: [(String, Color)] {
+        var facts: [(String, Color)] = []
+
+        // Filed today (diary fact - never in the badge anymore)
+        if coordinator.stats.filedToday > 0 {
+            var text = "\(coordinator.stats.filedToday) FILED TODAY"
+            if let last = coordinator.stats.lastFiledName {
+                text += " · \(last.prefix(14))"
+            }
+            facts.append((text, KOII.text))
+        } else {
+            facts.append(("NOTHING FILED TODAY", KOII.dim))
+        }
+
+        facts.append(("\(coordinator.stats.paidThisMonth) PAID THIS MONTH", KOII.text))
+
+        // Hidden segments keep teaching the badge vocabulary
+        for segment in BadgeSegmentID.allCases where segment != .status && !visibleSegments.contains(segment) {
+            facts.append((segmentExplanation(segment), KOII.dim))
+        }
+
+        return facts
+    }
+
+    @ViewBuilder
+    private func sideCallout(_ side: CalloutSide) -> some View {
+        if let segment = segment(on: side) {
+            calloutCapsule(segmentExplanation(segment), color: segmentColor(segment))
+                .anchorPreference(key: BadgeAnchorsKey.self, value: calloutAnchor(for: side)) {
+                    [BadgeMark.callout(segment): $0]
+                }
+        }
+    }
+
+    private var badgeBoard: some View {
+        VStack(spacing: 34) {
+            sideCallout(.top)
+            HStack(spacing: 40) {
+                sideCallout(.left)
+                badgeReplica
+                sideCallout(.right)
+            }
+            sideCallout(.bottom)
+
+            // Remaining facts, once each, quiet - the rest of the instrument readout
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 7) {
+                ForEach(Array(quietFacts.enumerated()), id: \.offset) { _, fact in
+                    calloutCapsule(fact.0, color: fact.1, dimmed: true)
                 }
             }
-            Spacer(minLength: 0)
+            .padding(.top, 4)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 16)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 18)
         .background(KOII.bg)
         .overlayPreferenceValue(BadgeAnchorsKey.self) { anchors in
-            // PCB-trace connector lines from each badge segment to its callout
+            // Straight elbow traces, one per side - geometrically unable to cross
             GeometryReader { proxy in
-                ForEach(Array(calloutOrder.enumerated()), id: \.element) { index, segment in
-                    if let segmentAnchor = anchors[.segment(segment)],
+                ForEach(visibleSegments, id: \.self) { segment in
+                    if let side = sideAssignment[segment],
+                       let segmentAnchor = anchors[.segment(segment)],
                        let calloutAnchor = anchors[.callout(segment)] {
                         let from = proxy[segmentAnchor]
                         let to = proxy[calloutAnchor]
-                        let nodeCenter = CGPoint(x: from.x + 9, y: from.y)
-                        let lane = to.x - 12 - CGFloat(calloutOrder.count - index) * 9
+                        let isHorizontal = (side == .left || side == .right)
+                        let nodeOffset: CGFloat = 8
+                        let node = isHorizontal
+                            ? CGPoint(x: from.x + (side == .left ? -nodeOffset : nodeOffset), y: from.y)
+                            : CGPoint(x: from.x, y: from.y + (side == .top ? -nodeOffset : nodeOffset))
 
-                        // Trace: node edge -> lane -> callout capsule, touching it
                         Path { path in
-                            path.move(to: CGPoint(x: nodeCenter.x + 4.5, y: nodeCenter.y))
-                            path.addLine(to: CGPoint(x: lane, y: nodeCenter.y))
-                            path.addLine(to: CGPoint(x: lane, y: to.y))
-                            path.addLine(to: CGPoint(x: to.x, y: to.y))
+                            path.move(to: node)
+                            if isHorizontal {
+                                if abs(node.y - to.y) < 6 {
+                                    // Already aligned: clean straight run
+                                } else {
+                                    let midX = (node.x + to.x) / 2
+                                    path.addLine(to: CGPoint(x: midX, y: node.y))
+                                    path.addLine(to: CGPoint(x: midX, y: to.y))
+                                }
+                            } else {
+                                if abs(node.x - to.x) < 6 {
+                                    // Already aligned: clean straight drop
+                                } else {
+                                    let midY = (node.y + to.y) / 2
+                                    path.addLine(to: CGPoint(x: node.x, y: midY))
+                                    path.addLine(to: CGPoint(x: to.x, y: midY))
+                                }
+                            }
+                            path.addLine(to: to)
                         }
                         .stroke(segmentColor(segment).opacity(0.6), lineWidth: 1.5)
 
@@ -385,90 +513,11 @@ struct MenuBarDashboardView: View {
                             .fill(KOII.bg)
                             .stroke(segmentColor(segment), lineWidth: 1.5)
                             .frame(width: 9, height: 9)
-                            .position(nodeCenter)
+                            .position(node)
                     }
                 }
             }
         }
-    }
-
-    // MARK: Header
-
-    private var statusColor: Color {
-        switch coordinator.status {
-        case .idle: return KOII.green
-        case .processing: return KOII.amber
-        case .error: return KOII.red
-        case .stopped: return KOII.dim
-        }
-    }
-
-    private var statusText: String {
-        switch coordinator.status {
-        case .idle: return "WATCHING \(configManager.config.monitoredPaths.count) DIR"
-        case .processing(let file): return "PROC \(file.prefix(18))"
-        case .error(let message): return "ERR \(message.prefix(20))"
-        case .stopped: return "STOPPED"
-        }
-    }
-
-    private var header: some View {
-        HStack(spacing: 6) {
-            Circle().fill(statusColor).frame(width: 8, height: 8)
-            Text("RFF·MONITOR").font(KOII.mono(11, weight: .heavy)).foregroundStyle(KOII.text)
-            Spacer()
-            Text(statusText).font(KOII.mono(9)).foregroundStyle(statusColor)
-        }
-        .padding(.horizontal, 10).padding(.vertical, 7)
-        .background(KOII.cell)
-    }
-
-    // MARK: Counters
-
-    private func counterCell(_ label: String, _ value: String, color: Color = KOII.text) -> some View {
-        VStack(spacing: 1) {
-            Text(value).font(KOII.mono(20, weight: .heavy)).foregroundStyle(color)
-            Text(label).font(KOII.mono(8)).foregroundStyle(KOII.dim)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 6)
-        .background(KOII.cell)
-    }
-
-    private var counterGrid: some View {
-        HStack(spacing: 1) {
-            counterCell("TODAY", "\(coordinator.stats.filedToday)")
-            counterCell("24H", "\(coordinator.stats.filed24h)")
-            counterCell("QUEUE", "\(reviewQueue.pendingCount)",
-                        color: reviewQueue.pendingCount > 0 ? KOII.amber : KOII.text)
-            counterCell("DRAFTS", "\(pendingDrafts.count)",
-                        color: pendingDrafts.isEmpty ? KOII.text : Color.teal)
-            counterCell("PAID·M", "\(coordinator.stats.paidThisMonth)")
-        }
-    }
-
-    // MARK: Report
-
-    private var reportRow: some View {
-        let days = AccountantReportService.daysUntilReport()
-        let urgency: Color = days <= 1 ? KOII.red : (days <= 3 ? KOII.amber : KOII.dim)
-        return HStack(spacing: 8) {
-            Text("RPT 12TH").font(KOII.mono(9, weight: .heavy)).foregroundStyle(urgency)
-            Text("T-\(days)D").font(KOII.mono(12, weight: .heavy)).foregroundStyle(urgency)
-            Text("IN:\(coordinator.stats.reportInbound) OUT:\(coordinator.stats.reportOutbound)")
-                .font(KOII.mono(9)).foregroundStyle(KOII.text)
-            Spacer()
-            Button {
-                openWindow(id: "library")
-                NSApp.activate(ignoringOtherApps: true)
-                NotificationCenter.default.post(name: .rffOpenReporting, object: nil)
-            } label: {
-                Text("[REPORT]").font(KOII.mono(9, weight: .heavy)).foregroundStyle(KOII.amber)
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, 10).padding(.vertical, 6)
-        .background(KOII.cell)
     }
 
     // MARK: AI status
@@ -494,12 +543,12 @@ struct MenuBarDashboardView: View {
         .background(KOII.cell)
     }
 
-    // MARK: Review queue
+    // MARK: Review section (actions, not numbers)
 
     private var queueSection: some View {
         VStack(spacing: 1) {
             HStack {
-                Text("CONFIRM?").font(KOII.mono(8, weight: .heavy)).foregroundStyle(KOII.amber)
+                Text("REVIEW").font(KOII.mono(8, weight: .heavy)).foregroundStyle(KOII.amber)
                 Spacer()
             }
             .padding(.horizontal, 10).padding(.vertical, 3)
@@ -530,7 +579,8 @@ struct MenuBarDashboardView: View {
 
             if reviewQueue.items.count > 3 {
                 HStack {
-                    Text("+\(reviewQueue.items.count - 3) MORE").font(KOII.mono(8)).foregroundStyle(KOII.dim)
+                    Text("+\(reviewQueue.items.count - 3) MORE → REVIEW")
+                        .font(KOII.mono(8)).foregroundStyle(KOII.dim)
                     Spacer()
                 }
                 .padding(.horizontal, 10).padding(.vertical, 2)
@@ -539,19 +589,33 @@ struct MenuBarDashboardView: View {
         }
     }
 
-    // MARK: Drafts
+    // MARK: Send section (outbound drafts that still need to go out)
 
-    private var draftsSection: some View {
+    private var sendSection: some View {
         VStack(spacing: 1) {
+            HStack {
+                Text("TO SEND").font(KOII.mono(8, weight: .heavy)).foregroundStyle(state.sendUrgency.koColor)
+                Spacer()
+            }
+            .padding(.horizontal, 10).padding(.vertical, 3)
+            .background(KOII.cell)
+
             ForEach(pendingDrafts.prefix(2)) { draft in
+                let overdue = draft.dueDate < Date()
+                let soon = !overdue && draft.dueDate.timeIntervalSinceNow < 7 * 24 * 3600
                 HStack(spacing: 6) {
-                    Text("INV").font(KOII.mono(8, weight: .heavy)).foregroundStyle(Color.teal)
                     Text(draft.invoiceNumber).font(KOII.mono(9)).foregroundStyle(KOII.text)
                     Text(draft.recipient.company ?? draft.recipient.name)
                         .font(KOII.mono(9)).foregroundStyle(KOII.dim).lineLimit(1)
                     Spacer()
                     Text(draft.dueDate, format: .dateTime.day(.twoDigits).month(.twoDigits))
-                        .font(KOII.mono(9)).foregroundStyle(KOII.amber)
+                        .font(KOII.mono(9, weight: .heavy))
+                        .foregroundStyle(overdue ? KOII.red : (soon ? KOII.amber : KOII.teal))
+                    Button {
+                        openSection(.drafts)
+                    } label: {
+                        Text("[SEND→]").font(KOII.mono(9, weight: .heavy)).foregroundStyle(KOII.teal)
+                    }.buttonStyle(.plain)
                 }
                 .padding(.horizontal, 10).padding(.vertical, 4)
                 .background(KOII.cell)
@@ -559,22 +623,12 @@ struct MenuBarDashboardView: View {
         }
     }
 
-    // MARK: Last filed + footer
+    // MARK: Footer navigation
 
-    private var lastFiledRow: some View {
-        HStack(spacing: 6) {
-            Text("LAST").font(KOII.mono(8, weight: .heavy)).foregroundStyle(KOII.dim)
-            if let name = coordinator.stats.lastFiledName, let at = coordinator.stats.lastFiledAt {
-                Text(name.prefix(28)).font(KOII.mono(9)).foregroundStyle(KOII.text).lineLimit(1)
-                Spacer()
-                Text(at, format: .dateTime.hour().minute()).font(KOII.mono(9)).foregroundStyle(KOII.dim)
-            } else {
-                Text("—").font(KOII.mono(9)).foregroundStyle(KOII.dim)
-                Spacer()
-            }
-        }
-        .padding(.horizontal, 10).padding(.vertical, 5)
-        .background(KOII.cell)
+    private func openSection(_ section: DocumentFilter) {
+        openWindow(id: "library")
+        NSApp.activate(ignoringOtherApps: true)
+        NotificationCenter.default.post(name: .rffOpenSection, object: section.rawValue)
     }
 
     private func footerButton(_ title: String, color: Color = KOII.text, action: @escaping () -> Void) -> some View {
@@ -591,30 +645,18 @@ struct MenuBarDashboardView: View {
 
     private var footer: some View {
         VStack(spacing: 1) {
-            // Navigation: inbound library / AI-uncertain review / my invoices / monthly report
             HStack(spacing: 1) {
-                footerButton("LIBRARY") {
-                    openWindow(id: "library")
-                    NSApp.activate(ignoringOtherApps: true)
-                }
+                footerButton("LIBRARY") { openSection(.confirmed) }
                 footerButton(
-                    reviewQueue.pendingCount > 0 ? "REVIEW·\(reviewQueue.pendingCount)" : "REVIEW",
-                    color: reviewQueue.pendingCount > 0 ? KOII.amber : KOII.text
-                ) {
-                    openWindow(id: "review-queue")
-                    NSApp.activate(ignoringOtherApps: true)
-                }
-                footerButton("OUTBOUND") {
-                    openWindow(id: "invoicing")
-                    NSApp.activate(ignoringOtherApps: true)
-                }
-                footerButton("REPORT", color: KOII.amber) {
-                    openWindow(id: "library")
-                    NSApp.activate(ignoringOtherApps: true)
-                    NotificationCenter.default.post(name: .rffOpenReporting, object: nil)
-                }
+                    state.queueCount > 0 ? "REVIEW·\(state.queueCount)" : "REVIEW",
+                    color: state.queueCount > 0 ? KOII.amber : KOII.text
+                ) { openSection(.review) }
+                footerButton(
+                    state.sendCount > 0 ? "SEND·\(state.sendCount)" : "OUTBOUND",
+                    color: state.sendCount > 0 ? state.sendUrgency.koColor : KOII.text
+                ) { openSection(.drafts) }
+                footerButton("REPORT", color: KOII.amber) { openSection(.reporting) }
             }
-            // Controls
             HStack(spacing: 1) {
                 footerButton(
                     coordinator.status.isRunning ? "■ STOP WATCH" : "▶ START WATCH",

@@ -5,11 +5,40 @@ import AppKit
 import UniformTypeIdentifiers
 
 /// Filter for document list: Inbox (pending/underReview) vs Confirmed (approved/completed) vs Paid (archive)
+/// Top-level app sections shown in the sidebar source list.
+/// Inbox/Confirmed/Paid are document states; the rest are places.
 enum DocumentFilter: String, CaseIterable {
     case inbox = "Inbox"
     case confirmed = "Confirmed"
     case paid = "Paid"
+    case review = "Review"
+    case templates = "Templates"
+    case drafts = "Drafts"
     case reporting = "Reporting"
+
+    var isDocumentList: Bool {
+        switch self {
+        case .inbox, .confirmed, .paid: return true
+        default: return false
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .inbox: return "tray"
+        case .confirmed: return "checkmark.circle"
+        case .paid: return "banknote"
+        case .review: return "questionmark.circle"
+        case .templates: return "doc.text"
+        case .drafts: return "paperplane"
+        case .reporting: return "chart.bar.doc.horizontal"
+        }
+    }
+}
+
+extension Notification.Name {
+    /// Posted by the menu bar panel / Go menu to switch the main window's section
+    static let rffOpenSection = Notification.Name("rff.openSection")
 }
 
 /// Currency filter for document list
@@ -154,8 +183,8 @@ struct ContentView: View {
             statusFiltered = confirmedDocuments
         case .paid:
             statusFiltered = paidDocuments
-        case .reporting:
-            statusFiltered = []  // Reporting renders its own view
+        default:
+            statusFiltered = []  // Non-document sections render their own views
         }
 
         // Apply currency filter
@@ -186,8 +215,8 @@ struct ContentView: View {
             statusFiltered = confirmedDocuments
         case .paid:
             statusFiltered = paidDocuments
-        case .reporting:
-            statusFiltered = []  // Reporting renders its own view
+        default:
+            statusFiltered = []  // Non-document sections render their own views
         }
         let currencies = Set(statusFiltered.map { $0.currency })
         return Currency.allCases.filter { currencies.contains($0) }
@@ -203,8 +232,8 @@ struct ContentView: View {
             statusFiltered = confirmedDocuments
         case .paid:
             statusFiltered = paidDocuments
-        case .reporting:
-            statusFiltered = []  // Reporting renders its own view
+        default:
+            statusFiltered = []  // Non-document sections render their own views
         }
         let recipients = Set(statusFiltered.compactMap { $0.recipient })
         return recipients.sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
@@ -227,6 +256,8 @@ struct ContentView: View {
 
     // Column visibility configuration
     @StateObject private var columnConfiguration = LibraryColumnConfiguration.shared
+    @ObservedObject private var reviewQueue = ReviewQueueStore.shared
+    @ObservedObject private var invoiceScheduler = InvoiceScheduler.shared
 
     // Text entry state
     @State private var showingTextEntry = false
@@ -281,21 +312,93 @@ struct ContentView: View {
         return "\(prefix): \(parts.joined(separator: ", "))"
     }
 
-    var body: some View {
+    /// Sidebar source list: every part of the app, one click away
+    private var sourceList: some View {
+        List(selection: $selectedFilter) {
+            Section("Money Out") {
+                Label("Inbox", systemImage: DocumentFilter.inbox.systemImage)
+                    .badge(inboxDocuments.count)
+                    .tag(DocumentFilter.inbox)
+                Label("Confirmed", systemImage: DocumentFilter.confirmed.systemImage)
+                    .tag(DocumentFilter.confirmed)
+                Label("Paid", systemImage: DocumentFilter.paid.systemImage)
+                    .tag(DocumentFilter.paid)
+            }
+            Section("Money In") {
+                Label("Templates", systemImage: DocumentFilter.templates.systemImage)
+                    .tag(DocumentFilter.templates)
+                Label("Drafts", systemImage: DocumentFilter.drafts.systemImage)
+                    .badge(unsentDraftCount)
+                    .tag(DocumentFilter.drafts)
+            }
+            Section {
+                Label("Review", systemImage: DocumentFilter.review.systemImage)
+                    .badge(reviewQueue.pendingCount)
+                    .tag(DocumentFilter.review)
+                Label("Reporting", systemImage: DocumentFilter.reporting.systemImage)
+                    .tag(DocumentFilter.reporting)
+            }
+        }
+        .listStyle(.sidebar)
+    }
+
+    /// Outbound drafts that still need sending (pending or approved, not sent)
+    private var unsentDraftCount: Int {
+        invoiceScheduler.draftInvoices
+            .filter { $0.status == .pending || $0.status == .approved }
+            .count
+    }
+
+    private var mainSplit: some View {
         NavigationSplitView {
+            sourceList
+                .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 220)
+        } detail: {
+            // Flexible frames everywhere: switching sections must never resize the window
+            Group {
+                switch selectedFilter {
+                case .review:
+                    ReviewQueueView()
+                case .templates:
+                    TemplatesListView()
+                case .drafts:
+                    DraftsListView()
+                case .reporting:
+                    ReportingView()
+                case .inbox, .confirmed, .paid:
+                    documentSplit
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    private var documentSplit: some View {
+        HSplitView {
+            documentListPane
+                .frame(minWidth: 470, maxWidth: .infinity)
+            // Detail gets the lion's share: preview + confirm form need the room
+            Group {
+                if let document = selectedDocument {
+                    DocumentDetailView(document: document)
+                        .id(document.id)
+                } else {
+                    ContentUnavailableView(
+                        "No Document Selected",
+                        systemImage: "doc.text",
+                        description: Text("Select a document to view details")
+                    )
+                }
+            }
+            .frame(minWidth: 480, maxWidth: .infinity, maxHeight: .infinity)
+            .layoutPriority(1)
+        }
+    }
+
+    private var documentListPane: some View {
             VStack(spacing: 0) {
                 // Filters live directly above the list they control
                 HStack(spacing: 6) {
-                    Picker("Filter", selection: $selectedFilter) {
-                        ForEach(DocumentFilter.allCases, id: \.self) { filter in
-                            Text(filterLabel(for: filter)).tag(filter)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .controlSize(.small)
-                    .fixedSize()
-
                     Spacer(minLength: 4)
 
                     // Currency filter menu
@@ -374,6 +477,7 @@ struct ContentView: View {
                 TableColumn("Due Date", value: \.dueDate) { document in
                     HStack {
                         Text(document.dueDate, format: .dateTime.month().day().year())
+                            .monospacedDigit()
                         // Overdue warning only matters while money is still owed
                         if document.dueDate < Date()
                             && document.status != .completed
@@ -383,18 +487,31 @@ struct ContentView: View {
                         }
                     }
                 }
-                .width(120)
+                .width(min: 96, ideal: 110, max: 130)
 
                 TableColumn("Amount") { document in
-                    Text(document.amount, format: .currency(code: document.currency.currencyCode))
-                        .monospacedDigit()
+                    HStack(spacing: 6) {
+                        Spacer(minLength: 0)
+                        Text(document.amount, format: .number.precision(.fractionLength(2)).grouping(.automatic))
+                            .font(.system(.body, design: .monospaced))
+                        Text(document.currency.rawValue)
+                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                            .tracking(0.5)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(currencyColor(for: document.currency).opacity(0.16), in: Capsule())
+                            .foregroundStyle(currencyColor(for: document.currency))
+                    }
                 }
-                .width(100)
+                .width(min: 110, ideal: 130, max: 160)
 
+                // From is the elastic column: it absorbs whatever width remains
                 TableColumn("From", value: \.requestingOrganization) { document in
                     Text(document.requestingOrganization)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                 }
-                .width(min: 120, ideal: 180)
+                .width(min: 110)
 
                 TableColumn("Status") { document in
                     HStack(spacing: 6) {
@@ -407,22 +524,8 @@ struct ContentView: View {
                         }
                     }
                 }
-                .width(120)
+                .width(min: 105, ideal: 120, max: 150)
 
-                TableColumn("Currency") { document in
-                    Text(document.currency.rawValue)
-                        .font(.caption)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(currencyColor(for: document.currency).opacity(0.2), in: Capsule())
-                }
-                .width(60)
-
-                TableColumn("Recipient") { document in
-                    Text(document.recipient ?? "—")
-                        .foregroundStyle(document.recipient == nil ? .secondary : .primary)
-                }
-                .width(min: 100, ideal: 150)
             }
             .onChange(of: sortOrder) { _, newOrder in
                 // Sorting is handled by the Table
@@ -531,18 +634,6 @@ struct ContentView: View {
             .tableColumnVisibility(configuration: columnConfiguration)
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
-                    Button(action: { isImportingPDF = true }) {
-                        Label("Import PDF", systemImage: "doc.badge.plus")
-                    }
-                    Button(action: { showingTextEntry = true }) {
-                        Label("Enter Text", systemImage: "text.badge.plus")
-                    }
-                    Button(action: addDocument) {
-                        Label("Add Document", systemImage: "plus")
-                    }
-                }
-
-                ToolbarItemGroup(placement: .secondaryAction) {
                     if !selectedDocuments.isEmpty {
                         Button(role: .destructive) {
                             deleteDocuments(ids: selectedDocuments)
@@ -550,46 +641,48 @@ struct ContentView: View {
                             Label("Delete Selected", systemImage: "trash")
                         }
                     }
+
+                    Menu {
+                        Button(action: { isImportingPDF = true }) {
+                            Label("Import PDF…", systemImage: "doc.badge.plus")
+                        }
+                        Button(action: { showingTextEntry = true }) {
+                            Label("Enter Text…", systemImage: "text.badge.plus")
+                        }
+                        Button(action: addDocument) {
+                            Label("New Empty Document", systemImage: "doc")
+                        }
+                    } label: {
+                        Label("Add", systemImage: "plus")
+                    }
                 }
             }
 
-                // Totals bar at bottom
+                // Totals bar: a dark "display surface" - the gauge readout of the table
                 if !documents.isEmpty {
-                    Divider()
                     HStack {
                         Text(totalsDisplayText)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(KOII.amber)
                         Spacer()
-                        Text("\(documentsForTotals.count) of \(documents.count) documents")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                        Text("\(documentsForTotals.count)/\(documents.count) DOCS")
+                            .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(KOII.dim)
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 8)
-                    .background(.bar)
+                    .background(KOII.bg)
                 }
-                }
-                .overlay {
-                    if selectedFilter == .reporting {
-                        ReportingView()
-                            .background(Color(nsColor: .windowBackgroundColor))
-                    }
                 }
             }
-            .onReceive(NotificationCenter.default.publisher(for: .rffOpenReporting)) { _ in
-                selectedFilter = .reporting
-            }
-        } detail: {
-            if let document = selectedDocument {
-                DocumentDetailView(document: document)
-                    .id(document.id)
-            } else {
-                ContentUnavailableView(
-                    "No Document Selected",
-                    systemImage: "doc.text",
-                    description: Text("Select a document from the library to view details")
-                )
+    }
+
+    var body: some View {
+        mainSplit
+        .onReceive(NotificationCenter.default.publisher(for: .rffOpenSection)) { note in
+            if let raw = note.object as? String,
+               let section = DocumentFilter(rawValue: raw) {
+                selectedFilter = section
             }
         }
         .fileImporter(
@@ -624,7 +717,7 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .openLibrary)) { _ in
             // Bring the library window to front when notification is received
-            if let window = NSApp.windows.first(where: { $0.title == "RFF Library" }) {
+            if let window = NSApp.windows.first(where: { $0.title == "RFF" }) {
                 window.makeKeyAndOrderFront(nil)
                 NSApp.activate(ignoringOtherApps: true)
             }
@@ -943,8 +1036,8 @@ struct ContentView: View {
             return "No Confirmed Documents"
         case .paid:
             return "No Paid Documents"
-        case .reporting:
-            return ""  // Reporting overlay covers the empty state
+        default:
+            return ""
         }
     }
 
@@ -956,8 +1049,8 @@ struct ContentView: View {
             return "checkmark.circle"
         case .paid:
             return "banknote"
-        case .reporting:
-            return "chart.bar.doc.horizontal"
+        default:
+            return "doc"
         }
     }
 
@@ -969,7 +1062,7 @@ struct ContentView: View {
             return "Approved and completed documents will appear here."
         case .paid:
             return "Paid documents will appear here as an archive."
-        case .reporting:
+        default:
             return ""
         }
     }
@@ -1186,29 +1279,32 @@ struct AIBatchProgressBar: View {
 
 // MARK: - Status Badge
 
+/// LED-style status: a signal dot plus a mono word.
+/// One palette app-wide: green ok · amber needs-you/late · red overdue · gray inert.
 struct StatusBadge: View {
     let status: RFFStatus
-    /// Days the payment was late (0 = on time); tints the Paid badge green -> orange
+    /// Days the payment was late (0 = on time)
     var paidDaysLate: Int? = nil
 
     var body: some View {
-        Text(status.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
-            .font(.caption)
-            .fontWeight(.medium)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(backgroundColor, in: Capsule())
-            .foregroundStyle(foregroundColor)
-            .help(paidHelp)
+        HStack(spacing: 5) {
+            Circle()
+                .fill(ledColor)
+                .frame(width: 7, height: 7)
+            Text(label)
+                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .tracking(0.5)
+            if status == .paid, let daysLate = paidDaysLate, daysLate > 0 {
+                Text("· \(daysLate)D LATE")
+                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(Signal.amber)
+            }
+        }
+        .help(paidHelp)
     }
 
-    /// Green when paid on time, sliding through yellow to orange the later it was paid
-    /// (30+ days late = full orange). Unknown payment date reads as on time.
-    private var paidColor: Color {
-        let daysLate = paidDaysLate ?? 0
-        guard daysLate > 0 else { return .green }
-        let lateness = min(Double(daysLate) / 30.0, 1.0)
-        return Color(hue: 0.33 - 0.25 * lateness, saturation: 0.85, brightness: 0.85)
+    private var label: String {
+        status.rawValue.replacingOccurrences(of: "_", with: " ").uppercased()
     }
 
     private var paidHelp: String {
@@ -1217,37 +1313,18 @@ struct StatusBadge: View {
         return "Paid \(daysLate) day\(daysLate == 1 ? "" : "s") after the due date"
     }
 
-    private var backgroundColor: Color {
+    private var ledColor: Color {
         switch status {
         case .pending:
-            return .gray.opacity(0.2)
+            return Signal.gray
         case .underReview:
-            return .blue.opacity(0.2)
-        case .approved:
-            return .green.opacity(0.2)
+            return Signal.amber
+        case .approved, .completed:
+            return Signal.green
         case .rejected:
-            return .red.opacity(0.2)
-        case .completed:
-            return .purple.opacity(0.2)
+            return Signal.red
         case .paid:
-            return paidColor.opacity(0.2)
-        }
-    }
-
-    private var foregroundColor: Color {
-        switch status {
-        case .pending:
-            return .gray
-        case .underReview:
-            return .blue
-        case .approved:
-            return .green
-        case .rejected:
-            return .red
-        case .completed:
-            return .purple
-        case .paid:
-            return paidColor
+            return (paidDaysLate ?? 0) > 0 ? Signal.amber : Signal.green
         }
     }
 }
@@ -1632,7 +1709,6 @@ struct DocumentDetailView: View {
                 }
             }
         }
-        .navigationTitle(document.title)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 if canConfirm {

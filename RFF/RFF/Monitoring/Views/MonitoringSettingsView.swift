@@ -9,6 +9,11 @@ struct MonitoringSettingsView: View {
     @State private var newCompanyName = ""
     @State private var newCompanyAliases = ""
 
+    // OCR knobs (shared with manual imports)
+    @AppStorage("ocrAccuracy") private var ocrAccuracy = "accurate"
+    @AppStorage("languageCorrection") private var languageCorrection = true
+    @AppStorage("maxConcurrentOCR") private var maxConcurrentOCR = 4
+
     var body: some View {
         Form {
             Section("Watched Folders") {
@@ -142,6 +147,20 @@ struct MonitoringSettingsView: View {
                 ))
                 Text("Templates and drafts are managed in the Invoices window (menu bar → INVOICES).")
                     .font(.caption).foregroundStyle(.secondary)
+            }
+
+            Section("OCR") {
+                Picker("Accuracy Level", selection: $ocrAccuracy) {
+                    Text("Fast").tag("fast")
+                    Text("Accurate").tag("accurate")
+                }
+                Toggle("Use Language Correction", isOn: $languageCorrection)
+                Picker("Concurrent Pages", selection: $maxConcurrentOCR) {
+                    Text("2 pages").tag(2)
+                    Text("4 pages").tag(4)
+                    Text("8 pages").tag(8)
+                    Text("16 pages").tag(16)
+                }
             }
 
             Section("Pipeline") {

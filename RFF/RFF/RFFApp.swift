@@ -39,7 +39,7 @@ struct RFFApp: App {
 
     var body: some Scene {
         // Library window for browsing all documents in SwiftData (primary window)
-        WindowGroup("RFF Library", id: "library") {
+        WindowGroup("RFF", id: "library") {
             ContentView()
                 .onAppear {
                     appDelegate.modelContainer = sharedModelContainer
@@ -70,18 +70,6 @@ struct RFFApp: App {
         }
         .menuBarExtraStyle(.window)
 
-        // Manual review: documents the AI cascade couldn't confidently classify
-        WindowGroup("Needs Review", id: "review-queue") {
-            ReviewQueueView()
-                .frame(minWidth: 700, minHeight: 450)
-        }
-        .defaultSize(width: 850, height: 550)
-
-        // Outbound invoices: templates, drafts, scheduling (inherited from InvoiceFiler)
-        WindowGroup("Outbound Invoices", id: "invoicing") {
-            InvoicingView()
-        }
-
         // Settings scene
         Settings {
             SettingsView()
@@ -89,7 +77,7 @@ struct RFFApp: App {
     }
 
     private func openLibraryWindow() {
-        if let window = NSApp.windows.first(where: { $0.title == "RFF Library" }) {
+        if let window = NSApp.windows.first(where: { $0.title == "RFF" }) {
             window.makeKeyAndOrderFront(nil)
         } else {
             // Open new library window
@@ -98,41 +86,38 @@ struct RFFApp: App {
     }
 }
 
-/// "Go" menu in the main menu bar: every part of the app, one keystroke away
+/// "Go" menu in the main menu bar: every section of the one window, one keystroke away
 struct RFFGoCommands: Commands {
     @Environment(\.openWindow) private var openWindow
 
+    private func go(_ section: DocumentFilter) {
+        openWindow(id: "library")
+        NotificationCenter.default.post(name: .rffOpenSection, object: section.rawValue)
+    }
+
     var body: some Commands {
         CommandMenu("Go") {
-            Button("Library") {
-                openWindow(id: "library")
-            }
-            .keyboardShortcut("1", modifiers: .command)
-
-            Button("Needs Review") {
-                openWindow(id: "review-queue")
-            }
-            .keyboardShortcut("2", modifiers: .command)
-
-            Button("Outbound Invoices") {
-                openWindow(id: "invoicing")
-            }
-            .keyboardShortcut("3", modifiers: .command)
-
-            Button("Reporting") {
-                openWindow(id: "library")
-                NotificationCenter.default.post(name: .rffOpenReporting, object: nil)
-            }
-            .keyboardShortcut("4", modifiers: .command)
+            Button("Inbox") { go(.inbox) }
+                .keyboardShortcut("1", modifiers: .command)
+            Button("Confirmed") { go(.confirmed) }
+                .keyboardShortcut("2", modifiers: .command)
+            Button("Paid") { go(.paid) }
+                .keyboardShortcut("3", modifiers: .command)
+            Button("Review") { go(.review) }
+                .keyboardShortcut("4", modifiers: .command)
+            Button("Drafts") { go(.drafts) }
+                .keyboardShortcut("5", modifiers: .command)
+            Button("Reporting") { go(.reporting) }
+                .keyboardShortcut("6", modifiers: .command)
 
             Divider()
 
-            Button("Current Archive Folder") {
+            Button("Archive Folder") {
                 NSWorkspace.shared.activateFileViewerSelecting(
                     [ConfigManager.shared.config.resolvedArchiveRoot]
                 )
             }
-            .keyboardShortcut("5", modifiers: .command)
+            .keyboardShortcut("7", modifiers: .command)
         }
     }
 }
