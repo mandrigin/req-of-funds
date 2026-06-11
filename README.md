@@ -120,10 +120,16 @@ Open `RFF/RFF.xcodeproj` in Xcode and build the `RFF` scheme. No external depend
 
 ## tools/
 
-- **`ls-isinvoice`** — a standalone CLI experiment: point it at a folder
-  (`ls-isinvoice ~/Downloads`) and it classifies every PDF/image/txt with on-device
-  Apple Intelligence, printing invoice confidence and the organizations mentioned.
-  Build with `swift build -c release` inside `tools/ls-isinvoice/`.
+Standalone CLI experiments; build each with `swift build -c release` inside its folder.
+
+- **`ls-isinvoice`** — point it at a folder (`ls-isinvoice ~/Downloads`) and it
+  classifies every PDF/image/txt with on-device Apple Intelligence, printing invoice
+  confidence and the organizations mentioned.
+- **`ls-explain`** — explains every file in a folder using local Ollama
+  (`ls-explain [--model qwen3:32b] ~/Downloads`): what the file is (from extracted
+  content) and where it came from — read from macOS provenance metadata
+  (`kMDItemWhereFroms` download URLs and the quarantine agent), never invented.
+  Files without provenance are reported as locally created, by code, not by the model.
 
 ## License
 
