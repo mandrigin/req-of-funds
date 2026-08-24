@@ -1567,6 +1567,15 @@ struct DocumentDetailView: View {
     @State private var isDetectingFields = false
     @State private var showConfirmationPanel = true
     @State private var isPreviewExpanded = false  // Preview collapsed by default
+    @State private var formPanelHeight: CGFloat = 360  // Measured form content height
+
+    /// Reports the confirmation form's natural content height so the panel can hug it
+    private struct FormPanelHeightKey: PreferenceKey {
+        static var defaultValue: CGFloat = 0
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            value = max(value, nextValue())
+        }
+    }
     @State private var showingConfirmationAlert = false
     @State private var showingValidationError = false
     @State private var validationErrors: [String] = []
@@ -1718,8 +1727,9 @@ struct DocumentDetailView: View {
                         isEditing: $isEditingSchema
                     )
                 } else {
-                    // Normal review mode - draggable split with preview on top, form below
-                    VSplitView {
+                    // Normal review mode - preview on top absorbs the free height,
+                    // the form below hugs its content
+                    VStack(spacing: 0) {
                         // Top: Collapsible PDF Viewer with highlight controls
                         VStack(spacing: 0) {
                             HStack {
@@ -1908,8 +1918,12 @@ struct DocumentDetailView: View {
                             }
                         }
 
-                        // Bottom: Confirmation form panel with line items
-                        // (drag the split divider to trade space with the preview)
+                        Divider()
+
+                        // Bottom: Confirmation form panel with line items.
+                        // Capped at its measured content height so the preview
+                        // gets all remaining space; scrolls only when the window
+                        // is too small for the whole form.
                         ScrollView {
                             VStack(spacing: 0) {
                                 ConfirmationFormView(document: document)
@@ -1920,8 +1934,17 @@ struct DocumentDetailView: View {
                                     LineItemsSection(document: document)
                                 }
                             }
+                            .background(
+                                GeometryReader { proxy in
+                                    Color.clear.preference(
+                                        key: FormPanelHeightKey.self,
+                                        value: proxy.size.height
+                                    )
+                                }
+                            )
                         }
-                        .frame(minHeight: 200, idealHeight: 340, maxHeight: .infinity)
+                        .onPreferenceChange(FormPanelHeightKey.self) { formPanelHeight = $0 }
+                        .frame(maxHeight: isPreviewExpanded ? max(formPanelHeight, 120) : .infinity)
                     }
                 }
             } else {
