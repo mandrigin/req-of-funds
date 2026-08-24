@@ -1718,8 +1718,8 @@ struct DocumentDetailView: View {
                         isEditing: $isEditingSchema
                     )
                 } else {
-                    // Normal review mode - vertical layout with preview on top, form below
-                    VStack(spacing: 0) {
+                    // Normal review mode - draggable split with preview on top, form below
+                    VSplitView {
                         // Top: Collapsible PDF Viewer with highlight controls
                         VStack(spacing: 0) {
                             HStack {
@@ -1851,7 +1851,7 @@ struct DocumentDetailView: View {
                                         )
                                     }
                                 }
-                                .frame(minHeight: 300, maxHeight: 400)
+                                .frame(minHeight: 300, maxHeight: .infinity)
 
                                 // Selected field info panel
                                 if let selected = selectedHighlight {
@@ -1908,9 +1908,8 @@ struct DocumentDetailView: View {
                             }
                         }
 
-                        Divider()
-
                         // Bottom: Confirmation form panel with line items
+                        // (drag the split divider to trade space with the preview)
                         ScrollView {
                             VStack(spacing: 0) {
                                 ConfirmationFormView(document: document)
@@ -1922,6 +1921,7 @@ struct DocumentDetailView: View {
                                 }
                             }
                         }
+                        .frame(minHeight: 200, idealHeight: 340, maxHeight: .infinity)
                     }
                 }
             } else {
