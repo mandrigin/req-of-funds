@@ -210,16 +210,30 @@ final class MonitoringCoordinator: ObservableObject {
                 ?? "Unknown Organization"
 
             let baseName = filed.originalURL.deletingPathExtension().lastPathComponent
+
+            // Salary slips document money already paid: the pay date stands in for
+            // the due date, and no payment-deadline reminder is scheduled
+            let dueDate: Date
+            if filed.isSalary {
+                dueDate = entities.dueDate ?? filed.invoiceDate
+            } else {
+                dueDate = entities.dueDate ?? filed.invoiceDate.addingTimeInterval(30 * 24 * 60 * 60)
+            }
+
             let document = RFFDocument(
                 id: docId,
                 title: baseName,
                 requestingOrganization: organization,
                 amount: entities.amount ?? Decimal(0),
                 currency: entities.currency ?? .usd,
-                dueDate: entities.dueDate ?? filed.invoiceDate.addingTimeInterval(30 * 24 * 60 * 60),
+                dueDate: dueDate,
                 extractedText: ocrResult.fullText,
                 documentPath: storedPath
             )
+            if filed.isSalary {
+                document.documentCategory = DocumentCategory.salary.rawValue
+                document.classificationConfidence = 1.0
+            }
 
             let context = modelContainer.mainContext
             context.insert(document)
@@ -228,12 +242,14 @@ final class MonitoringCoordinator: ObservableObject {
             importedPaths.insert(filed.destinationURL.path)
             saveImportedPaths()
 
-            try? await NotificationService.shared.scheduleDeadlineNotification(
-                documentId: document.id,
-                title: document.title,
-                organization: document.requestingOrganization,
-                dueDate: document.dueDate
-            )
+            if !filed.isSalary {
+                try? await NotificationService.shared.scheduleDeadlineNotification(
+                    documentId: document.id,
+                    title: document.title,
+                    organization: document.requestingOrganization,
+                    dueDate: document.dueDate
+                )
+            }
         } catch {
             // Filing succeeded; import is best-effort. Leave a trace in the status.
             status = .error("Library import failed: \(error.localizedDescription)")

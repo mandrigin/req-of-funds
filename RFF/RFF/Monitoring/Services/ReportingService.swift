@@ -56,6 +56,7 @@ enum ReportingService {
         let allDocuments = (try? context.fetch(FetchDescriptor<RFFDocument>())) ?? []
         let inbound = allDocuments
             .filter { document in
+                guard document.documentCategory != DocumentCategory.salary.rawValue else { return false }
                 guard document.status == .paid, let paidDate = document.paidDate else { return false }
                 return isDate(paidDate, inMonth: monthStart)
             }

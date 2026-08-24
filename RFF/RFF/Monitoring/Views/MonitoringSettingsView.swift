@@ -8,6 +8,7 @@ struct MonitoringSettingsView: View {
 
     @State private var newCompanyName = ""
     @State private var newCompanyAliases = ""
+    @State private var salaryKeywordsText = ""
 
     // OCR knobs (shared with manual imports)
     @AppStorage("ocrAccuracy") private var ocrAccuracy = "accurate"
@@ -90,6 +91,23 @@ struct MonitoringSettingsView: View {
                 Toggle("Import filed invoices into RFF library", isOn: binding(\.autoImportToRFF, default: true))
                 Text("Clear cases are decided by Apple Intelligence on-device. Uncertain ones (\(Int(AIInvoiceClassifier.confidentNo * 100))-\(Int(AIInvoiceClassifier.confidentYes * 100))% confidence) are double-checked with Ollama, and anything still unclear lands in the Confirmation Queue.")
                     .font(.caption).foregroundStyle(.secondary)
+            }
+
+            Section("Salary Slips") {
+                Toggle("Detect salary slips and file them under Salary", isOn: Binding(
+                    get: { configManager.config.usesSalaryDetection },
+                    set: { enabled in
+                        try? configManager.updateConfig { $0.salaryDetectionEnabled = enabled }
+                        coordinator.restart()
+                    }
+                ))
+
+                if configManager.config.usesSalaryDetection {
+                    TextField("Keywords (comma-separated)", text: $salaryKeywordsText)
+                        .onSubmit { saveSalaryKeywords() }
+                    Text("Matched case-insensitively against the filename and document text. Matching files skip invoice classification, move to the archive's Salary folder, and show up in the Salary section of the library. Press Return to apply.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
             }
 
             Section("My Companies (invoice recipients)") {
@@ -179,6 +197,19 @@ struct MonitoringSettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
+        .onAppear {
+            salaryKeywordsText = configManager.config.resolvedSalaryKeywords.joined(separator: ", ")
+        }
+    }
+
+    private func saveSalaryKeywords() {
+        let keywords = salaryKeywordsText
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        try? configManager.updateConfig { $0.salaryKeywords = keywords.isEmpty ? nil : keywords }
+        salaryKeywordsText = configManager.config.resolvedSalaryKeywords.joined(separator: ", ")
+        coordinator.restart()
     }
 
     private var statusDescription: String {

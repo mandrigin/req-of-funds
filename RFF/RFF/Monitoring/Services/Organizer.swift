@@ -57,6 +57,9 @@ final class Organizer {
     /// Regex pattern for invoice folder naming
     private static let invoiceFolderPattern = #"^invoices-\d{2}-\d{4}$"#
 
+    /// Subfolder name for filed salary slips
+    static let salarySubfolder = "Salary"
+
     // MARK: - Properties
 
     private let config: AppConfig
@@ -80,8 +83,9 @@ final class Organizer {
     /// - Parameters:
     ///   - sourceFile: The source file URL
     ///   - extractedDate: Optional date extracted from invoice content
+    ///   - subfolder: Optional subfolder under the destination root (e.g. "Salary")
     /// - Returns: Organization result with destination paths
-    func organize(sourceFile: URL, extractedDate: Date? = nil) throws -> OrganizationResult {
+    func organize(sourceFile: URL, extractedDate: Date? = nil, subfolder: String? = nil) throws -> OrganizationResult {
         // 1. Idempotency check - skip if already in invoice folder
         if isInInvoiceFolder(sourceFile) {
             throw OrganizerError.alreadyInInvoiceFolder(sourceFile)
@@ -99,16 +103,25 @@ final class Organizer {
         if config.usesArchiveFiling {
             // Flat archive: the app database is the source of truth for reporting,
             // so files just need a safe home with a guaranteed-unique name.
-            destinationFolder = config.resolvedArchiveRoot
+            var folder = config.resolvedArchiveRoot
+            if let subfolder {
+                folder = folder.appendingPathComponent(subfolder, isDirectory: true)
+            }
+            destinationFolder = folder
             destinationPath = destinationFolder.appendingPathComponent(
                 Self.archiveFilename(for: sourceFile)
             )
         } else {
-            // Legacy: curated invoices-MM-YYYY folders
-            destinationFolder = resolveDestinationFolder(
-                sourceFile: sourceFile,
-                folderDate: folderDate
-            )
+            // Legacy: curated invoices-MM-YYYY folders (subfolder replaces the month folder)
+            if let subfolder {
+                let root = config.destinationRoot ?? sourceFile.deletingLastPathComponent()
+                destinationFolder = root.appendingPathComponent(subfolder, isDirectory: true)
+            } else {
+                destinationFolder = resolveDestinationFolder(
+                    sourceFile: sourceFile,
+                    folderDate: folderDate
+                )
+            }
             destinationPath = destinationFolder.appendingPathComponent(sourceFile.lastPathComponent)
         }
 
@@ -147,6 +160,14 @@ final class Organizer {
     func isInInvoiceFolder(_ url: URL) -> Bool {
         let parent = url.deletingLastPathComponent()
         if parent.standardizedFileURL.path == config.resolvedArchiveRoot.standardizedFileURL.path {
+            return true
+        }
+        let salaryFolder = config.resolvedArchiveRoot
+            .appendingPathComponent(Self.salarySubfolder, isDirectory: true)
+        if parent.standardizedFileURL.path == salaryFolder.standardizedFileURL.path {
+            return true
+        }
+        if parent.lastPathComponent == Self.salarySubfolder {
             return true
         }
         return parent.lastPathComponent.range(of: Self.invoiceFolderPattern, options: .regularExpression) != nil

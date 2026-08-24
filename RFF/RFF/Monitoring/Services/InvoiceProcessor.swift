@@ -72,6 +72,7 @@ struct FiledInvoice {
     let companyName: String?
     let organizations: [String]
     let invoiceDate: Date
+    let isSalary: Bool
 }
 
 // MARK: - Invoice Processor Delegate
@@ -344,12 +345,20 @@ final class InvoiceProcessor {
             return
         }
 
-        // 4. Classify as invoice - AI cascade (Apple Intelligence -> Ollama -> review queue)
+        // 4. Salary slips are matched by keyword (filename or text) and bypass
+        // invoice classification entirely - they are filed under Salary instead
+        let isSalary = SalarySlipDetector.isSalarySlip(
+            filename: url.lastPathComponent,
+            text: extractionResult.text,
+            config: config
+        )
+
+        // 5. Classify as invoice - AI cascade (Apple Intelligence -> Ollama -> review queue)
         // Keyword classification still runs for log details
         classification = invoiceClassifier.classify(extractionResult.text)
 
         var verdict: AIClassificationVerdict?
-        if !forceInvoice {
+        if !forceInvoice && !isSalary {
             let aiVerdict = await aiClassifier.classify(text: extractionResult.text)
             verdict = aiVerdict
 
@@ -420,8 +429,8 @@ final class InvoiceProcessor {
             )
         }
 
-        // User-approved files get filed even without a company match
-        guard companyMatch != nil || forceInvoice else {
+        // User-approved files and salary slips get filed even without a company match
+        guard companyMatch != nil || forceInvoice || isSalary else {
             let result = ProcessingResultData(
                 file: url,
                 extraction: extraction,
@@ -449,7 +458,11 @@ final class InvoiceProcessor {
         // 7. Resolve destination
         let organization: OrganizationResult
         do {
-            organization = try organizer.organize(sourceFile: url, extractedDate: invoiceDate)
+            organization = try organizer.organize(
+                sourceFile: url,
+                extractedDate: invoiceDate,
+                subfolder: isSalary ? Organizer.salarySubfolder : nil
+            )
         } catch OrganizerError.alreadyInInvoiceFolder {
             let result = ProcessingResultData(
                 file: url,
@@ -520,7 +533,8 @@ final class InvoiceProcessor {
                     extractedText: extractionResult.text,
                     companyName: companyMatch?.company.name,
                     organizations: verdict?.organizations ?? [],
-                    invoiceDate: invoiceDate
+                    invoiceDate: invoiceDate,
+                    isSalary: isSalary
                 ))
             }
 

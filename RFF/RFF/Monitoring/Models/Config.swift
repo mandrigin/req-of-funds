@@ -155,6 +155,30 @@ struct AppConfig: Codable, Equatable {
     var usesOllamaFallback: Bool { ollamaFallbackEnabled ?? true }
     var importsToRFF: Bool { autoImportToRFF ?? true }
 
+    // MARK: - Salary Slip Detection
+    // Optional so configs from older versions still decode
+
+    /// Detect salary slips / payslips and file them under the Salary section (nil = enabled)
+    var salaryDetectionEnabled: Bool?
+
+    /// Keywords matched case-insensitively against filename and document text (nil = defaults)
+    var salaryKeywords: [String]?
+
+    var usesSalaryDetection: Bool { salaryDetectionEnabled ?? true }
+
+    static let defaultSalaryKeywords = [
+        "salary slip", "salary-slip", "salary_slip", "payslip", "pay slip",
+        "salary statement", "lohnabrechnung", "gehaltsabrechnung", "lohnausweis",
+        "bulletin de salaire", "fiche de paie"
+    ]
+
+    var resolvedSalaryKeywords: [String] {
+        let keywords = salaryKeywords ?? Self.defaultSalaryKeywords
+        return keywords
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+    }
+
     // MARK: - Archive Filing
     // Reporting now comes from the app database, so processed files go to one flat
     // archive folder instead of curated invoices-MM-YYYY folders.
@@ -228,8 +252,32 @@ struct AppConfig: Codable, Equatable {
         case aiClassificationEnabled
         case ollamaFallbackEnabled
         case autoImportToRFF
+        case salaryDetectionEnabled
+        case salaryKeywords
         case archiveRoot
         case useArchiveFiling
+    }
+}
+
+// MARK: - Salary Slip Detection
+
+/// Keyword-based detector for salary slips / payslips.
+/// A filename or text match on any configured keyword marks the document as a salary slip.
+enum SalarySlipDetector {
+    static func isSalarySlip(filename: String?, text: String?, config: AppConfig) -> Bool {
+        guard config.usesSalaryDetection else { return false }
+        let keywords = config.resolvedSalaryKeywords.map { $0.lowercased() }
+        guard !keywords.isEmpty else { return false }
+
+        if let filename = filename?.lowercased(),
+           keywords.contains(where: { filename.contains($0) }) {
+            return true
+        }
+        if let text = text?.lowercased(),
+           keywords.contains(where: { text.contains($0) }) {
+            return true
+        }
+        return false
     }
 }
 

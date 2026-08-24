@@ -11,6 +11,7 @@ enum DocumentFilter: String, CaseIterable {
     case inbox = "Inbox"
     case confirmed = "Confirmed"
     case paid = "Paid"
+    case salary = "Salary"
     case review = "Review"
     case templates = "Templates"
     case drafts = "Drafts"
@@ -18,7 +19,7 @@ enum DocumentFilter: String, CaseIterable {
 
     var isDocumentList: Bool {
         switch self {
-        case .inbox, .confirmed, .paid: return true
+        case .inbox, .confirmed, .paid, .salary: return true
         default: return false
         }
     }
@@ -28,6 +29,7 @@ enum DocumentFilter: String, CaseIterable {
         case .inbox: return "tray"
         case .confirmed: return "checkmark.circle"
         case .paid: return "banknote"
+        case .salary: return "dollarsign.circle"
         case .review: return "questionmark.circle"
         case .templates: return "doc.text"
         case .drafts: return "paperplane"
@@ -154,19 +156,28 @@ struct ContentView: View {
     // All documents (for filtering)
     @Query(sort: \RFFDocument.dueDate) private var allDocuments: [RFFDocument]
 
+    // Salary slips live in their own section, regardless of status
+    private var salaryDocuments: [RFFDocument] {
+        allDocuments.filter { $0.documentCategory == DocumentCategory.salary.rawValue }
+    }
+
+    private func isSalaryDocument(_ document: RFFDocument) -> Bool {
+        document.documentCategory == DocumentCategory.salary.rawValue
+    }
+
     // Inbox: pending and underReview documents
     private var inboxDocuments: [RFFDocument] {
-        allDocuments.filter { $0.status == .pending || $0.status == .underReview }
+        allDocuments.filter { ($0.status == .pending || $0.status == .underReview) && !isSalaryDocument($0) }
     }
 
     // Confirmed: approved and completed documents
     private var confirmedDocuments: [RFFDocument] {
-        allDocuments.filter { $0.status == .approved || $0.status == .completed }
+        allDocuments.filter { ($0.status == .approved || $0.status == .completed) && !isSalaryDocument($0) }
     }
 
     // Paid: archived documents with payment recorded
     private var paidDocuments: [RFFDocument] {
-        allDocuments.filter { $0.status == .paid }
+        allDocuments.filter { $0.status == .paid && !isSalaryDocument($0) }
     }
 
     @State private var selectedFilter: DocumentFilter = .confirmed
@@ -183,6 +194,8 @@ struct ContentView: View {
             statusFiltered = confirmedDocuments
         case .paid:
             statusFiltered = paidDocuments
+        case .salary:
+            statusFiltered = salaryDocuments
         default:
             statusFiltered = []  // Non-document sections render their own views
         }
@@ -215,6 +228,8 @@ struct ContentView: View {
             statusFiltered = confirmedDocuments
         case .paid:
             statusFiltered = paidDocuments
+        case .salary:
+            statusFiltered = salaryDocuments
         default:
             statusFiltered = []  // Non-document sections render their own views
         }
@@ -232,6 +247,8 @@ struct ContentView: View {
             statusFiltered = confirmedDocuments
         case .paid:
             statusFiltered = paidDocuments
+        case .salary:
+            statusFiltered = salaryDocuments
         default:
             statusFiltered = []  // Non-document sections render their own views
         }
@@ -351,6 +368,9 @@ struct ContentView: View {
                     Label("Drafts", systemImage: DocumentFilter.drafts.systemImage)
                         .badge(unsentDraftCount)
                         .tag(DocumentFilter.drafts)
+                    Label("Salary", systemImage: DocumentFilter.salary.systemImage)
+                        .badge(salaryDocuments.count)
+                        .tag(DocumentFilter.salary)
                 }
                 Section {
                     Label("Review", systemImage: DocumentFilter.review.systemImage)
@@ -389,7 +409,7 @@ struct ContentView: View {
                     DraftsListView()
                 case .reporting:
                     ReportingView()
-                case .inbox, .confirmed, .paid:
+                case .inbox, .confirmed, .paid, .salary:
                     documentSplit
                 }
             }
@@ -778,16 +798,25 @@ struct ContentView: View {
                             extractedText: ocrResult.fullText,
                             documentPath: storedPath
                         )
+                        if SalarySlipDetector.isSalarySlip(
+                            filename: nil,
+                            text: ocrResult.fullText,
+                            config: ConfigManager.shared.config
+                        ) {
+                            newDocument.documentCategory = DocumentCategory.salary.rawValue
+                        }
                         modelContext.insert(newDocument)
 
-                        // Schedule deadline notification
-                        Task {
-                            try? await NotificationService.shared.scheduleDeadlineNotification(
-                                documentId: newDocument.id,
-                                title: newDocument.title,
-                                organization: newDocument.requestingOrganization,
-                                dueDate: newDocument.dueDate
-                            )
+                        // Schedule deadline notification (not for salary slips - already paid)
+                        if newDocument.documentCategory != DocumentCategory.salary.rawValue {
+                            Task {
+                                try? await NotificationService.shared.scheduleDeadlineNotification(
+                                    documentId: newDocument.id,
+                                    title: newDocument.title,
+                                    organization: newDocument.requestingOrganization,
+                                    dueDate: newDocument.dueDate
+                                )
+                            }
                         }
                     }
 
@@ -995,17 +1024,26 @@ struct ContentView: View {
                         extractedText: ocrResult.fullText,
                         documentPath: storedPath
                     )
+                    if SalarySlipDetector.isSalarySlip(
+                        filename: url.lastPathComponent,
+                        text: ocrResult.fullText,
+                        config: ConfigManager.shared.config
+                    ) {
+                        newDocument.documentCategory = DocumentCategory.salary.rawValue
+                    }
                     modelContext.insert(newDocument)
                     newlyDroppedDocumentIDs.append(newDocument.id)
 
-                    // Schedule deadline notification
-                    Task {
-                        try? await NotificationService.shared.scheduleDeadlineNotification(
-                            documentId: newDocument.id,
-                            title: newDocument.title,
-                            organization: newDocument.requestingOrganization,
-                            dueDate: newDocument.dueDate
-                        )
+                    // Schedule deadline notification (not for salary slips - already paid)
+                    if newDocument.documentCategory != DocumentCategory.salary.rawValue {
+                        Task {
+                            try? await NotificationService.shared.scheduleDeadlineNotification(
+                                documentId: newDocument.id,
+                                title: newDocument.title,
+                                organization: newDocument.requestingOrganization,
+                                dueDate: newDocument.dueDate
+                            )
+                        }
                     }
                 }
             }
@@ -1071,6 +1109,8 @@ struct ContentView: View {
             return "No Confirmed Documents"
         case .paid:
             return "No Paid Documents"
+        case .salary:
+            return "No Salary Slips"
         default:
             return ""
         }
@@ -1084,6 +1124,8 @@ struct ContentView: View {
             return "checkmark.circle"
         case .paid:
             return "banknote"
+        case .salary:
+            return "dollarsign.circle"
         default:
             return "doc"
         }
@@ -1097,6 +1139,8 @@ struct ContentView: View {
             return "Approved and completed documents will appear here."
         case .paid:
             return "Paid documents will appear here as an archive."
+        case .salary:
+            return "Salary slips detected in your watched folders will appear here."
         default:
             return ""
         }

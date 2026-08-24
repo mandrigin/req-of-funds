@@ -7,6 +7,7 @@ enum DocumentCategory: String, CaseIterable, Codable {
     case purchaseOrder = "purchase_order"
     case grantRequest = "grant_request"
     case reimbursement = "reimbursement"
+    case salary = "salary"
 
     /// Human-readable display name
     var displayName: String {
@@ -19,6 +20,8 @@ enum DocumentCategory: String, CaseIterable, Codable {
             return "Grant Request"
         case .reimbursement:
             return "Reimbursement"
+        case .salary:
+            return "Salary Slip"
         }
     }
 
@@ -33,6 +36,8 @@ enum DocumentCategory: String, CaseIterable, Codable {
             return "An application for funding from a grant program"
         case .reimbursement:
             return "A request for repayment of expenses incurred"
+        case .salary:
+            return "A payslip documenting salary paid to an employee"
         }
     }
 }
