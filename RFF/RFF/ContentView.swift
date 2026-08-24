@@ -1678,11 +1678,7 @@ struct DocumentDetailView: View {
                                         )
                                     } else if let image = documentImage {
                                         // Image preview for non-PDF documents (screenshots, etc.)
-                                        ScrollView([.horizontal, .vertical]) {
-                                            Image(nsImage: image)
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                        }
+                                        ZoomableImageView(image: image)
                                     } else if let missing = missingFilePath {
                                         ContentUnavailableView {
                                             Label("File Not Found", systemImage: "questionmark.folder")
@@ -2384,6 +2380,101 @@ struct SelectedFieldPanel: View {
 // MARK: - Paste Preview Sheet
 
 /// Preview sheet for pasted screenshots showing image with OCR highlights and editable fields
+// MARK: - Zoomable Image Preview
+
+/// Image preview with pinch-to-zoom and explicit zoom controls.
+/// Zoom 1.0 = fit to the visible area; larger values scroll.
+struct ZoomableImageView: View {
+    let image: NSImage
+
+    @State private var zoom: CGFloat = 1.0
+    @State private var pinchBaseZoom: CGFloat?
+
+    private static let minZoom: CGFloat = 0.25
+    private static let maxZoom: CGFloat = 8.0
+
+    var body: some View {
+        GeometryReader { proxy in
+            let fitScale = min(
+                proxy.size.width / max(image.size.width, 1),
+                proxy.size.height / max(image.size.height, 1),
+                1
+            )
+            let scale = fitScale * zoom
+
+            ScrollView([.horizontal, .vertical]) {
+                Image(nsImage: image)
+                    .resizable()
+                    .interpolation(.high)
+                    .frame(
+                        width: image.size.width * scale,
+                        height: image.size.height * scale
+                    )
+                    // Center the image while it is smaller than the viewport
+                    .frame(
+                        minWidth: proxy.size.width,
+                        minHeight: proxy.size.height
+                    )
+            }
+            .gesture(
+                MagnificationGesture()
+                    .onChanged { value in
+                        if pinchBaseZoom == nil { pinchBaseZoom = zoom }
+                        zoom = clampZoom((pinchBaseZoom ?? 1) * value)
+                    }
+                    .onEnded { _ in pinchBaseZoom = nil }
+            )
+            .overlay(alignment: .bottomTrailing) {
+                zoomControls(fitScale: fitScale)
+            }
+        }
+    }
+
+    private func zoomControls(fitScale: CGFloat) -> some View {
+        HStack(spacing: 6) {
+            Button {
+                zoom = clampZoom(zoom / 1.25)
+            } label: {
+                Image(systemName: "minus.magnifyingglass")
+            }
+            .help("Zoom out")
+
+            Text("\(Int(zoom * 100))%")
+                .font(.caption.monospacedDigit())
+                .frame(minWidth: 40)
+
+            Button {
+                zoom = clampZoom(zoom * 1.25)
+            } label: {
+                Image(systemName: "plus.magnifyingglass")
+            }
+            .help("Zoom in")
+
+            Divider()
+                .frame(height: 14)
+
+            Button("Fit") {
+                zoom = 1.0
+            }
+            .help("Fit to window")
+
+            Button("100%") {
+                zoom = clampZoom(1 / max(fitScale, 0.001))
+            }
+            .help("Actual size")
+        }
+        .buttonStyle(.borderless)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(.regularMaterial, in: Capsule())
+        .padding(12)
+    }
+
+    private func clampZoom(_ value: CGFloat) -> CGFloat {
+        min(Self.maxZoom, max(Self.minZoom, value))
+    }
+}
+
 struct PastePreviewSheet: View {
     @Environment(\.dismiss) private var dismiss
 
