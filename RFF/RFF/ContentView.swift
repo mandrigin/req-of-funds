@@ -265,6 +265,7 @@ struct ContentView: View {
     // Paste preview state
     @State private var showingPastePreview = false
     @State private var pastedImageData: Data?
+    @State private var pastedImageExtension: String = "png"
     @State private var pastedOCRResult: OCRPageResult?
     @State private var pastedExtractedData: ExtractedData?
     @State private var pastedEntities: ExtractedEntities?
@@ -758,13 +759,24 @@ struct ContentView: View {
                 ) { confirmedEntities in
                     // Create document with confirmed data
                     withAnimation {
+                        let docId = UUID()
+
+                        // Save the pasted image into app storage so the document keeps a preview
+                        let storedPath = try? DocumentStorageService.saveData(
+                            imageData,
+                            documentId: docId,
+                            fileExtension: pastedImageExtension
+                        )
+
                         let newDocument = RFFDocument(
+                            id: docId,
                             title: generateTitle(from: confirmedEntities),
                             requestingOrganization: confirmedEntities.organizationName ?? "Unknown",
                             amount: confirmedEntities.amount ?? Decimal(0),
                             currency: confirmedEntities.currency ?? .usd,
                             dueDate: confirmedEntities.dueDate ?? Date().addingTimeInterval(30 * 24 * 60 * 60),
-                            extractedText: ocrResult.fullText
+                            extractedText: ocrResult.fullText,
+                            documentPath: storedPath
                         )
                         modelContext.insert(newDocument)
 
@@ -1195,9 +1207,11 @@ struct ContentView: View {
 
         for imageType in imageTypes {
             if provider.hasItemConformingToTypeIdentifier(imageType.identifier) {
+                let fileExtension = imageType.preferredFilenameExtension ?? "png"
                 provider.loadDataRepresentation(forTypeIdentifier: imageType.identifier) { data, error in
                     Task { @MainActor in
                         if let data = data {
+                            pastedImageExtension = fileExtension
                             await processClipboardImage(data: data)
                         } else {
                             isProcessingPaste = false

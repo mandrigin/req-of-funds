@@ -33,6 +33,18 @@ enum DocumentStorageService {
         return destURL.path
     }
 
+    /// Write raw data (e.g. a pasted clipboard image) into local storage, keyed by document UUID.
+    /// Returns the path to the stored file.
+    static func saveData(_ data: Data, documentId: UUID, fileExtension ext: String) throws -> String {
+        try ensureDirectory()
+
+        let destName = ext.isEmpty ? documentId.uuidString : "\(documentId.uuidString).\(ext)"
+        let destURL = documentsDirectory.appendingPathComponent(destName)
+
+        try data.write(to: destURL, options: .atomic)
+        return destURL.path
+    }
+
     /// Delete the local copy for a document.
     static func deleteFile(for documentId: UUID, extension ext: String? = nil) {
         let name: String
