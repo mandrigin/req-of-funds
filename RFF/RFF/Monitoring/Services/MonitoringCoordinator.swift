@@ -198,6 +198,21 @@ final class MonitoringCoordinator: ObservableObject {
         do {
             // Mirror ContentView.processDroppedPDF: OCR -> entities -> RFFDocument
             let ocrResult = try await DocumentOCRService().processDocument(at: filed.destinationURL)
+
+            // A salary PDF can bundle several payslips (one per page, e.g. one per
+            // employee): when two or more pages each read as a payslip, every page
+            // becomes its own library entry with page-level amounts
+            if filed.isSalary {
+                let slipPages = SalarySlipDetector.salaryPages(
+                    in: ocrResult,
+                    config: ConfigManager.shared.config
+                )
+                if slipPages.count >= 2 {
+                    await importSalaryPages(slipPages, filed: filed)
+                    return
+                }
+            }
+
             let entities = try await EntityExtractionService().extractEntities(from: ocrResult)
 
             let docId = UUID()
@@ -242,18 +257,66 @@ final class MonitoringCoordinator: ObservableObject {
             importedPaths.insert(filed.destinationURL.path)
             saveImportedPaths()
 
-            if !filed.isSalary {
-                try? await NotificationService.shared.scheduleDeadlineNotification(
-                    documentId: document.id,
-                    title: document.title,
-                    organization: document.requestingOrganization,
-                    dueDate: document.dueDate
-                )
-            }
+            try? await NotificationService.shared.scheduleDeadlineNotification(
+                documentId: document.id,
+                title: document.title,
+                organization: document.requestingOrganization,
+                dueDate: document.dueDate
+            )
         } catch {
             // Filing succeeded; import is best-effort. Leave a trace in the status.
             status = .error("Library import failed: \(error.localizedDescription)")
         }
+    }
+
+    /// Import each payslip page of a multi-payslip PDF as its own library entry
+    private func importSalaryPages(_ pages: [OCRPageResult], filed: FiledInvoice) async {
+        guard let modelContainer else { return }
+
+        let entityService = EntityExtractionService()
+        let baseName = filed.originalURL.deletingPathExtension().lastPathComponent
+        let context = modelContainer.mainContext
+
+        for page in pages {
+            let entities = try? await entityService.extractEntities(from: page.fullText)
+
+            let docId = UUID()
+            // Each entry keeps its own copy of the PDF so deleting one never
+            // orphans the file another entry points to
+            let storedPath = (try? DocumentStorageService.copyFile(from: filed.destinationURL, documentId: docId))
+                ?? filed.destinationURL.path
+
+            let organization = filed.companyName
+                ?? entities?.organizationName
+                ?? filed.organizations.first
+                ?? "Unknown Organization"
+
+            let document = RFFDocument(
+                id: docId,
+                title: "\(baseName) – page \(page.pageIndex + 1)",
+                requestingOrganization: organization,
+                amount: entities?.amount ?? Decimal(0),
+                currency: entities?.currency ?? .usd,
+                dueDate: entities?.dueDate ?? filed.invoiceDate,
+                extractedText: page.fullText,
+                documentPath: storedPath
+            )
+            document.documentCategory = DocumentCategory.salary.rawValue
+            document.classificationConfidence = 1.0
+            context.insert(document)
+
+            try? await NotificationService.shared.scheduleDeadlineNotification(
+                documentId: document.id,
+                title: document.title,
+                organization: document.requestingOrganization,
+                dueDate: document.dueDate
+            )
+        }
+
+        try? context.save()
+
+        importedPaths.insert(filed.destinationURL.path)
+        saveImportedPaths()
     }
 
     private func loadImportedPaths() {

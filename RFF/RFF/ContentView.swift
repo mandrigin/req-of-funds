@@ -11,7 +11,6 @@ enum DocumentFilter: String, CaseIterable {
     case inbox = "Inbox"
     case confirmed = "Confirmed"
     case paid = "Paid"
-    case salary = "Salary"
     case review = "Review"
     case templates = "Templates"
     case drafts = "Drafts"
@@ -19,7 +18,7 @@ enum DocumentFilter: String, CaseIterable {
 
     var isDocumentList: Bool {
         switch self {
-        case .inbox, .confirmed, .paid, .salary: return true
+        case .inbox, .confirmed, .paid: return true
         default: return false
         }
     }
@@ -29,7 +28,6 @@ enum DocumentFilter: String, CaseIterable {
         case .inbox: return "tray"
         case .confirmed: return "checkmark.circle"
         case .paid: return "banknote"
-        case .salary: return "dollarsign.circle"
         case .review: return "questionmark.circle"
         case .templates: return "doc.text"
         case .drafts: return "paperplane"
@@ -156,28 +154,19 @@ struct ContentView: View {
     // All documents (for filtering)
     @Query(sort: \RFFDocument.dueDate) private var allDocuments: [RFFDocument]
 
-    // Salary slips live in their own section, regardless of status
-    private var salaryDocuments: [RFFDocument] {
-        allDocuments.filter { $0.documentCategory == DocumentCategory.salary.rawValue }
-    }
-
-    private func isSalaryDocument(_ document: RFFDocument) -> Bool {
-        document.documentCategory == DocumentCategory.salary.rawValue
-    }
-
     // Inbox: pending and underReview documents
     private var inboxDocuments: [RFFDocument] {
-        allDocuments.filter { ($0.status == .pending || $0.status == .underReview) && !isSalaryDocument($0) }
+        allDocuments.filter { $0.status == .pending || $0.status == .underReview }
     }
 
     // Confirmed: approved and completed documents
     private var confirmedDocuments: [RFFDocument] {
-        allDocuments.filter { ($0.status == .approved || $0.status == .completed) && !isSalaryDocument($0) }
+        allDocuments.filter { $0.status == .approved || $0.status == .completed }
     }
 
     // Paid: archived documents with payment recorded
     private var paidDocuments: [RFFDocument] {
-        allDocuments.filter { $0.status == .paid && !isSalaryDocument($0) }
+        allDocuments.filter { $0.status == .paid }
     }
 
     @State private var selectedFilter: DocumentFilter = .confirmed
@@ -194,8 +183,6 @@ struct ContentView: View {
             statusFiltered = confirmedDocuments
         case .paid:
             statusFiltered = paidDocuments
-        case .salary:
-            statusFiltered = salaryDocuments
         default:
             statusFiltered = []  // Non-document sections render their own views
         }
@@ -228,8 +215,6 @@ struct ContentView: View {
             statusFiltered = confirmedDocuments
         case .paid:
             statusFiltered = paidDocuments
-        case .salary:
-            statusFiltered = salaryDocuments
         default:
             statusFiltered = []  // Non-document sections render their own views
         }
@@ -247,8 +232,6 @@ struct ContentView: View {
             statusFiltered = confirmedDocuments
         case .paid:
             statusFiltered = paidDocuments
-        case .salary:
-            statusFiltered = salaryDocuments
         default:
             statusFiltered = []  // Non-document sections render their own views
         }
@@ -368,9 +351,6 @@ struct ContentView: View {
                     Label("Drafts", systemImage: DocumentFilter.drafts.systemImage)
                         .badge(unsentDraftCount)
                         .tag(DocumentFilter.drafts)
-                    Label("Salary", systemImage: DocumentFilter.salary.systemImage)
-                        .badge(salaryDocuments.count)
-                        .tag(DocumentFilter.salary)
                 }
                 Section {
                     Label("Review", systemImage: DocumentFilter.review.systemImage)
@@ -409,7 +389,7 @@ struct ContentView: View {
                     DraftsListView()
                 case .reporting:
                     ReportingView()
-                case .inbox, .confirmed, .paid, .salary:
+                case .inbox, .confirmed, .paid:
                     documentSplit
                 }
             }
@@ -551,9 +531,14 @@ struct ContentView: View {
 
                 // From is the elastic column: it absorbs whatever width remains
                 TableColumn("From", value: \.requestingOrganization) { document in
-                    Text(document.requestingOrganization)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
+                    HStack(spacing: 6) {
+                        Text(document.requestingOrganization)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                        if document.documentCategory == DocumentCategory.salary.rawValue {
+                            SalaryTag()
+                        }
+                    }
                 }
                 .width(min: 110)
 
@@ -807,16 +792,14 @@ struct ContentView: View {
                         }
                         modelContext.insert(newDocument)
 
-                        // Schedule deadline notification (not for salary slips - already paid)
-                        if newDocument.documentCategory != DocumentCategory.salary.rawValue {
-                            Task {
-                                try? await NotificationService.shared.scheduleDeadlineNotification(
-                                    documentId: newDocument.id,
-                                    title: newDocument.title,
-                                    organization: newDocument.requestingOrganization,
-                                    dueDate: newDocument.dueDate
-                                )
-                            }
+                        // Schedule deadline notification
+                        Task {
+                            try? await NotificationService.shared.scheduleDeadlineNotification(
+                                documentId: newDocument.id,
+                                title: newDocument.title,
+                                organization: newDocument.requestingOrganization,
+                                dueDate: newDocument.dueDate
+                            )
                         }
                     }
 
@@ -994,6 +977,50 @@ struct ContentView: View {
             // Step 1: Run OCR on the PDF
             let ocrResult = try await ocrService.processDocument(at: url)
 
+            // A salary PDF can bundle several payslips (one per page): when two or
+            // more pages each read as a payslip, import every page as its own entry
+            let config = ConfigManager.shared.config
+            if SalarySlipDetector.isSalarySlip(
+                filename: url.lastPathComponent,
+                text: ocrResult.fullText,
+                config: config
+            ) {
+                let slipPages = SalarySlipDetector.salaryPages(in: ocrResult, config: config)
+                if slipPages.count >= 2 {
+                    var pageSlips: [(page: OCRPageResult, entities: ExtractedEntities?)] = []
+                    for page in slipPages {
+                        pageSlips.append((page, try? await entityService.extractEntities(from: page.fullText)))
+                    }
+
+                    await MainActor.run {
+                        withAnimation {
+                            let baseName = url.deletingPathExtension().lastPathComponent
+                            for slip in pageSlips {
+                                let docId = UUID()
+                                // Each entry keeps its own copy so deleting one never
+                                // orphans the file another entry points to
+                                let storedPath = (try? DocumentStorageService.copyFile(from: url, documentId: docId))
+                                    ?? url.path
+                                let newDocument = RFFDocument(
+                                    id: docId,
+                                    title: "\(baseName) – page \(slip.page.pageIndex + 1)",
+                                    requestingOrganization: slip.entities?.organizationName ?? "Unknown Organization",
+                                    amount: slip.entities?.amount ?? Decimal(0),
+                                    currency: slip.entities?.currency ?? .usd,
+                                    dueDate: slip.entities?.dueDate ?? Date(),
+                                    extractedText: slip.page.fullText,
+                                    documentPath: storedPath
+                                )
+                                newDocument.documentCategory = DocumentCategory.salary.rawValue
+                                modelContext.insert(newDocument)
+                                newlyDroppedDocumentIDs.append(newDocument.id)
+                            }
+                        }
+                    }
+                    return
+                }
+            }
+
             // Step 2: Extract entities (org, amount, due date)
             let entities = try await entityService.extractEntities(from: ocrResult)
 
@@ -1034,16 +1061,14 @@ struct ContentView: View {
                     modelContext.insert(newDocument)
                     newlyDroppedDocumentIDs.append(newDocument.id)
 
-                    // Schedule deadline notification (not for salary slips - already paid)
-                    if newDocument.documentCategory != DocumentCategory.salary.rawValue {
-                        Task {
-                            try? await NotificationService.shared.scheduleDeadlineNotification(
-                                documentId: newDocument.id,
-                                title: newDocument.title,
-                                organization: newDocument.requestingOrganization,
-                                dueDate: newDocument.dueDate
-                            )
-                        }
+                    // Schedule deadline notification
+                    Task {
+                        try? await NotificationService.shared.scheduleDeadlineNotification(
+                            documentId: newDocument.id,
+                            title: newDocument.title,
+                            organization: newDocument.requestingOrganization,
+                            dueDate: newDocument.dueDate
+                        )
                     }
                 }
             }
@@ -1109,8 +1134,6 @@ struct ContentView: View {
             return "No Confirmed Documents"
         case .paid:
             return "No Paid Documents"
-        case .salary:
-            return "No Salary Slips"
         default:
             return ""
         }
@@ -1124,8 +1147,6 @@ struct ContentView: View {
             return "checkmark.circle"
         case .paid:
             return "banknote"
-        case .salary:
-            return "dollarsign.circle"
         default:
             return "doc"
         }
@@ -1139,8 +1160,6 @@ struct ContentView: View {
             return "Approved and completed documents will appear here."
         case .paid:
             return "Paid documents will appear here as an archive."
-        case .salary:
-            return "Salary slips detected in your watched folders will appear here."
         default:
             return ""
         }
@@ -1637,6 +1656,12 @@ struct DocumentDetailView: View {
                                     }
                                 }
                                 .disabled(AIAnalysisProgressManager.shared.isAnalyzing(documentId: document.id) || (document.extractedText ?? "").isEmpty)
+
+                                if document.documentCategory == DocumentCategory.salary.rawValue {
+                                    Divider()
+                                        .frame(height: 20)
+                                    SalaryTag()
+                                }
 
                                 Spacer()
                             }
@@ -2380,6 +2405,22 @@ struct SelectedFieldPanel: View {
 // MARK: - Paste Preview Sheet
 
 /// Preview sheet for pasted screenshots showing image with OCR highlights and editable fields
+// MARK: - Salary Tag
+
+/// Small capsule marking a document as a salary slip
+struct SalaryTag: View {
+    var body: some View {
+        Text("SALARY")
+            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .tracking(0.5)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 2)
+            .background(Color.purple.opacity(0.16), in: Capsule())
+            .foregroundStyle(.purple)
+            .help("Salary slip")
+    }
+}
+
 // MARK: - Zoomable Image Preview
 
 /// Image preview with pinch-to-zoom and explicit zoom controls.

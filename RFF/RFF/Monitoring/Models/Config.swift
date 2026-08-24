@@ -279,6 +279,16 @@ enum SalarySlipDetector {
         }
         return false
     }
+
+    /// Pages of a document that individually read as a salary slip.
+    /// Two or more means the PDF bundles multiple payslips (e.g. one per employee)
+    /// and each page should become its own library entry.
+    static func salaryPages(in ocrResult: OCRDocumentResult, config: AppConfig) -> [OCRPageResult] {
+        ocrResult.pages.filter { page in
+            !page.fullText.isEmpty
+                && isSalarySlip(filename: nil, text: page.fullText, config: config)
+        }
+    }
 }
 
 // MARK: - Validation

@@ -94,7 +94,7 @@ struct MonitoringSettingsView: View {
             }
 
             Section("Salary Slips") {
-                Toggle("Detect salary slips and file them under Salary", isOn: Binding(
+                Toggle("Detect salary slips", isOn: Binding(
                     get: { configManager.config.usesSalaryDetection },
                     set: { enabled in
                         try? configManager.updateConfig { $0.salaryDetectionEnabled = enabled }
@@ -105,7 +105,7 @@ struct MonitoringSettingsView: View {
                 if configManager.config.usesSalaryDetection {
                     TextField("Keywords (comma-separated)", text: $salaryKeywordsText)
                         .onSubmit { saveSalaryKeywords() }
-                    Text("Matched case-insensitively against the filename and document text. Matching files skip invoice classification, move to the archive's Salary folder, and show up in the Salary section of the library. Press Return to apply.")
+                    Text("Matched case-insensitively against the filename and document text. Matching files skip invoice classification, move to the archive's Salary folder, and go through the normal Inbox flow tagged as salary. A PDF whose pages each read as a payslip becomes one entry per page. Press Return to apply.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }
