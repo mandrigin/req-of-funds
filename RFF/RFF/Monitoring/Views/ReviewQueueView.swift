@@ -24,7 +24,7 @@ struct ReviewQueueView: View {
                 .padding(.vertical, 2)
                 .tag(item)
             }
-            .frame(minWidth: 250, idealWidth: 300)
+            .frame(minWidth: 240, idealWidth: 300, maxWidth: 400)
             .overlay {
                 if reviewQueue.items.isEmpty {
                     ContentUnavailableView(
@@ -54,7 +54,8 @@ struct ReviewQueueView: View {
                     )
                 }
             }
-            .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
+            .frame(minWidth: 680, maxWidth: .infinity, maxHeight: .infinity)
+            .layoutPriority(1)
         }
         .navigationTitle("Review")
         .onAppear { reviewQueue.prune() }
@@ -96,11 +97,13 @@ private struct ReviewItemDetail: View {
 
     var body: some View {
         HSplitView {
+            // The preview flexes; the verification panel keeps a readable fixed band
             QuickLookPreview(url: item.fileURL)
-                .frame(minWidth: 420, maxWidth: .infinity, maxHeight: .infinity)
+                .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
+                .layoutPriority(1)
 
             verificationPanel
-                .frame(minWidth: 340, idealWidth: 380, maxWidth: 460, maxHeight: .infinity)
+                .frame(minWidth: 320, idealWidth: 360, maxWidth: 420, maxHeight: .infinity)
         }
     }
 
