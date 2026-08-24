@@ -63,9 +63,6 @@ struct ConfirmationFormView: View {
     @Bindable var document: RFFDocument
     @Environment(\.modelContext) private var modelContext
 
-    /// Called when the user cancels the form (optional)
-    var onCancel: (() -> Void)?
-
     // Track original values to detect manual edits
     @State private var originalOrganization: String = ""
     @State private var originalRecipient: String = ""
@@ -87,9 +84,6 @@ struct ConfirmationFormView: View {
     @State private var editingCurrency: Currency = .usd
     @State private var editingDueDate: Date = Date()
 
-    @State private var showingConfirmation = false
-    @State private var isConfirming = false
-
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
@@ -108,11 +102,6 @@ struct ConfirmationFormView: View {
                 }
                 .padding()
             }
-
-            Divider()
-
-            // Footer with confirm button
-            footer
         }
         .frame(minWidth: 280, maxWidth: .infinity)
         .background(Color(nsColor: .controlBackgroundColor))
@@ -121,14 +110,6 @@ struct ConfirmationFormView: View {
         }
         .onChange(of: document.id) { _, _ in
             initializeFields()
-        }
-        .alert("Confirm Document", isPresented: $showingConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Confirm") {
-                confirmDocument()
-            }
-        } message: {
-            Text("Mark this document as confirmed? The extracted values will be saved and the document will be moved to review.")
         }
     }
 
@@ -237,81 +218,7 @@ struct ConfirmationFormView: View {
         }
     }
 
-    // MARK: - Footer
-
-    private var footer: some View {
-        VStack(spacing: 12) {
-            // Summary of changes
-            if hasEdits {
-                HStack(spacing: 4) {
-                    Image(systemName: "info.circle")
-                        .font(.caption)
-                    Text(editSummary)
-                        .font(.caption)
-                }
-                .foregroundStyle(.secondary)
-            }
-
-            // Action buttons
-            HStack(spacing: 12) {
-                // Cancel button
-                Button {
-                    cancelEdits()
-                } label: {
-                    Text("Cancel")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-
-                // Confirm button
-                Button {
-                    showingConfirmation = true
-                } label: {
-                    HStack {
-                        if isConfirming {
-                            ProgressView()
-                                .scaleEffect(0.7)
-                        } else {
-                            Image(systemName: "checkmark.circle.fill")
-                        }
-                        Text("Confirm & Submit")
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(isConfirming || !isValid)
-            }
-        }
-        .padding()
-    }
-
     // MARK: - Helpers
-
-    private var hasEdits: Bool {
-        organizationSource == .manual || recipientSource == .manual || amountSource == .manual || currencySource == .manual || dueDateSource == .manual
-    }
-
-    private var editSummary: String {
-        var edited: [String] = []
-        if organizationSource == .manual { edited.append("organization") }
-        if recipientSource == .manual { edited.append("recipient") }
-        if amountSource == .manual { edited.append("amount") }
-        if currencySource == .manual { edited.append("currency") }
-        if dueDateSource == .manual { edited.append("due date") }
-
-        if edited.isEmpty {
-            return "All values auto-extracted"
-        } else {
-            return "Edited: \(edited.joined(separator: ", "))"
-        }
-    }
-
-    private var isValid: Bool {
-        !editingOrganization.trimmingCharacters(in: .whitespaces).isEmpty &&
-        editingAmount >= 0
-    }
 
     private func initializeFields() {
         // Store original values for edit detection
@@ -337,125 +244,6 @@ struct ConfirmationFormView: View {
         dueDateSource = .extracted
     }
 
-    private func cancelEdits() {
-        // Reset document to original values
-        document.requestingOrganization = originalOrganization
-        document.recipient = originalRecipient.isEmpty ? nil : originalRecipient
-        document.amount = originalAmount
-        document.currency = originalCurrency
-        document.dueDate = originalDueDate
-
-        // Reset editing state to original values
-        editingOrganization = originalOrganization
-        editingRecipient = originalRecipient
-        editingAmount = originalAmount
-        editingCurrency = originalCurrency
-        editingDueDate = originalDueDate
-
-        // Reset source indicators
-        organizationSource = .extracted
-        recipientSource = .extracted
-        amountSource = .extracted
-        currencySource = .extracted
-        dueDateSource = .extracted
-
-        // Notify parent if callback provided
-        onCancel?()
-    }
-
-    private func confirmDocument() {
-        isConfirming = true
-
-        // Record corrections for learning
-        Task {
-            await recordCorrections()
-        }
-
-        // Store confirmed values
-        document.confirmedOrganization = document.requestingOrganization
-        document.confirmedAmount = document.amount
-        document.confirmedDueDate = document.dueDate
-        document.confirmedAt = Date()
-
-        // Update document status to approved (moves to Confirmed tab)
-        document.status = .approved
-        document.updatedAt = Date()
-
-        // Save changes
-        do {
-            try modelContext.save()
-        } catch {
-            print("Failed to save document: \(error)")
-        }
-
-        // Post notification for UI updates
-        NotificationCenter.default.post(
-            name: .documentStatusChanged,
-            object: nil,
-            userInfo: ["documentId": document.id, "status": RFFStatus.approved]
-        )
-
-        isConfirming = false
-    }
-
-    private func recordCorrections() async {
-        let correctionService = CorrectionHistoryService.shared
-
-        // Record organization correction if edited
-        if organizationSource == .manual && editingOrganization != originalOrganization {
-            let correction = FieldCorrection(
-                schemaId: nil,
-                fieldType: .vendor,
-                originalValue: originalOrganization,
-                correctedValue: editingOrganization,
-                originalConfidence: 0.5,
-                wasCompleteReplacement: originalOrganization.isEmpty,
-                documentId: document.id
-            )
-            try? await correctionService.recordCorrection(correction)
-        } else {
-            await correctionService.recordConfirmation(schemaId: nil, fieldType: .vendor)
-        }
-
-        // Record amount correction if edited
-        if amountSource == .manual && editingAmount != originalAmount {
-            let correction = FieldCorrection(
-                schemaId: nil,
-                fieldType: .total,
-                originalValue: "\(originalAmount)",
-                correctedValue: "\(editingAmount)",
-                originalConfidence: 0.5,
-                wasCompleteReplacement: originalAmount == 0,
-                documentId: document.id
-            )
-            try? await correctionService.recordCorrection(correction)
-        } else {
-            await correctionService.recordConfirmation(schemaId: nil, fieldType: .total)
-        }
-
-        // Record due date correction if edited
-        let calendar = Calendar.current
-        if dueDateSource == .manual && !calendar.isDate(editingDueDate, inSameDayAs: originalDueDate) {
-            let formatter = ISO8601DateFormatter()
-            let correction = FieldCorrection(
-                schemaId: nil,
-                fieldType: .dueDate,
-                originalValue: formatter.string(from: originalDueDate),
-                correctedValue: formatter.string(from: editingDueDate),
-                originalConfidence: 0.5,
-                wasCompleteReplacement: false,
-                documentId: document.id
-            )
-            try? await correctionService.recordCorrection(correction)
-        } else {
-            await correctionService.recordConfirmation(schemaId: nil, fieldType: .dueDate)
-        }
-
-        // Track extractions for accuracy statistics
-        correctionService.recordExtraction(fieldType: .vendor)
-        correctionService.recordExtraction(fieldType: .total)
-        correctionService.recordExtraction(fieldType: .dueDate)
-    }
 }
 
 #Preview {

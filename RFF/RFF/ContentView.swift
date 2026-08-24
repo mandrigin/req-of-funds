@@ -262,6 +262,25 @@ struct ContentView: View {
     // Text entry state
     @State private var showingTextEntry = false
 
+    // Bulk actions on the table selection
+    @State private var showingBulkPaidSheet = false
+    @State private var bulkPaidDate = Date()
+    @State private var bulkPaidIDs: Set<RFFDocument.ID> = []
+
+    /// Selected documents still in the inbox state (eligible for bulk confirm)
+    private var confirmableSelection: [RFFDocument] {
+        allDocuments.filter {
+            selectedDocuments.contains($0.id) && ($0.status == .pending || $0.status == .underReview)
+        }
+    }
+
+    /// Selected documents in the confirmed state (eligible for bulk mark-as-paid)
+    private var payableSelection: [RFFDocument] {
+        allDocuments.filter {
+            selectedDocuments.contains($0.id) && ($0.status == .approved || $0.status == .completed)
+        }
+    }
+
     // Paste preview state
     @State private var showingPastePreview = false
     @State private var pastedImageData: Data?
@@ -648,6 +667,37 @@ struct ContentView: View {
 
                     Divider()
 
+                    let confirmable = selectedDocs.filter { $0.status == .pending || $0.status == .underReview }
+                    let payable = selectedDocs.filter { $0.status == .approved || $0.status == .completed }
+
+                    if !confirmable.isEmpty {
+                        Button {
+                            confirmDocuments(ids: Set(confirmable.map(\.id)))
+                        } label: {
+                            Label(
+                                confirmable.count > 1 ? "Confirm (\(confirmable.count))" : "Confirm",
+                                systemImage: "checkmark.seal.fill"
+                            )
+                        }
+                    }
+
+                    if !payable.isEmpty {
+                        Button {
+                            bulkPaidIDs = Set(payable.map(\.id))
+                            bulkPaidDate = Date()
+                            showingBulkPaidSheet = true
+                        } label: {
+                            Label(
+                                payable.count > 1 ? "Mark as Paid (\(payable.count))…" : "Mark as Paid…",
+                                systemImage: "banknote.fill"
+                            )
+                        }
+                    }
+
+                    if !confirmable.isEmpty || !payable.isEmpty {
+                        Divider()
+                    }
+
                     Button(role: .destructive) {
                         deleteDocuments(ids: ids)
                     } label: {
@@ -663,6 +713,26 @@ struct ContentView: View {
             .tableColumnVisibility(configuration: columnConfiguration)
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
+                    if !confirmableSelection.isEmpty {
+                        Button {
+                            confirmDocuments(ids: Set(confirmableSelection.map(\.id)))
+                        } label: {
+                            Label("Confirm (\(confirmableSelection.count))", systemImage: "checkmark.seal.fill")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.green)
+                    }
+
+                    if !payableSelection.isEmpty {
+                        Button {
+                            bulkPaidIDs = Set(payableSelection.map(\.id))
+                            bulkPaidDate = Date()
+                            showingBulkPaidSheet = true
+                        } label: {
+                            Label("Mark as Paid (\(payableSelection.count))", systemImage: "banknote.fill")
+                        }
+                    }
+
                     if !selectedDocuments.isEmpty {
                         Button(role: .destructive) {
                             deleteDocuments(ids: selectedDocuments)
@@ -810,6 +880,20 @@ struct ContentView: View {
                     pastedEntities = nil
                 }
             }
+        }
+        .sheet(isPresented: $showingBulkPaidSheet) {
+            MarkAsPaidSheet(
+                selectedDate: $bulkPaidDate,
+                onConfirm: {
+                    markDocumentsAsPaid(ids: bulkPaidIDs, paidDate: bulkPaidDate)
+                    bulkPaidIDs.removeAll()
+                    showingBulkPaidSheet = false
+                },
+                onCancel: {
+                    bulkPaidIDs.removeAll()
+                    showingBulkPaidSheet = false
+                }
+            )
         }
         .sheet(isPresented: $showingTextEntry) {
             TextEntrySheet { document in
@@ -1231,6 +1315,50 @@ struct ContentView: View {
                     }
                     modelContext.delete(document)
                 }
+            }
+            selectedDocuments.removeAll()
+            selectedDocument = nil
+        }
+    }
+
+    /// Confirm every given document still in the inbox state
+    private func confirmDocuments(ids: Set<RFFDocument.ID>) {
+        let now = Date()
+        withAnimation {
+            for document in allDocuments where ids.contains(document.id)
+                && (document.status == .pending || document.status == .underReview) {
+                document.confirmedOrganization = document.requestingOrganization
+                document.confirmedAmount = document.amount
+                document.confirmedDueDate = document.dueDate
+                document.confirmedAt = now
+                document.status = .approved
+                document.updatedAt = now
+
+                NotificationCenter.default.post(
+                    name: .documentStatusChanged,
+                    object: nil,
+                    userInfo: ["documentId": document.id, "status": RFFStatus.approved]
+                )
+            }
+            selectedDocuments.removeAll()
+            selectedDocument = nil
+        }
+    }
+
+    /// Mark every given confirmed document as paid on the chosen date
+    private func markDocumentsAsPaid(ids: Set<RFFDocument.ID>, paidDate: Date) {
+        withAnimation {
+            for document in allDocuments where ids.contains(document.id)
+                && (document.status == .approved || document.status == .completed) {
+                document.paidDate = paidDate
+                document.status = .paid
+                document.updatedAt = Date()
+
+                NotificationCenter.default.post(
+                    name: .documentStatusChanged,
+                    object: nil,
+                    userInfo: ["documentId": document.id, "status": RFFStatus.paid]
+                )
             }
             selectedDocuments.removeAll()
             selectedDocument = nil
